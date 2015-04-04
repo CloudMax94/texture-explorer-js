@@ -62,9 +62,8 @@ gulp.task('sass', function() {
 gulp.task('watch-browser', function() {
     mainBundle();
     var pattern;
-    pattern = ['./main.jade'];
-    gulp.src(pattern)
-        .pipe(watch(pattern))
+    gulp.src('./templates/main.jade')
+        .pipe(watch(['./templates/*.jade']))
         .pipe(rename("index.html"))
         .pipe(gulpJade({
             jade: jade,
@@ -84,4 +83,15 @@ gulp.task('watch-sass', function() {
     gulp.watch('./sass/**/*.scss', ['sass']);
 });
 
-gulp.task('default', ['watch-sass', 'watch-browser']);
+gulp.task('watch', ['watch-sass', 'watch-browser'], function() {
+    gulp.src('./templates/main.jade')
+        .pipe(watch(['./templates/*.jade']))
+        .pipe(rename("index.html"))
+        .pipe(gulpJade({
+            jade: jade,
+            pretty: true
+        }))
+        .pipe(gulp.dest('.'));
+});
+
+gulp.task('default', ['watch']);

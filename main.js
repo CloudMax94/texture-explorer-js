@@ -4,11 +4,6 @@ var fs = require('fs');
 var BrowserWindow = require('browser-window');  // Module to create native browser window.
 argv = require('minimist')(process.argv.slice(1));
 
-if (argv.browsermenu) {
-    console.log("enable browser menu");
-}
-console.log(argv);
-
 // Report crashes to our server.
 require('crash-reporter').start();
 
@@ -28,12 +23,16 @@ app.on('ready', function() {
     // Create the browser window.
     mainWindow = new BrowserWindow({width: 800, height: 600, icon: path.join(__dirname, 'icon.png')});
     // and load the index.html of the app.
-
+/*
     var jade = require('jade');
     var html = jade.renderFile(__dirname+'/main.jade');
     fs.writeFileSync(__dirname+'/index.html', html);
+*/
     mainWindow.loadUrl('file://' + __dirname + '/index.html');
-    mainWindow.toggleDevTools();
+    console.log(argv);
+    if (argv._.indexOf('debug') > -1) {
+        mainWindow.toggleDevTools();
+    }
     // Emitted when the window is closed.
     mainWindow.on('closed', function() {
         // Dereference the window object, usually you would store windows

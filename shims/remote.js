@@ -1,3 +1,7 @@
+/*jslint node:true, browser: true */
+var url = require('url');
+var _   = require('lodash');
+
 module.exports = {
     require: function(component){
         var remoteComponents = {
@@ -10,7 +14,17 @@ module.exports = {
     },
     getGlobal: function(g) {
         if (g == 'argv') {
-            return {_:[]};
+            var url_parts = url.parse(window.location.href, true);
+            var query = url_parts.query;
+            var query_ = [];
+            _.each(query, function(val, key){
+                if (val === '') {
+                    delete query[key];
+                    query_.push(key);
+                }
+            });
+            query._ = query_;
+            return query;
         }
         return null;
     },

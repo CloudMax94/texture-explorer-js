@@ -7,7 +7,7 @@ var path                = require('path');
 var fs                  = require('fs');
 
 var textureManipulator  = require('./lib/textureManipulator');
-var TexturePreview      = require('./lib/texturePreview');
+var TextureViewer       = require('./lib/textureViewer');
 var profile             = require('./lib/profile');
 var ui                  = require('./lib/ui');
 require('./lib/contextmenu');
@@ -144,7 +144,7 @@ var wrap = ui.createForm([
 ]);
 document.getElementById('preview-fields').appendChild(wrap);
 
-var preview = new TexturePreview(container, document.getElementById('texture-preview'));
+var preview = new TextureViewer(container, document.getElementById('texture-preview'));
 preview.assignInputs(document.getElementById('preview-fields'));
 //texturePreview.initializeListeners(container);
 var mainTree = document.getElementById('mainTree');

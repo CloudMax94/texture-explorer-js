@@ -3,7 +3,6 @@ logs
 node_modules
 browser
 profiles
-index.html
 assets/css
 *.sublime-project
 *.sublime-workspace

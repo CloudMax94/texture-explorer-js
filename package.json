@@ -29,5 +29,7 @@
     "gulp-jade": "~1.0.0",
     "gulp-util": "~3.0.4"
   },
-  "browser": {}
+  "browser": {
+    "jade": false
+  }
 }
