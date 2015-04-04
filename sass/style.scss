@@ -1,0 +1,25 @@
+@import 'variables';
+@import 'base';
+@import 'input';
+@import 'menu';
+@import 'ui';
+
+html {
+    font-family: $font-default;
+}
+
+body {
+    font-size: 16px;
+    color: #FFF;
+    background: $background-color;
+}
+
+#app {
+    height: 100%;
+    width: 100%;
+}
+
+#mainTree {
+    flex: 1;
+    font-family: $font-monospace;
+}

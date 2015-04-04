@@ -1,0 +1,32 @@
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+    -webkit-touch-callout: none;
+    user-select: none;
+    cursor: default;
+}
+html {
+    text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+p,
+ol,
+ul {
+    margin: 0;
+    padding: 0;
+}
+a {
+    text-decoration: none;
+}
+img {
+    max-width: 100%;
+    height: auto;
+    border: 0;
+}

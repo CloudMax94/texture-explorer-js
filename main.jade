@@ -1,0 +1,13 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset='UTF-8')
+    title Texture Explorer.js
+    link(rel='stylesheet', type='text/css', href='assets/css/style.css')
+    //-link(rel='import', href='components/tree-view/tree-view.html')
+    if browser
+        script(src='FileSaver.min.js')
+    script(src='boot.js')
+  body
+    ui-rows#app
+        include ./interface.jade

@@ -1,0 +1,81 @@
+ui-rows {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    > * + * {
+        margin-top: 1px;
+    }
+}
+
+ui-columns {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    > * + * {
+        margin-left: 1px;
+    }
+}
+
+ui-panel {
+    display: flex;
+    flex-direction: column;
+    background: $panel-color;
+    padding: 0 8px;
+    overflow: auto;
+}
+
+ui-container {
+    flex: 1 0 auto;
+    width: 100%;
+    margin: 10px 0 5px 0;
+    display: flex;
+    flex-direction: column;
+    &::shadow {
+        fieldset {
+            flex: 1;
+            border: 2px groove lighten($panel-color, 10);
+            margin: 0;
+            legend {
+                font-size: 13px;
+                font-weight: bold;
+            }
+        }
+    }
+}
+
+ui-handle {
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    cursor: ns-resize;
+    &::shadow .handle {
+        position: absolute;
+        top: -5px;
+        bottom: -5px;
+        left: 0;
+        right: 0;
+    }
+    ui-columns > & {
+        cursor: ew-resize;
+        &::shadow .handle {
+            top: 0;
+            bottom: 0;
+            left: -5px;
+            right: -5px;
+        }
+    }
+}
+
+texture-viewer::shadow {
+    .wrap {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    img {
+        background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2M8duzYfwY0YGVlxYguxjgUFKI7GsTH5m4M3w1ChQC2sSSgO3MQyAAAAABJRU5ErkJggg==) repeat;
+    }
+}

@@ -1,0 +1,48 @@
+Texture Explore Texture Pack (.tetp) File Format
+
+File Header:
+	0x00-0x0E = Identifier, "TextureExplorer"
+	0x0F      = Version Number. (Current version is 0x01)
+	0x10-0x11 = Flags
+			0x01 = zlib compressed (All data after the file header is zlib compressed)
+	0x12-0x13 = Number of textures in the file. (All data after the texture specified here is ignored)
+	0x14-0x1F = Unused
+
+Texture Header:
+	0x0     = Texture Format
+			0x10 = RGB5A1
+			0x18 = RGBA32
+			0x40 = CI4
+			0x48 = CI8
+			0x60 = IA4
+			0x68 = IA8
+			0x70 = IA16
+			0x80 = I4
+			0x88 = I8
+			0xFE = JPEG
+	0x1-0x4 = Texture Address
+		The address the texture should be imported to.
+	0x5-0x8 = Data Size
+		The size of the texture data, excluding the header.
+	0x9-0xA = Texture Width
+		The width of the texture. The dimensions of JPEG textures are stored in the JPEG Header, so this is not used by them (it is set to 0).
+		This is currently unused but may be used in the future to generate texture lists out of texture packs, among other things. 
+		(It is not possible to generate a texture entry without knowing the format, address, data length and at least one dimension (or both dimensions and no data length))
+	0xB-0xE = Palette Address
+		The address to the palette of the texture. Only used by ci4 and ci8 textures (it is set to 0 for other formats).
+		This is currently unused but may be used in the future to generate texture lists out of texture packs, among other things.
+		(Without it, all ci4 and ci8 textures would have a palette address of 0x00000000)
+	0xF     = Unused
+
+The header of the first texture comes right after the file header.
+The texture data comes right after its header.
+Unless the current texture is specified as the last one in the file header, the texture data is always followed by a texture header.
+
+54657874 75726545 78706C6F 72657201 //Identifier & Version Number
+00000002 00000000 00000000 00000000 //2 Textures in the file. The file is not compressed
+180074C0 00000000 20000400 00000000 //Texture Header for texture 1, a rgba32 texture which should be imported to 0x0074C000 with a data size of 0x000020 and is 4 pixels wide.
+000000FF FF0000FF 00FF00FF 0000FFFF //Data for Texture 1
+FFFF00FF FF00FFFF 00FFFFFF FFFFFFFF //Data for Texture 1
+180074C0 20000000 10000200 00000000 //Texture Header for texture 2, a rgba32 texture which should be imported to 0x0074C020 with a data size of 0x000010 and is 2 pixels wide.
+FF0000FF 00FF00FF 0000FFFF FFFFFFFF //Data for Texture 2
+DEADBEEF DEADBEEF DEADBEEF DEADBEEF //Random data. This is not read, since the file header specified that there only are 2 textures in the file.

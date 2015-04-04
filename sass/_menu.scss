@@ -1,0 +1,72 @@
+menu-bar {
+    line-height: 24px;
+    font-size: 14px;
+    background: $panel-color;
+    z-index: 1000;
+}
+
+menu-item {
+    display: inline-block;
+    position: relative;
+    color: $menu-text-color;
+    text-shadow: -1px -1px rgba(0,0,0,0.33);
+    cursor: pointer;
+    padding: 0 8px;
+    &:hover {
+        color: $menu-text-color-hover;
+        background: $menu-background-color-hover;
+        menu-bar > & {
+            $color: rgba(0, 0, 0, 0.5);
+            box-shadow: inset  0px 1px 0 $color,
+                        inset  1px 0px 0 $color,
+                        inset -1px 0px 0 $color;
+        }
+        > menu-items {
+            display:block;
+        }
+    }
+    menu-items {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1;
+        min-width: 128px;
+        background: darken($panel-color, 10);
+        border: 1px solid darken($panel-color, 15);
+        box-shadow: 5px 10px 15px 0px rgba(0,0,0,0.25);
+        > menu-item {
+            display: block;
+            &:hover {
+                box-shadow: 0 0 0 rgba($menu-background-color-hover, 0.75);
+            }
+            &.parent {
+                &:after {
+                    content: '';
+                    position: absolute;
+                    right: 8px;
+                    top: 50%;
+                    transform: translate(0, -50%);
+                    width: 0;
+                    height: 0;
+                    border-top: 4px solid transparent;
+                    border-left: 6px solid rgba(255, 255, 255, 0.75);
+                    border-bottom: 4px solid transparent;
+                }
+            }
+            > menu-items {
+                top: 0;
+                left: 100%;
+            }
+        }
+    }
+}
+menu-items {
+    display: block;
+}
+
+menu-separator {
+    border-top: 2px groove rgba(lighten($panel-color, 15), 0.2);
+    display: block;
+    margin: 0 5px;
+}
