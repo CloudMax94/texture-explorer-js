@@ -18,7 +18,6 @@ var gulp        = require('gulp'),
     aliasify    = require('aliasify');
 
 var mainBundler = watchify(browserify('./boot.js', watchify.args));
-// add any other browserify options or transforms here
 mainBundler.transform(babelify);
 mainBundler.transform(aliasify, {
     aliases: {
@@ -28,8 +27,8 @@ mainBundler.transform(aliasify, {
     },
 });
 mainBundler.exclude('./lib/contextmenu.js');
-mainBundler.on('update', mainBundle); // on any dep update, runs the mainBundler
-mainBundler.on('log', gutil.log); // output build logs to terminal
+mainBundler.on('update', mainBundle);
+mainBundler.on('log', gutil.log);
 
 function mainBundle() {
     return mainBundler.bundle()
@@ -37,8 +36,8 @@ function mainBundle() {
         .pipe(source('boot.js'))
             .pipe(buffer())
             .pipe(uglify())
-            .pipe(sourcemaps.init({loadMaps: true})) // loads map from browserify file
-            .pipe(sourcemaps.write('./')) // writes .map file
+            .pipe(sourcemaps.init({loadMaps: true}))
+            .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('./browser'));
 }
 
@@ -75,10 +74,10 @@ gulp.task('watch-browser', function() {
             }
         }))
         .pipe(gulp.dest('browser'));
-    pattern = ['./favicon.ico', 'FileSaver.min.js'];
-    gulp.src(pattern).pipe(watch(pattern)).pipe(gulp.dest('browser'));
-    pattern = ['./assets/**/*.*'];
-    gulp.src(pattern).pipe(watch(pattern)).pipe(gulp.dest('browser/assets'));
+    pattern = ['./assets/**/*.*', './favicon.ico', 'FileSaver.min.js'];
+    gulp.src(pattern, {base: './'})
+        .pipe(watch(pattern))
+        .pipe(gulp.dest('./browser'));
 });
 
 gulp.task('watch-sass', function() {
