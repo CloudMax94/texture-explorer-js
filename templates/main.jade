@@ -1,0 +1,13 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset='UTF-8')
+    title Texture Explorer.js
+    link(rel='stylesheet', type='text/css', href='assets/css/style.css')
+    if browser
+        script(src='FileSaver.min.js')
+  body
+    ui-rows#app
+        if browser
+            include ./interface.jade
+    script(src='boot.js')
