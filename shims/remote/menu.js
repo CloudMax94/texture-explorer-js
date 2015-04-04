@@ -13,6 +13,15 @@ class Menu {
     }
     popup(w) {
         console.log("contextmenus are not supported yet!");
+        var contextmenus = document.querySelectorAll('context-menu');
+        _.each(contextmenus, function(e){
+            e.parentNode.removeChild(e);
+        });
+        var contextmenu = document.createElement('context-menu');
+        contextmenu.style.top = event.clientY+'px';
+        contextmenu.style.left = event.clientX+'px';
+        contextmenu.appendChild(this.e);
+        document.body.appendChild(contextmenu);
     }
 }
 Menu.setApplicationMenu = function(menu) {

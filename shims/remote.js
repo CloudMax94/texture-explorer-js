@@ -9,8 +9,11 @@ module.exports = {
             'dialog':           require('./remote/dialog'),
             'menu':             require('./remote/menu'),
             'menu-item':        require('./remote/menu-item'),
-        }
-        return remoteComponents[component];
+        };
+        if (component in remoteComponents)
+            return remoteComponents[component];
+        else
+            console.error("Unsupported remote component '"+component+"'.");
     },
     getGlobal: function(g) {
         if (g == 'argv') {

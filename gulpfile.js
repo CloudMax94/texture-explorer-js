@@ -17,16 +17,18 @@ var gulp        = require('gulp'),
     babelify    = require("babelify"),
     aliasify    = require('aliasify');
 
-var mainBundler = watchify(browserify('./boot.js', watchify.args));
+var mainBundler = watchify(browserify('./boot.js', {
+    debug: true
+}));
 mainBundler.transform(babelify);
 mainBundler.transform(aliasify, {
     aliases: {
         "remote": "./shims/remote",
         "fs": "./shims/fs",
-        "./lib/contextmenu": "./shims/contextmenu",
+        //"./lib/contextmenu": "./shims/contextmenu",
     },
 });
-mainBundler.exclude('./lib/contextmenu.js');
+//mainBundler.exclude('./lib/contextmenu.js');
 mainBundler.on('update', mainBundle);
 mainBundler.on('log', gutil.log);
 
@@ -35,8 +37,9 @@ function mainBundle() {
         .on('error', gutil.log.bind(gutil, 'Browserify Error'))
         .pipe(source('boot.js'))
             .pipe(buffer())
-            .pipe(uglify())
             .pipe(sourcemaps.init({loadMaps: true}))
+            .pipe(uglify())
+                .on('error', gutil.log)
             .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('./browser'));
 }

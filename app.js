@@ -29,14 +29,15 @@ function loadProfile() {
     var profileExt = path.extname(profilePath);
     fs.readFile(profilePath, function(err, data) {
         if (err) {
-            console.error(err);
+            console.log(err);
             fixProfile(null);
         } else {
             if (profileExt === '.json') {
                 try {
                     var json = JSON.parse(data);
                 } catch (e) {
-                    console.error('There was an error parsing '+profilePath+': '+e.message);
+                    console.error('There was an error parsing '+profilePath);
+                    console.log(e);
                     return;
                 }
                 fixProfile(json);

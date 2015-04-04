@@ -70,3 +70,16 @@ menu-separator {
     display: block;
     margin: 0 5px;
 }
+
+context-menu {
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    background: #D8D4D4;
+    menu-item {
+        text-shadow: none;
+        color: black;
+    }
+}
