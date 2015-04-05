@@ -8,20 +8,18 @@ var fs                  = require('fs');
 
 var textureManipulator  = require('./lib/textureManipulator');
 var TextureViewer       = require('./lib/textureViewer');
-var profile             = require('./lib/profile');
+var container           = require('./lib/profile');
 var ui                  = require('./lib/ui');
 require('./lib/contextmenu');
 require('./lib/menu');
 
-var container = profile.new();
-
 function fixProfile(root) {
-    container.root = root;
-    profile.initialize(container);
+    //container.root = root;
+    //container.initialize();
+    container.initializeJSON(root);
     var mainTree = document.getElementById('mainTree');
     mainTree.innerHTML = '';
     mainTree.appendChild(container.root.ele);
-    container.stringify();
 }
 function loadProfile() {
     console.log("loading profile");
