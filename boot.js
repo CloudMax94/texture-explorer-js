@@ -6,5 +6,5 @@ if (jade.renderFile) { // Browserify will not load jade and renderFile won't be 
 require('cm-tree-view');
 require("babel/register");
 window.onload = function () {
-    require('./app.js');
+    require('./lib/app.js');
 };
