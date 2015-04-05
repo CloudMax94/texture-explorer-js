@@ -99,7 +99,21 @@ class MenuItem {
     }
 
     set click(data) {
-        this.e.onclick = data;
+        if (!data) {
+            this.e.onclick = data;
+            return;
+        }
+        var self = this;
+        this.e.onclick = function(){
+            var parentEle = self.e.parentNode;
+            while (parentEle !== null && parentEle.tagName != 'CONTEXT-MENU') {
+                parentEle = parentEle.parentNode;
+            }
+            if (parentEle) {
+                parentEle.remove();
+            }
+            data();
+        };
     }
 
     set enabled(data) {
