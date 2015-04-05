@@ -8,7 +8,7 @@ var fs                  = require('fs');
 
 var textureManipulator  = require('./lib/textureManipulator');
 var TextureViewer       = require('./lib/textureViewer');
-var container           = require('./lib/profile');
+var container           = require('./lib/container');
 var ui                  = require('./lib/ui');
 require('./lib/contextmenu');
 require('./lib/menu');
