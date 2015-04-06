@@ -8,3 +8,4 @@ assets/css
 *.sublime-workspace
 .sass-cache/
 *.bak
+.sublime-gulp.cache

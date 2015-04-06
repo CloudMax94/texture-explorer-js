@@ -12,7 +12,6 @@ class Menu {
         this.e.appendChild(item.e);
     }
     popup(w) {
-        console.log("contextmenus are not supported yet!");
         var contextmenus = document.querySelectorAll('context-menu');
         _.each(contextmenus, function(e){
             e.parentNode.removeChild(e);

@@ -1,86 +1,159 @@
-menu-bar {
-    line-height: 24px;
-    font-size: 14px;
-    background: $panel-color;
-    z-index: 1000;
-}
+//GENERAL
+$menu-font-size:                14px;
+$menu-color-hover:              #fff;
+$menu-item-padding:             0 8px;
+$menu-item-height:              24px;
+//BAR
+$menu-bar-background-color:     $panel-color;
+//BAR MENU
+$menu-text-shadow:              -1px -1px rgba(0, 0, 0, .33);
+$menu-background-color:         darken($menu-bar-background-color, 10);
+$menu-border-color:             darken($menu-background-color, 10);
+$menu-background-color-hover:   $highlight-color;
+$menu-color:                    #d8d4d4;
+$menu-separator-style:          2px groove rgba(lighten($menu-background-color, 15), .2);
+$menu-separator-margin:         5px 5px;
+//CONTEXT MENU
+$menu-popup-background-color:   #d8d4d4;
+$menu-popup-color:              #333;
+$menu-popup-padding:            4px;
+$menu-popup-separator-style:    1px solid rgba(lighten($menu-background-color, 15), .2);
+$menu-popup-separator-margin:   5px 0;
 
-menu-item {
-    display: inline-block;
-    position: relative;
-    color: $menu-text-color;
-    text-shadow: -1px -1px rgba(0,0,0,0.33);
-    cursor: pointer;
-    padding: 0 8px;
-    &:hover {
-        color: $menu-text-color-hover;
-        background: $menu-background-color-hover;
-        menu-bar > & {
-            $color: rgba(0, 0, 0, 0.5);
-            box-shadow: inset  0px 1px 0 $color,
-                        inset  1px 0px 0 $color,
-                        inset -1px 0px 0 $color;
-        }
-        > menu-items {
-            display:block;
-        }
-    }
+/**
+ * Generic menu styles
+ */
+
+menu-items {
+    display: block;
+    font-size: $menu-font-size;
+    line-height: $menu-item-height;
+    box-shadow: 5px 10px 15px 0 rgba(0, 0, 0, .25);
+
     menu-items {
         display: none;
         position: absolute;
-        top: 100%;
-        left: 0;
         z-index: 1;
-        min-width: 128px;
-        background: darken($panel-color, 10);
-        border: 1px solid darken($panel-color, 15);
-        box-shadow: 5px 10px 15px 0px rgba(0,0,0,0.25);
-        > menu-item {
-            display: block;
-            &:hover {
-                box-shadow: 0 0 0 rgba($menu-background-color-hover, 0.75);
-            }
-            &.parent {
-                &:after {
-                    content: '';
-                    position: absolute;
-                    right: 8px;
-                    top: 50%;
-                    transform: translate(0, -50%);
-                    width: 0;
-                    height: 0;
-                    border-top: 4px solid transparent;
-                    border-left: 6px solid rgba(255, 255, 255, 0.75);
-                    border-bottom: 4px solid transparent;
-                }
-            }
-            > menu-items {
-                top: 0;
-                left: 100%;
-            }
-        }
     }
 }
-menu-items {
+
+menu-item {
+    color: $menu-color;
+    cursor: pointer;
     display: block;
+    padding: $menu-item-padding;
+    position: relative;
+
+    &:hover {
+        background: $menu-background-color-hover;
+        box-shadow: 0 0 0 rgba($menu-background-color-hover, .75);
+        color: $menu-color-hover;
+
+        > menu-items {
+            display: block;
+        }
+    }
+
+    &.parent:after {
+        border-bottom: 4px solid transparent;
+        border-left: 6px solid $menu-color;
+        border-top: 4px solid transparent;
+        content: '';
+        cursor: pointer;
+        height: 0;
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translate(0, -50%);
+        width: 0;
+    }
+
+    menu-items {
+        left: 100%;
+        top: 0;
+    }
+
 }
 
 menu-separator {
-    border-top: 2px groove rgba(lighten($panel-color, 15), 0.2);
+    border-top: $menu-separator-style;
     display: block;
-    margin: 0 5px;
+    margin: $menu-separator-margin;
 }
 
-context-menu {
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 0;
-    z-index: 2000;
-    background: #D8D4D4;
+/**
+ * Menu Bar Style
+ */
+
+menu-bar {
+    background: $menu-bar-background-color;
+    z-index: 1000;
+
     menu-item {
-        display: block;
-        text-shadow: none;
-        color: black;
+        text-shadow: $menu-text-shadow;
+
+        menu-items {
+            background: $menu-background-color;
+            border: 1px solid $menu-border-color;
+            min-width: 128px;
+        }
+    }
+
+    > menu-items {
+        box-shadow: 0;
+
+        > menu-item {
+            float: left;
+
+            &:hover {
+                $color: rgba(0, 0, 0, .5);
+                box-shadow: inset  0 1px 0 $color,
+                            inset  1px 0 0 $color,
+                            inset -1px 0 0 $color;
+            }
+
+            &.parent:after {
+                display: none;
+            }
+
+            > menu-items {
+                left: 0;
+                top: 100%;
+            }
+        }
+
+    }
+}
+
+/**
+ * Context Menu Style
+ */
+
+context-menu {
+    display: block;
+    position: absolute;
+    z-index: 2000;
+
+    menu-separator {
+        border-top: $menu-popup-separator-style;
+        margin: $menu-popup-separator-margin;
+    }
+
+    menu-items {
+        background: $menu-popup-background-color;
+        min-width: 128px;
+        padding: $menu-popup-padding 0;
+
+        menu-items {
+            top: $menu-popup-padding * -1;
+        }
+    }
+
+    menu-item {
+        color: $menu-popup-color;
+
+        &.parent:after {
+            border-left-color: $menu-popup-color;
+        }
     }
 }
