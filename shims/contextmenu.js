@@ -2,11 +2,11 @@
 "use strict";
 
 var _ = require('lodash');
-document.addEventListener("DOMContentLoaded", function(event) {
-    document.getElementById('mainTree').addEventListener('contextmenu', function (e) {
-        if (e.target.tagName == 'TREE-ITEM') {
-            e.preventDefault();
-            var obj = e.target.object;
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById('mainTree').addEventListener('contextmenu', function (event) {
+        if (event.target.tagName == 'TREE-ITEM') {
+            event.preventDefault();
+            var obj = event.target.object;
             if (obj.type == 'texture') {
                 var texture = obj.getTexture(function(texture){
                     if (texture) {

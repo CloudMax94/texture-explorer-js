@@ -11,14 +11,14 @@ class Menu {
     append(item) {
         this.e.appendChild(item.e);
     }
-    popup(w) {
+    popup(browserWindow, x, y) {
         var contextmenus = document.querySelectorAll('context-menu');
-        _.each(contextmenus, function(e){
-            e.parentNode.removeChild(e);
+        _.each(contextmenus, function(element){
+            element.parentNode.removeChild(element);
         });
         var contextmenu = document.createElement('context-menu');
-        contextmenu.style.top = event.clientY+'px';
-        contextmenu.style.left = event.clientX+'px';
+        contextmenu.style.top = y+'px';
+        contextmenu.style.left = x+'px';
         contextmenu.appendChild(this.e);
         document.body.appendChild(contextmenu);
     }
@@ -26,8 +26,8 @@ class Menu {
 Menu.setApplicationMenu = function(menu) {
     var _cb = function(){
         var appContainer = document.getElementById('app');
-        _.each(document.querySelectorAll('menu-bar'), function(e){
-            e.parentNode.removeChild(e);
+        _.each(document.querySelectorAll('menu-bar'), function(element){
+            event.parentNode.removeChild(element);
         });
         var bar = document.createElement('menu-bar');
         bar.appendChild(menu.e);

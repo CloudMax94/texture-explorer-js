@@ -6,7 +6,7 @@ class GlobalKeys {
         var self = this;
         this.keyBindings = [];
         this.assignedKeys = [];
-        document.addEventListener("keydown", function(e){self.triggerBinding(e);});
+        document.addEventListener("keydown", function(event){self.triggerBinding(event);});
     }
     add(accelerator, callback) {
         var o = {
@@ -41,18 +41,18 @@ class GlobalKeys {
     updateAssignedKeys() {
         this.assignedKeys = _.uniq(_.map(this.keyBindings, 'which'));
     }
-    getBinding(e) {
-        if (this.assignedKeys.indexOf(e.which) == -1) {
+    getBinding(event) {
+        if (this.assignedKeys.indexOf(event.which) == -1) {
             return;
         }
         return _.findWhere(this.keyBindings, {
-            shiftKey: e.shiftKey,
-            cmdorctrlKey: (e.metaKey || e.ctrlKey),
-            which: e.which
+            shiftKey: event.shiftKey,
+            cmdorctrlKey: (event.metaKey || event.ctrlKey),
+            which: event.which
         });
     }
-    triggerBinding(e) {
-        var binding = this.getBinding(e);
+    triggerBinding(event) {
+        var binding = this.getBinding(event);
         if (binding) {
             binding.callback();
         };
@@ -91,7 +91,7 @@ class MenuItem {
         if (this.globalKeyObject) {
             globalKeys.unbind(this.globalKeyObject);
         }
-        this.globalKeyObject = globalKeys.add(data, function(){self.e.click()});
+        this.globalKeyObject = globalKeys.add(data, function(event){self.e.click(event)});
     }
 
     set label(data) {
