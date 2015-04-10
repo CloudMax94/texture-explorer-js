@@ -52,7 +52,7 @@ var buildFromTemplateSubmenus = function(item) {
         item.submenu = submenu;
     }
     return item;
-}
+};
 Menu.buildFromTemplate = function(template) {
     var menu = new Menu();
     _.each(template, function(i){

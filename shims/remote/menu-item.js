@@ -3,10 +3,9 @@
 var _ = require('lodash');
 class GlobalKeys {
     constructor() {
-        var self = this;
         this.keyBindings = [];
         this.assignedKeys = [];
-        document.addEventListener("keydown", function(event){self.triggerBinding(event);});
+        document.addEventListener("keydown", (event) => {this.triggerBinding(event);});
     }
     add(accelerator, callback) {
         var o = {
@@ -87,11 +86,10 @@ class MenuItem {
     }
 
     set accelerator(data) {
-        var self = this;
         if (this.globalKeyObject) {
             globalKeys.unbind(this.globalKeyObject);
         }
-        this.globalKeyObject = globalKeys.add(data, function(event){self.e.click(event)});
+        this.globalKeyObject = globalKeys.add(data, (event) => {this.e.click(event)});
     }
 
     set label(data) {
@@ -103,9 +101,8 @@ class MenuItem {
             this.e.onclick = data;
             return;
         }
-        var self = this;
-        this.e.onclick = function(){
-            var parentEle = self.e.parentNode;
+        this.e.onclick = () => {
+            var parentEle = this.e.parentNode;
             while (parentEle !== null && parentEle.tagName != 'CONTEXT-MENU') {
                 parentEle = parentEle.parentNode;
             }

@@ -1,4 +1,4 @@
-/*jslint node:true, browser: true */
+/*jslint node:true, browser: true, esnext: true */
 "use strict";
 
 var _ = require('lodash');

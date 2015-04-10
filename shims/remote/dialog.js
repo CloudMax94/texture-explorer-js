@@ -1,11 +1,11 @@
-/*jslint node:true, browser: true */
+/*jslint node:true, browser: true, esnext: true */
 "use strict";
 
 module.exports = {
-    showOpenDialog: function(w, options) {
+    showOpenDialog(w, options) {
         document.getElementById('fileOpener').click();
     },
-    showSaveDialog: function(w, options, callback) {
+    showSaveDialog(w, options, callback) {
         var fileName = prompt("File Name", "");
         callback(fileName);
     }

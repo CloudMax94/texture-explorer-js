@@ -1,19 +1,19 @@
-/*jslint node:true, browser: true */
+/*jslint node:true, browser: true, esnext: true */
 "use strict";
 
 module.exports = {
-    getFocusedWindow: function(){
+    getFocusedWindow(){
         return {
-            reloadIgnoringCache: function() {
+            reloadIgnoringCache() {
                 location.reload(true);
             },
-            toggleDevTools: function() {
+            toggleDevTools() {
                 this.setFullScreen(!this.isFullscreen);
             },
-            isFullScreen: function() {
+            isFullScreen() {
                 return document.webkitIsFullScreen;
             },
-            setFullScreen: function(bool) {
+            setFullScreen(bool) {
                 if (bool) {
                     var docElm = document.documentElement;
                     if (docElm.requestFullscreen) {

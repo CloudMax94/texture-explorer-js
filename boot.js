@@ -3,8 +3,8 @@ if (jade.renderFile) { // Browserify will not load jade and renderFile won't be 
     var html = jade.renderFile(__dirname+'/templates/interface.jade');
     document.getElementById('app').innerHTML = html;
 }
-require('cm-tree-view');
 require("babel/register");
+require('cm-tree-view/tree-view.js');
 window.onload = function () {
     require('./lib/app.js');
 };

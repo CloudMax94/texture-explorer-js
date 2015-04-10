@@ -1,9 +1,9 @@
-/*jslint node:true, browser: true */
+/*jslint node:true, browser: true, esnext: true */
 var url = require('url');
 var _   = require('lodash');
 
 module.exports = {
-    require: function(component){
+    require(component){
         var remoteComponents = {
             'browser-window':   require('./remote/browser-window'),
             'dialog':           require('./remote/dialog'),
@@ -15,7 +15,7 @@ module.exports = {
         else
             console.error("Unsupported remote component '"+component+"'.");
     },
-    getGlobal: function(g) {
+    getGlobal(g) {
         if (g == 'argv') {
             var url_parts = url.parse(window.location.href, true);
             var query = url_parts.query;
@@ -31,7 +31,7 @@ module.exports = {
         }
         return null;
     },
-    getCurrentWindow: function() {
+    getCurrentWindow() {
         return require('./remote/browser-window').getFocusedWindow();
     }
 };

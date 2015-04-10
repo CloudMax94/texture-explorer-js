@@ -1,8 +1,8 @@
-/*jslint node:true, browser: true */
+/*jslint node:true, browser: true, esnext: true */
 "use strict";
 
 module.exports = {
-    readFile: function(path, callback) {
+    readFile(path, callback) {
         var val = window.localStorage.getItem(path);
         if (val === null) {
             callback(new Error("ENOENT, open '"+path+"'"), null);
@@ -11,7 +11,7 @@ module.exports = {
         }
 
     },
-    writeFile: function(path, data, callback) {
+    writeFile(path, data, callback) {
         window.localStorage.setItem(path, data);
         if (callback)
             callback();
