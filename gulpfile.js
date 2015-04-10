@@ -23,9 +23,10 @@ var mainBundler = watchify(browserify('./boot.js', {
 mainBundler.transform(babelify);
 mainBundler.transform(aliasify, {
     aliases: {
-        "remote": "./shims/remote",
-        "fs": "./shims/fs",
-        //"./lib/contextmenu": "./shims/contextmenu",
+        "cm-tree-view": "cm-tree-view/browser",
+        "remote":       "./lib/shims/remote",
+        //"./worker":     "./lib/shims/worker",
+        "fs":           "./lib/shims/fs"
     },
 });
 //mainBundler.exclude('./lib/contextmenu.js');

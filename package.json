@@ -30,6 +30,7 @@
     "gulp-util": "~3.0.4"
   },
   "browser": {
-    "jade": false
+    "jade": false,
+    "babel/register": false
   }
 }
