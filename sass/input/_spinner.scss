@@ -1,0 +1,58 @@
+@mixin hex-spinner {
+    color: #fff;
+    cursor: pointer;
+    text-align: center;
+    width: 14px;
+
+    &:before,
+    &:after {
+        border-left: 3px solid transparent;
+        border-right: 3px solid transparent;
+        content: '';
+        cursor:pointer;
+        display: block;
+        height: 0;
+        left: 50%;
+        position: absolute;
+        transform: translateX(-50%);
+    }
+
+    &:before {
+        border-bottom: 4px solid #666;
+        pointer-events: none;
+        top: 2px;
+    }
+
+    &:after {
+        border-top: 4px solid #666;
+        bottom: 2px;
+        pointer-events: none;
+    }
+}
+
+.hex-wrap {
+    position: relative;
+
+    .hex-input {
+        padding-right: 14px;
+        &.hidden + .hex-spinner {
+            display: none;
+        }
+    }
+
+    .hex-spinner {
+        @include hex-spinner;
+        bottom: 1px;
+        position: absolute;
+        right: 1px;
+        top: 1px;
+    }
+}
+
+input[type=number]::-webkit-inner-spin-button {
+    @include hex-spinner;
+    -webkit-appearance: none;
+    display: block;
+    margin-right: 0;
+    position: relative;
+}

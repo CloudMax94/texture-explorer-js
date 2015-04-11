@@ -1,0 +1,49 @@
+@import 'spinner';
+
+input {
+    background: #373737;
+    border: 1px solid #2c2c2c;
+    box-shadow: 0 1px 1px rgba(255, 255, 255, .1);
+    color: #fff;
+    cursor: text;
+    font-size: 12px;
+
+    &:focus {
+        outline: 0;
+    }
+
+    &[type=text] {
+        padding: 0 4px;
+    }
+
+    &[type=number] {
+        padding: 0 0 0 4px;
+    }
+
+    &:disabled {
+        background: #494949;
+        border-color: #3f3f3f;
+        box-shadow: 0 1px 1px rgba(255, 255, 255, .05);
+        cursor: default;
+    }
+}
+
+.input-columns {
+    display: flex;
+    flex-direction: row;
+
+    label {
+        display: block;
+        font-size: 13px;
+        line-height: 20px;
+    }
+
+    input {
+        height: 20px;
+        width: 100%;
+    }
+
+    > div > * + * {
+        margin-top: 4px;
+    }
+}

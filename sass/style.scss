@@ -1,6 +1,6 @@
 @import 'variables';
 @import 'base';
-@import 'input';
+@import 'input/input';
 @import 'menu';
 @import 'ui';
 
@@ -22,4 +22,18 @@ body {
 #mainTree {
     flex: 1;
     font-family: $font-monospace;
+}
+
+@-moz-document url-prefix() {
+    tree-view {
+        display: flex;
+        flex-direction: column;
+        outline: 0;
+        overflow: hidden;
+        position: relative;
+    }
+}
+
+.hidden {
+    display: none !important;
 }

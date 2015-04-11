@@ -43,6 +43,7 @@ menu-item {
     display: block;
     padding: $menu-item-padding;
     position: relative;
+    white-space: nowrap;
 
     &:hover {
         background: $menu-background-color-hover;
@@ -71,6 +72,17 @@ menu-item {
     menu-items {
         left: 100%;
         top: 0;
+    }
+
+    display: flex;
+    flex: 1 0 100%;
+    justify-content: space-between;
+
+    &[data-accelerator]:after {
+        cursor: pointer;
+        content: attr(data-accelerator);
+        margin-left: 8px;
+        flex: 0 0 auto;
     }
 
 }
