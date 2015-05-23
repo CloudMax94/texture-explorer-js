@@ -3,6 +3,7 @@
 @import 'input/input';
 @import 'menu';
 @import 'ui';
+@import 'dialog';
 
 html {
     font-family: $font-default;
@@ -19,9 +20,19 @@ body {
     width: 100%;
 }
 
-#mainTree {
+#workspace {
+    flex-direction: column;
+    display: flex;
+    flex: 1;
+}
+
+tree-view {
     flex: 1;
     font-family: $font-monospace;
+    
+    &:not(.active) {
+        display: none;
+    }
 }
 
 @-moz-document url-prefix() {

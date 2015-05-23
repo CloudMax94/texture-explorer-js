@@ -100,6 +100,7 @@ menu-separator {
 menu-bar {
     background: $menu-bar-background-color;
     z-index: 1000;
+    flex-shrink: 0;
 
     menu-item {
         text-shadow: $menu-text-shadow;
