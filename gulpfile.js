@@ -7,8 +7,6 @@ var gulp        = require('gulp'),
     uglify      = require('gulp-uglify'),
     concat      = require('gulp-concat'),
     watch       = require('gulp-watch'),
-    jade        = require('jade'),
-    gulpJade    = require('gulp-jade'),
     gutil       = require('gulp-util'),
     source      = require('vinyl-source-stream'),
     buffer      = require('vinyl-buffer'),
@@ -66,17 +64,6 @@ gulp.task('sass', function() {
 gulp.task('watch-browser', function() {
     mainBundle();
     var pattern;
-    gulp.src('./templates/main.jade')
-        .pipe(watch(['./templates/*.jade']))
-        .pipe(rename("index.html"))
-        .pipe(gulpJade({
-            jade: jade,
-            pretty: true,
-            locals: {
-                'browser': true
-            }
-        }))
-        .pipe(gulp.dest('browser'));
     pattern = ['./assets/**/*.*', './favicon.ico', 'FileSaver.min.js'];
     gulp.src(pattern, {base: './'})
         .pipe(watch(pattern))
@@ -88,14 +75,6 @@ gulp.task('watch-sass', function() {
 });
 
 gulp.task('watch', ['watch-sass', 'watch-browser'], function() {
-    gulp.src('./templates/main.jade')
-        .pipe(watch(['./templates/*.jade']))
-        .pipe(rename("index.html"))
-        .pipe(gulpJade({
-            jade: jade,
-            pretty: true
-        }))
-        .pipe(gulp.dest('.'));
 });
 
 gulp.task('default', ['watch']);

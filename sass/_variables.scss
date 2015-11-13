@@ -1,8 +1,43 @@
-$panel-color:       #535353;
-$panel-color-dark:  #3a3a3a;
-$background-color:  darken($panel-color, 17.5);
-$highlight-color:   #5080B0;
-
-
 $font-default: "Roboto", sans-serif;
 $font-monospace: 'DejaVu Sans Mono', 'DejaVu Mono', monospace;
+
+/*
+DARK THEME
+*/
+
+$text-color:                        #FFF;
+$text-color-inactive:               rgba($text-color, 0.5);
+
+$panel-color:                       #535353;
+$panel-tab-background-color:        darken($panel-color, 10);
+
+$background-color:                  darken($panel-color, 17.5);
+
+$tree-background-color:             $background-color;
+$tree-background-color-selected:    rgba(104, 127, 163, .5);
+$tree-icon-color:                   rgba(255,255,255,0.8);
+$tree-icon-color-selected:          rgba(255,255,127,0.8);
+
+$scroll-background:                 rgba(255, 255, 255, 0.05);
+$scroll-color:                      rgba(255, 255, 255, 0.15);
+
+/*
+LIGHT THEME
+
+
+$text-color:                        #000;
+$text-color-inactive:               #000;
+
+$panel-color:                       #D6D6D6;
+$panel-tab-background-color:        #8C8C8C;
+
+$background-color:                  #666;
+
+$tree-background-color:             #7F7F7F;
+$tree-background-color-selected:    rgba(127, 196, 255, .5);
+$tree-icon-color:                   #DDD;
+
+$scroll-background:                 rgba(0, 0, 0, 0.05);
+$scroll-color:                      rgba(0, 0, 0, 0.15);
+
+*/

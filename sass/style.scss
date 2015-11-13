@@ -1,9 +1,11 @@
 @import 'variables';
 @import 'base';
+@import 'icons';
 @import 'input/input';
 @import 'menu';
 @import 'ui';
 @import 'dialog';
+@import 'tree';
 
 html {
     font-family: $font-default;
@@ -11,28 +13,28 @@ html {
 
 body {
     background: $background-color;
-    color: #fff;
+    color: $text-color;
     font-size: 16px;
 }
 
-#app {
+#container {
     height: 100%;
-    width: 100%;
 }
 
-#workspace {
-    flex-direction: column;
-    display: flex;
+.app {
+    height: 100%;
+    @extend .rows;
+}
+
+.workspace {
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-tree-view {
+.tree-view {
     flex: 1;
     font-family: $font-monospace;
-    
-    &:not(.active) {
-        display: none;
-    }
 }
 
 @-moz-document url-prefix() {
@@ -47,4 +49,52 @@ tree-view {
 
 .hidden {
     display: none !important;
+}
+/*
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    padding: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+    border: 4px solid transparent;
+    background-clip: content-box;
+    border-radius: 2.5px;
+    background: rgba(127,127,127,0.8);
+
+    &:vertical:active,
+    &:horizontal:active {
+        background-clip: border-box;
+        color: red;
+    }
+}
+*/
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: $scroll-background;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    border: 3px solid transparent;
+    background: $scroll-color;
+    background-clip: content-box;
+
+    &:vertical:active,
+    &:horizontal:active {
+        border-radius: 0;
+        border-width: 0;
+    }
+}
+
+::-webkit-scrollbar-corner {
+    background: $scroll-background;
 }

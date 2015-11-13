@@ -1,4 +1,14 @@
-dialog {
+.dialog {
+    position: absolute;
+    z-index: 10000;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0px;
+    right: 0px;
+    width: fit-content;
+    height: fit-content;
+    margin: auto;
+
     background: #f2f1f0;
     border-radius: 3px;
     border: 0;

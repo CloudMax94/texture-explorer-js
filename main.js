@@ -23,12 +23,10 @@ app.on('ready', function() {
     // Create the browser window.
     mainWindow = new BrowserWindow({width: 800, height: 600, icon: path.join(__dirname, 'icon.png')});
     // and load the index.html of the app.
-/*
-    var jade = require('jade');
-    var html = jade.renderFile(__dirname+'/main.jade');
-    fs.writeFileSync(__dirname+'/index.html', html);
-*/
+
     mainWindow.loadUrl('file://' + __dirname + '/index.html');
+    var webContents = mainWindow.webContents;
+    console.log(mainWindow);
     console.log(argv);
     if (argv._.indexOf('debug') > -1) {
         mainWindow.toggleDevTools();

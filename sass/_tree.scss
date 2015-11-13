@@ -1,0 +1,149 @@
+$tree-item-height: 20px;
+
+.tree-view {
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.tree-header {
+    border-bottom: 1px solid #000000;
+    display: flex;
+    flex: 0 0 24px;
+    font-size: 0.75rem;
+}
+
+.tree-header-col {
+    position: relative;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+    flex-grow: 0;
+    padding: 0 8px;
+    line-height: 24px;
+    font-weight: bold;
+}
+
+.tree-header-col.sorted:after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translate(0, -50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 12px solid rgba(255, 255, 255, 1);
+
+    /*reverse order
+    border-top: 12px solid rgba(255, 255, 255, 1);
+    border-bottom: 0 solid transparent;
+    */
+}
+
+.tree-content {
+    overflow-x: hidden;
+    overflow-y: auto;
+    flex: 1;
+    background: $tree-background-color;
+    outline: 0;
+}
+
+.tree-item {
+    white-space: nowrap;
+    position: relative;
+    clear: both;
+    min-width: fit-content;
+
+    &.focused:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        width: 100%;
+        top: 0;
+        height: $tree-item-height;
+        background: $tree-background-color-selected;
+    }
+
+    &.selected > .tree-col .tree-icon {
+        color: $tree-icon-color-selected;
+    }
+
+}
+
+.tree-col {
+    position: relative;
+    overflow: hidden;
+    line-height: $tree-item-height;
+    white-space: nowrap;
+    padding: 0 8px;
+    display: inline-block;
+    text-overflow: ellipsis;
+    vertical-align: top; //Fix align issue caused by overflow: hidden
+}
+
+.tree-rows:not(.open) {
+    display: none;
+}
+
+.tree-icon {
+    color: $tree-icon-color;
+    line-height: $tree-item-height;
+    height: 16px;
+    width: 16px;
+    text-align: center;
+    margin-right: 8px;
+    vertical-align: top;
+    display: inline-block;
+}
+
+.tree-icon[style*="background-image:"] {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.tree-handle {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    right: 0px;
+    height: 100%;
+    width: 6px;
+    cursor: col-resize;
+
+    &:before {
+        content: '';
+        position: absolute;
+        top: 3px;
+        bottom: 2px;
+        right: 0;
+        width: 1px;
+        background: rgba(255,255,255,0.25);
+        cursor: col-resize;
+    }
+}
+/*
+.tree-view {
+    display: table;
+    table-layout: fixed;
+    min-width: -webkit-max-content;
+}
+.tree-header-col,
+.tree-col {
+    display: table-cell;
+}
+.tree-header {
+    display: table-header-group;
+}
+.tree-content {
+    display: table-row-group;
+}
+.tree-item {
+    display: table-row;
+}
+*/

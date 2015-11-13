@@ -9,7 +9,7 @@ $menu-bar-background-color:     $panel-color;
 $menu-text-shadow:              -1px -1px rgba(0, 0, 0, .33);
 $menu-background-color:         darken($menu-bar-background-color, 10);
 $menu-border-color:             darken($menu-background-color, 10);
-$menu-background-color-hover:   $highlight-color;
+$menu-background-color-hover:   #5080B0;
 $menu-color:                    #d8d4d4;
 $menu-separator-style:          2px groove rgba(lighten($menu-background-color, 15), .2);
 $menu-separator-margin:         5px 5px;
@@ -24,20 +24,19 @@ $menu-popup-separator-margin:   5px 0;
  * Generic menu styles
  */
 
-menu-items {
+.menu {
     display: block;
     font-size: $menu-font-size;
     line-height: $menu-item-height;
     box-shadow: 5px 10px 15px 0 rgba(0, 0, 0, .25);
 
-    menu-items {
+    .menu {
         display: none;
         position: absolute;
-        z-index: 1;
     }
 }
 
-menu-item {
+.menu-item {
     color: $menu-color;
     cursor: pointer;
     display: block;
@@ -45,12 +44,16 @@ menu-item {
     position: relative;
     white-space: nowrap;
 
+    > span {
+        cursor: pointer;
+    }
+
     &:hover {
         background: $menu-background-color-hover;
         box-shadow: 0 0 0 rgba($menu-background-color-hover, .75);
         color: $menu-color-hover;
 
-        > menu-items {
+        > .menu {
             display: block;
         }
     }
@@ -69,7 +72,7 @@ menu-item {
         width: 0;
     }
 
-    menu-items {
+    .menu {
         left: 100%;
         top: 0;
     }
@@ -87,7 +90,7 @@ menu-item {
 
 }
 
-menu-separator {
+.menu-separator {
     border-top: $menu-separator-style;
     display: block;
     margin: $menu-separator-margin;
@@ -97,25 +100,27 @@ menu-separator {
  * Menu Bar Style
  */
 
-menu-bar {
+.application-menu {
+    display: block;
     background: $menu-bar-background-color;
+    position: relative;
     z-index: 1000;
     flex-shrink: 0;
 
-    menu-item {
+    .menu-item {
         text-shadow: $menu-text-shadow;
 
-        menu-items {
+        .menu {
             background: $menu-background-color;
             border: 1px solid $menu-border-color;
             min-width: 128px;
         }
     }
 
-    > menu-items {
+    > .menu {
         box-shadow: 0;
 
-        > menu-item {
+        > .menu-item {
             float: left;
 
             &:hover {
@@ -129,7 +134,7 @@ menu-bar {
                 display: none;
             }
 
-            > menu-items {
+            > .menu {
                 left: 0;
                 top: 100%;
             }
@@ -142,27 +147,26 @@ menu-bar {
  * Context Menu Style
  */
 
-context-menu {
+.context-menu {
     display: block;
     position: absolute;
-    z-index: 2000;
 
-    menu-separator {
+    .menu-separator {
         border-top: $menu-popup-separator-style;
         margin: $menu-popup-separator-margin;
     }
 
-    menu-items {
+    .menu {
         background: $menu-popup-background-color;
         min-width: 128px;
         padding: $menu-popup-padding 0;
 
-        menu-items {
+        .menu {
             top: $menu-popup-padding * -1;
         }
     }
 
-    menu-item {
+    .menu-item {
         color: $menu-popup-color;
 
         &.parent:after {
