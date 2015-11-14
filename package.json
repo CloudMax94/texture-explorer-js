@@ -7,10 +7,10 @@
     "immutable": "^3.7.3",
     "lodash": "~3.5.0",
     "minimist": "~1.1.1",
+    "node-sass": "^3.4.2",
     "png-stream": "~1.0.4",
     "react": "^0.13.3",
     "reflux": "^0.2.7",
-    "seamless-immutable": "^4.0.2",
     "xml2js": "~0.4.5"
   },
   "devDependencies": {

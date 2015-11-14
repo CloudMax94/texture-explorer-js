@@ -1,6 +1,36 @@
-require("babel/register");
-var React = require('react');
-document.addEventListener("DOMContentLoaded", function(event) {
+(function(){
+    require("babel/register");
+    var React = require('react');
     var App = require('./components/App.jsx');
     React.render(React.createElement(App), document.getElementById('container'));
-});
+
+    var head = document.head || document.getElementsByTagName('head')[0];
+    var link = document.createElement('link');
+
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = 'data:text/css,' + encodeURIComponent('#container {display:none}');
+    head.appendChild(link);
+
+    var sass = require('node-sass');
+    var result = sass.render({
+        file: __dirname + '/sass/style.scss',
+        outFile: __dirname + '/assets/css/style.css',
+        sourcemap: true,
+        sourceMapEmbed: true,
+        sourceMapContents: true,
+        outputStyle: 'compact'
+    }, function(error, result) {
+        var css;
+        if (error) {
+            css = 'body:before {content: "';
+            css += 'SASS Error: ' + error.message.replace(/"/g, '\\"') + ' \\A ';
+            css += 'on line ' + error.line + ' column ' + error.column + ' in ' + error.file +  ' \\A ';
+            css += '"; white-space: pre; display: block; padding: 0.5em; border: 2px solid red;}#container {display:none}';
+        } else {
+            css = result.css.toString();
+
+        }
+        link.href = 'data:text/css,' + encodeURIComponent(css);
+    });
+})();

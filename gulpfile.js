@@ -5,7 +5,6 @@ var gulp        = require('gulp'),
     sourcemaps  = require('gulp-sourcemaps'),
     rename      = require("gulp-rename"),
     uglify      = require('gulp-uglify'),
-    concat      = require('gulp-concat'),
     watch       = require('gulp-watch'),
     gutil       = require('gulp-util'),
     source      = require('vinyl-source-stream'),
@@ -23,11 +22,9 @@ mainBundler.transform(aliasify, {
     aliases: {
         "cm-tree-view": "cm-tree-view/browser",
         "remote":       "./lib/shims/remote",
-        //"./worker":     "./lib/shims/worker",
         "fs":           "./lib/shims/fs"
     },
 });
-//mainBundler.exclude('./lib/contextmenu.js');
 mainBundler.on('update', mainBundle);
 mainBundler.on('log', gutil.log);
 
@@ -74,7 +71,4 @@ gulp.task('watch-sass', function() {
     gulp.watch('./sass/**/*.scss', ['sass']);
 });
 
-gulp.task('watch', ['watch-sass', 'watch-browser'], function() {
-});
-
-gulp.task('default', ['watch']);
+gulp.task('default', ['watch-sass', 'watch-browser']);
