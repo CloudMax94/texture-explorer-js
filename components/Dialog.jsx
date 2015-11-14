@@ -1,11 +1,8 @@
 'use strict';
 
-var React   = require('react');
-var Reflux  = require('reflux');
+const React   = require('react');
 
-var interfaceStore  = require('../stores/interface');
-
-var Dialog = React.createClass({
+const Dialog = React.createClass({
     render() {
         return (
             <div className="dialog">

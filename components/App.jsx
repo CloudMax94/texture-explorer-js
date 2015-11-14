@@ -1,28 +1,25 @@
-/*jslint node:true, browser: true */
 'use strict';
 
-var React   = require('react/addons');
-var Reflux  = require('reflux');
-var _       = require('lodash');
-var fs      = require('fs');
-var path    = require('path');
+const React   = require('react/addons');
+const Reflux  = require('reflux');
+const _       = require('lodash');
+const fs      = require('fs');
+const path    = require('path');
 
-var fileHandler     = require('../lib/fileHandler');
-var argv            = require('remote').getGlobal('argv');
+const fileHandler     = require('../lib/fileHandler');
+const argv            = require('remote').getGlobal('argv');
 
-var interfaceStore   = require('../stores/interface');
-var workspaceActions = require('../actions/workspace');
+const workspaceActions = require('../actions/workspace');
 
-var Rows            = require('./Rows.jsx');
-var Columns         = require('./Columns.jsx');
-var Container       = require('./Container.jsx');
-var Handle          = require('./Handle.jsx');
-var Workspaces      = require('./Workspaces.jsx');
-var ApplicationMenu = require('./ApplicationMenu.jsx');
-var StatusBar       = require('./StatusBar.jsx');
-var Dialog           = require('./Dialog.jsx');
+const Columns         = require('./Columns.jsx');
+const Container       = require('./Container.jsx');
+const Handle          = require('./Handle.jsx');
+const Workspaces      = require('./Workspaces.jsx');
+const ApplicationMenu = require('./ApplicationMenu.jsx');
+const StatusBar       = require('./StatusBar.jsx');
+const Dialog          = require('./Dialog.jsx');
 
-var App = React.createClass({
+const App = React.createClass({
     mixins: [Reflux.ListenerMixin],
     getInitialState() {
         return {
@@ -52,21 +49,21 @@ var App = React.createClass({
         console.log('handleDragEnd');
     },
     handleDrop(event) {
+        const file = event.dataTransfer.files[0];
+        const reader = new FileReader();
         event.preventDefault();
-        var file = event.dataTransfer.files[0];
-        var reader = new FileReader();
-        reader.onloadend = (event) => {
+        reader.onloadend = (e) => {
             workspaceActions.createWorkspace({
-                data: new Buffer(new Uint8Array(event.target.result)),
+                data: new Buffer(new Uint8Array(e.target.result)),
                 path: file.path,
-                name: file.name
+                name: file.name,
             });
         };
         reader.readAsArrayBuffer(file);
     },
     render() {
         return (
-            <div className='app' onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop}>
+            <div className="app" onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop}>
                 <ApplicationMenu/>
                 <Container index={0} direction="horizontal"/>
                 <Handle index={0}/>

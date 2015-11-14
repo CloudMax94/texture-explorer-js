@@ -1,27 +1,26 @@
 'use strict';
 
-var React = require('react');
-var Reflux  = require('reflux');
-var _ = require('lodash');
+const React = require('react');
+const Reflux  = require('reflux');
 
-var TreeView = require('./TreeView.jsx');
+const TreeView = require('./TreeView.jsx');
 
-var workspaceStore  = require('../stores/workspace');
+const workspaceStore  = require('../stores/workspace');
 
-var Overview = React.createClass({
+const Overview = React.createClass({
     mixins: [Reflux.ListenerMixin],
     getInitialState() {
         return {
-            workspace: workspaceStore.getCurrentWorkspace()
+            workspace: workspaceStore.getCurrentWorkspace(),
         };
-    },
-    onWorkspaceStoreChange() {
-        this.setState({
-            workspace: workspaceStore.getCurrentWorkspace()
-        });
     },
     componentDidMount() {
         this.listenTo(workspaceStore, this.onWorkspaceStoreChange);
+    },
+    onWorkspaceStoreChange() {
+        this.setState({
+            workspace: workspaceStore.getCurrentWorkspace(),
+        });
     },
     render() {
         return (

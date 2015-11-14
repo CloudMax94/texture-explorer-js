@@ -1,0 +1,25 @@
+{
+  "extends": "airbnb",
+  "globals": {
+    "__DEV__": true
+  },
+  "rules": {
+    "quote-props": [1, "consistent-as-needed"],
+    "no-cond-assign": [2, "except-parens"],
+    "space-infix-ops": 0,
+    "no-unused-vars": [1, {"vars": "local", "args": "none"}],
+    "new-cap": [2, {
+      "capIsNewExceptions": ["Immutable.Map", "Immutable.Set", "Immutable.List"]
+    }],
+    "no-multi-spaces": [2, { "exceptions": {
+      "VariableDeclarator": true,
+      "Property": true,
+      "ImportDeclaration": true
+    } }],
+    "no-console": 0,
+    "indent": [2, 4, {"SwitchCase": 1}],
+    "react/jsx-quotes": 0,
+    "react/jsx-boolean-value": 0,
+    "jsx-quotes": [2, "prefer-double"]
+  }
+}

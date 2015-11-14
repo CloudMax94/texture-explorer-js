@@ -1,19 +1,16 @@
 'use strict';
 
-var React = require('react');
-var Reflux = require('reflux');
-var _ = require('lodash');
-var TreeItem = require('./TreeItem.jsx');
-var interfaceActions = require('../actions/interface');
-var interfaceStore = require('../stores/interface');
+const React = require('react');
+const _ = require('lodash');
+const interfaceActions = require('../actions/interface');
 
-var TreeHandle = React.createClass({
-    componentDidMount() {
-        window.addEventListener('mouseup', this.handleMouseUp);
-    },
-
+const TreeHandle = React.createClass({
     componentWillMount() {
         this.handleMouseMove = _.throttle(this.handleMouseMove, 30);
+    },
+
+    componentDidMount() {
+        window.addEventListener('mouseup', this.handleMouseUp);
     },
 
     componentWillUnmount() {
@@ -22,9 +19,8 @@ var TreeHandle = React.createClass({
     },
 
     handleMouseMove(event) {
-        var ele = React.findDOMNode(this.refs.handle);
-        var diff = event.clientX - this.startPos;
-        var newSize = this.startSize + diff;
+        const diff = event.clientX - this.startPos;
+        const newSize = this.startSize + diff;
         interfaceActions.setTreeSize(this.props.index, newSize);
     },
 
@@ -33,7 +29,6 @@ var TreeHandle = React.createClass({
     },
 
     handleMouseDown(event) {
-        var ele = React.findDOMNode(this.refs.handle);
         this.startPos = event.clientX;
         this.startSize = this.props.size;
 
@@ -42,19 +37,19 @@ var TreeHandle = React.createClass({
 
     render() {
         return (
-            <div ref="handle" className='tree-handle' onMouseDown={this.handleMouseDown}></div>
+            <div ref="handle" className="tree-handle" onMouseDown={this.handleMouseDown}></div>
         );
     },
 });
 
-var TreeHeader = React.createClass({
+const TreeHeader = React.createClass({
     render() {
         return (
-            <div className='tree-header'>
+            <div className="tree-header">
                 {this.props.columns.map((col, i) => {
-                    var style = {width: this.props.sizes[i]+'px'};
+                    const style = {width: this.props.sizes[i]+'px'};
                     return (
-                        <div key={i} className='tree-header-col' style={style}>
+                        <div key={i} className="tree-header-col" style={style}>
                             {col}
                             <TreeHandle index={i} size={this.props.sizes[i]} />
                         </div>

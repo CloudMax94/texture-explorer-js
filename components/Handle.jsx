@@ -1,17 +1,18 @@
 'use strict';
 
-var React = require('react');
-var _ = require('lodash');
-var interfaceActions = require('../actions/interface');
-var interfaceStore  = require('../stores/interface');
+const React = require('react');
+const _ = require('lodash');
 
-var Handle = React.createClass({
-    componentDidMount() {
-        window.addEventListener('mouseup', this.handleMouseUp);
-    },
+const interfaceActions = require('../actions/interface');
+const interfaceStore  = require('../stores/interface');
 
+const Handle = React.createClass({
     componentWillMount() {
         this.handleMouseMove = _.throttle(this.handleMouseMove, 30);
+    },
+
+    componentDidMount() {
+        window.addEventListener('mouseup', this.handleMouseUp);
     },
 
     componentWillUnmount() {
@@ -20,23 +21,22 @@ var Handle = React.createClass({
     },
 
     handleMouseMove(event) {
+        const ele = React.findDOMNode(this.refs.handle);
+        const direction = window.getComputedStyle(ele.parentElement).getPropertyValue('flex-direction');
 
-        var ele = React.findDOMNode(this.refs.handle);
-        var direction = window.getComputedStyle(ele.parentElement).getPropertyValue('flex-direction');
-
-        var offset = 0;
+        let offset = 0;
         if (direction === 'column') {
             offset = event.clientY;
         } else {
             offset = event.clientX;
         }
-        var diff = 0
+        let diff = 0;
         if (this.props.reverse !== true) {
             diff = offset - this.startPos;
         } else {
             diff = this.startPos - offset;
         }
-        var newSize = this.startSize + diff;
+        const newSize = this.startSize + diff;
         interfaceActions.setContainerSize(this.props.index, newSize);
     },
 
@@ -45,8 +45,8 @@ var Handle = React.createClass({
     },
 
     handleMouseDown(event) {
-        var ele = React.findDOMNode(this.refs.handle);
-        var direction = window.getComputedStyle(ele.parentElement).getPropertyValue('flex-direction');
+        const ele = React.findDOMNode(this.refs.handle);
+        const direction = window.getComputedStyle(ele.parentElement).getPropertyValue('flex-direction');
         if (direction === 'column') {
             this.startPos = event.clientY;
         } else {
@@ -59,8 +59,8 @@ var Handle = React.createClass({
 
     render() {
         return (
-            <div ref="handle" className='handle'>
-                <div className='handle-inner' onMouseDown={this.handleMouseDown}></div>
+            <div ref="handle" className="handle">
+                <div className="handle-inner" onMouseDown={this.handleMouseDown}></div>
             </div>
         );
     },

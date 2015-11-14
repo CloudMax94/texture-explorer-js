@@ -1,28 +1,28 @@
 'use strict';
 
-var React   = require('react');
-var Reflux  = require('reflux');
+const React   = require('react');
+const Reflux  = require('reflux');
 
-var interfaceStore  = require('../stores/interface');
+const interfaceStore  = require('../stores/interface');
 
-var StatusBar = React.createClass({
+const StatusBar = React.createClass({
     mixins: [Reflux.ListenerMixin],
     getInitialState() {
         return {
-            status: interfaceStore.getStatus()
+            status: interfaceStore.getStatus(),
         };
-    },
-    oninterfaceStoreChange() {
-        this.setState({
-            status: interfaceStore.getStatus()
-        });
     },
     componentDidMount() {
         this.listenTo(interfaceStore, this.oninterfaceStoreChange);
     },
+    oninterfaceStoreChange() {
+        this.setState({
+            status: interfaceStore.getStatus(),
+        });
+    },
     render() {
         return (
-            <div className='status-bar'>{this.state.status}</div>
+            <div className="status-bar">{this.state.status}</div>
         );
     },
 });

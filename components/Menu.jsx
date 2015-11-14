@@ -1,20 +1,21 @@
 'use strict';
 
-var React = require('react');
+const React = require('react');
 
-var MenuItem = React.createClass({
+const MenuItem = React.createClass({
     render() {
-        if (!this.props.data)
+        if (!this.props.data) {
             return null;
+        }
 
         if (this.props.data.type === 'separator') {
             return (
-                <div className='menu-separator'></div>
+                <div className="menu-separator"></div>
             );
         }
 
-        var classes = [
-            'menu-item'
+        let classes = [
+            'menu-item',
         ];
 
         var subMenu = null;
@@ -24,7 +25,7 @@ var MenuItem = React.createClass({
                 <Menu data={this.props.data.submenu}/>
             );
         }
-        var accelerator = null;
+        let accelerator = null;
         if (this.props.data.globalKeyObject) {
             accelerator = this.props.data.globalKeyObject.text;
         }
@@ -37,17 +38,18 @@ var MenuItem = React.createClass({
     },
 });
 
-var Menu = React.createClass({
+const Menu = React.createClass({
     render() {
-        if (!this.props.data)
+        if (!this.props.data) {
             return null;
-        var menuItems = this.props.data.items.map(function (item, i) {
+        }
+        const menuItems = this.props.data.items.map(function (item, i) {
             return (
                 <MenuItem key={i} data={item} />
             );
         });
         return (
-            <div className='menu'>
+            <div className="menu">
                 {menuItems}
             </div>
         );

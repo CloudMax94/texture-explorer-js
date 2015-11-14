@@ -1,11 +1,11 @@
 logs
 *.log
 node_modules
+ncp-debug.log
+npm-debug.log
 browser
 profiles
-assets/css
+.sass-cache/
+.sublime-gulp.cache
 *.sublime-project
 *.sublime-workspace
-.sass-cache/
-*.bak
-.sublime-gulp.cache

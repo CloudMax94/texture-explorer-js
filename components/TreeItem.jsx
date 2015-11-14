@@ -1,12 +1,12 @@
 'use strict';
 
-var React = require('react');
-var _ = require('lodash');
-var workspaceActions = require('../actions/workspace');
-var textureManipulator = require('../lib/textureManipulator');
-var workspaceStore = require('../stores/workspace');
+const React = require('react');
+const _ = require('lodash');
+const workspaceActions = require('../actions/workspace');
+const textureManipulator = require('../lib/textureManipulator');
+const workspaceStore = require('../stores/workspace');
 
-var TreeItem = React.createClass({
+const TreeItem = React.createClass({
     getInitialState() {
         return {
         };
@@ -14,7 +14,7 @@ var TreeItem = React.createClass({
 
     handleDoubleClick(event) {
         event.preventDefault();
-        var item = this.props.item;
+        const item = this.props.item;
         if (item.get('type') === 'directory') {
             workspaceActions.setCurrentDirectory(item);
         } else if (item.get('type') === 'texture') {
@@ -28,59 +28,61 @@ var TreeItem = React.createClass({
     },
 
     render() {
-        var depth = this.props.depth?this.props.depth:0;
-        var item = this.props.item;
-        var dataList = [
+        const depth = this.props.depth?this.props.depth:0;
+        const item = this.props.item;
+        let dataList = [
             item.get('name'),
         ];
         if (this.props.nameOnly !== true) {
-            var start = workspaceStore.getItemAbsoluteAddress(item);
+            const start = workspaceStore.getItemAbsoluteAddress(item);
             dataList.push(...[
                 '0x'+_.padLeft(item.get('address').toString(16), 8, 0).toUpperCase(),
                 '0x'+_.padLeft(start.toString(16), 8, 0).toUpperCase(),
             ]);
             if (item.get('type') === 'texture') {
-                var size = item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier();
+                const size = item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier();
                 dataList.push(...[
                     '0x'+_.padLeft((start+size).toString(16), 8, 0).toUpperCase(),
                     '0x'+_.padLeft(size.toString(16), 8, 0).toUpperCase(),
                     item.get('format'),
                     item.get('width'),
-                    item.get('height')
+                    item.get('height'),
                 ]);
                 if (textureManipulator.getFormat(item.get('format')).hasPalette()) {
                     dataList.push('0x'+_.padLeft(item.get('palette').toString(16), 8, 0).toUpperCase());
-                };
+                }
             } else if (item.get('type') === 'directory') {
                 dataList.push(...[
                     '0x'+_.padLeft((start+item.get('length')).toString(16), 8, 0).toUpperCase(),
-                    '0x'+_.padLeft(item.get('length').toString(16), 8, 0).toUpperCase()
+                    '0x'+_.padLeft(item.get('length').toString(16), 8, 0).toUpperCase(),
                 ]);
             }
         }
-        var children = [];
+        let children = [];
         if (this.props.traverse !== 0) {
-            var mapItem = (item, i) => {
-                return <TreeItem
-                            key={item.get('name')}
-                            nameOnly={this.props.nameOnly}
-                            depth={depth+1}
-                            traverse={this.props.traverse-1}
-                            handleFocus={this.props.handleFocus}
-                            focusedItem={this.props.focusedItem}
-                            selectedDirectory={this.props.selectedDirectory}
-                            item={item}
-                            items={this.props.items}
-                            sizes={this.props.sizes}
-                        />;
+            const mapItem = (item, i) => {
+                return (
+                    <TreeItem
+                        key={item.get('name')}
+                        nameOnly={this.props.nameOnly}
+                        depth={depth+1}
+                        traverse={this.props.traverse-1}
+                        handleFocus={this.props.handleFocus}
+                        focusedItem={this.props.focusedItem}
+                        selectedDirectory={this.props.selectedDirectory}
+                        item={item}
+                        items={this.props.items}
+                        sizes={this.props.sizes}
+                    />
+                );
             };
-            var group = this.props.items.get(item.get('id'));
+            const group = this.props.items.get(item.get('id'));
 
             if (group) {
                 children.push(...group.map(mapItem));
             }
         }
-        var classes = 'tree-item';
+        let classes = 'tree-item';
         if (item.equals(this.props.focusedItem)) {
             classes += ' focused';
         }
@@ -90,9 +92,8 @@ var TreeItem = React.createClass({
         return (
             <div key={item.get('name')} className={classes}>
                 {dataList.map((data, i) => {
-                    var icon = null;
-                    var style = {
-                    };
+                    let icon = null;
+                    let style = {};
                     if (this.props.sizes) {
                         style.width = this.props.sizes[i]+'px';
                     }
@@ -109,7 +110,7 @@ var TreeItem = React.createClass({
                         }
                     }
                     return (
-                        <div key={i} className='tree-col' style={style} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick}>{icon}{data}</div>
+                        <div key={i} className="tree-col" style={style} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick}>{icon}{data}</div>
                     );
                 })}
                 <div className="tree-items">

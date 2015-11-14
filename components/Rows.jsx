@@ -1,11 +1,11 @@
 'use strict';
 
-var React = require('react');
+const React = require('react');
 
-var Rows = React.createClass({
+const Rows = React.createClass({
     render() {
         return (
-            <div className='rows'>{this.props.children}</div>
+            <div className="rows">{this.props.children}</div>
         );
     },
 });

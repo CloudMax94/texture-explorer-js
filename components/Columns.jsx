@@ -1,11 +1,11 @@
 'use strict';
 
-var React = require('react');
+const React = require('react');
 
-var Columns = React.createClass({
+const Columns = React.createClass({
     render() {
         return (
-            <div className='columns'>{this.props.children}</div>
+            <div className="columns">{this.props.children}</div>
         );
     },
 });

@@ -1,12 +1,12 @@
 'use strict';
 
-var React = require('react');
+const React = require('react');
 
-var TextureViewer = React.createClass({
+const TextureViewer = React.createClass({
     render() {
         return (
-            <div className='texture-viewer'>
-                <div className='texture-viewer-inner'>
+            <div className="texture-viewer">
+                <div className="texture-viewer-inner">
                     <img/>
                 </div>
             </div>

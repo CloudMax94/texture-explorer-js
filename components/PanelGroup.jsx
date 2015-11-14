@@ -1,47 +1,49 @@
 'use strict';
 
-var React = require('react');
+const React = require('react');
 
-var remote = require('remote');
-var MenuItem = remote.require('menu-item');
-var MenuClass = remote.require('menu');
-var interfaceActions = require('../actions/interface');
+const remote = require('remote');
+const MenuItem = remote.require('menu-item');
+const MenuClass = remote.require('menu');
+const interfaceActions = require('../actions/interface');
 
-
-var PanelGroup = React.createClass({
+const PanelGroup = React.createClass({
     getInitialState() {
         return {selected: 0};
     },
+    setCurrentTab(i) {
+        this.setState({selected: i});
+    },
     handleGroupContext(event) {
         event.preventDefault();
-        var menu = new MenuClass;
+        let menu = new MenuClass;
 
         menu.append(new MenuItem({
             label: 'Move Group to Top Container',
             click: () => {
                 interfaceActions.movePanelGroupToContainer(this.props.container, this.props.index, 0);
-            }
+            },
         }));
 
         menu.append(new MenuItem({
             label: 'Move Group to Left Container',
             click: () => {
                 interfaceActions.movePanelGroupToContainer(this.props.container, this.props.index, 1);
-            }
+            },
         }));
 
         menu.append(new MenuItem({
             label: 'Move Group to Right Container',
             click: () => {
                 interfaceActions.movePanelGroupToContainer(this.props.container, this.props.index, 2);
-            }
+            },
         }));
 
         menu.append(new MenuItem({
             label: 'Move Group to Bottom Container',
             click: () => {
                 interfaceActions.movePanelGroupToContainer(this.props.container, this.props.index, 3);
-            }
+            },
         }));
 
         menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY);
@@ -49,54 +51,51 @@ var PanelGroup = React.createClass({
     handleTabContext(index, event) {
         event.preventDefault();
         event.stopPropagation();
-        var menu = new MenuClass;
+        let menu = new MenuClass;
 
         menu.append(new MenuItem({
             label: 'Move Pane to Top Container',
             click: () => {
                 interfaceActions.movePanelToContainer(this.props.container, this.props.index, index, 0);
-            }
+            },
         }));
 
         menu.append(new MenuItem({
             label: 'Move Pane to Left Container',
             click: () => {
                 interfaceActions.movePanelToContainer(this.props.container, this.props.index, index, 1);
-            }
+            },
         }));
 
         menu.append(new MenuItem({
             label: 'Move Pane to Right Container',
             click: () => {
                 interfaceActions.movePanelToContainer(this.props.container, this.props.index, index, 2);
-            }
+            },
         }));
 
         menu.append(new MenuItem({
             label: 'Move Pane to Bottom Container',
             click: () => {
                 interfaceActions.movePanelToContainer(this.props.container, this.props.index, index, 3);
-            }
+            },
         }));
 
         menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY);
-    },
-    setCurrentTab(i) {
-        this.setState({selected: i});
     },
     render() {
         if (this.state.selected > this.props.panels.length) {
             this.setCurrentTab(0);
         }
         return (
-            <div className='panel'>
-                <div className='panel-header' onContextMenu={this.handleGroupContext}>
-                    <div className='panel-tabs'>
+            <div className="panel">
+                <div className="panel-header" onContextMenu={this.handleGroupContext}>
+                    <div className="panel-tabs">
                         {this.props.panels.map((panel, i) => {
                             if (this.state.selected === null || this.state.selected > this.props.panels.length) {
                                 this.state.selected = i;
                             }
-                            var classes = 'panel-tab';
+                            let classes = 'panel-tab';
                             if (this.state.selected === i) {
                                 classes += ' selected';
                             }
@@ -104,9 +103,9 @@ var PanelGroup = React.createClass({
                         })}
                     </div>
                 </div>
-                <div className='panel-content'>
+                <div className="panel-content">
                     {this.props.panels.map((panel, i) => {
-                        var style = {};
+                        let style = {};
                         if (this.state.selected !== i) {
                             style.display = 'none';
                         }
