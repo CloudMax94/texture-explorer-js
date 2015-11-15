@@ -1,5 +1,3 @@
-'use strict';
-
 const React   = require('react/addons');
 const Reflux  = require('reflux');
 const _       = require('lodash');

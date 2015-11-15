@@ -1,5 +1,3 @@
-"use strict";
-
 require('../lib/menu');
 
 var React   = require('react/addons');

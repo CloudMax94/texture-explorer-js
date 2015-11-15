@@ -1,5 +1,3 @@
-'use strict';
-
 const React = require('react');
 const _ = require('lodash');
 const interfaceActions = require('../actions/interface');

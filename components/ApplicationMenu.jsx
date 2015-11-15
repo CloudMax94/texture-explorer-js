@@ -1,5 +1,3 @@
-'use strict';
-
 const React           = require('react');
 const Reflux          = require('reflux');
 const Menu            = require('./Menu.jsx');
