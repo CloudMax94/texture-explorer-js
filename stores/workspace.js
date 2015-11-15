@@ -1,22 +1,22 @@
-var React       = require('react/addons');
-var Reflux      = require('reflux');
-var actions     = require('../actions/workspace');
-var _           = require('lodash');
-var Immutable   = require('immutable');
-var worker      = require('../lib/worker');
-var fileHandler = require('../lib/fileHandler');
-var path        = require('path');
+const Reflux      = require('reflux');
+const actions     = require('../actions/workspace');
+const _           = require('lodash');
+const Immutable   = require('immutable');
+const worker      = require('../lib/worker');
+const fileHandler = require('../lib/fileHandler');
+const path        = require('path');
+const textureManipulator = require('../lib/textureManipulator');
 
-var itemFormatPlural = function(format) {
-    if (format.toLowerCase() == 'texture')
+function itemFormatPlural(format) {
+    if (format.toLowerCase() === 'texture') {
         return 'textures';
-    else if (format.toLowerCase() == 'directory')
+    } else if (format.toLowerCase() === 'directory') {
         return 'directories';
-    else
-        return '';
-};
+    }
+    return '';
+}
 
-var DirectoryRecord = Immutable.Record({
+const DirectoryRecord = Immutable.Record({
     id:             null,
     parentId:       null,
     name:           'New Directory',
@@ -25,7 +25,7 @@ var DirectoryRecord = Immutable.Record({
     type:           'directory',
 });
 
-var TextureRecord = Immutable.Record({
+const TextureRecord = Immutable.Record({
     id:             null,
     parentId:       null,
     name:           'New Texture',
@@ -35,6 +35,7 @@ var TextureRecord = Immutable.Record({
     height:         32,
     palette:        0,
     type:           'texture',
+    blob:           null,
 });
 
 var WorkspaceRecord = Immutable.Record({
@@ -44,27 +45,29 @@ var WorkspaceRecord = Immutable.Record({
     name:               'New Workspace',
     key:                null,
     items:              null,
-    root:               null,
     selectedDirectory:  null,
     selectedTexture:    null,
 });
 
-var workspaces = Immutable.Map();
-var currentWorkspace = null;
+let blobBank = Immutable.Map();
+
+const textureWorker = worker('textures');
+let workspaces = Immutable.Map();
+let currentWorkspace = null;
 
 function prepareProfile(profile, length) {
     console.time('Initialize profile and tree');
-    var types = ['directory', 'texture'];
-    var _innerLoop = (input, items, parent) => {
+    const types = ['directory', 'texture'];
+    const _innerLoop = (input, items, parent) => {
         types.forEach((type) => {
             if (input[itemFormatPlural(type)]) {
                 input[itemFormatPlural(type)].forEach((i, index) => {
-                    var item;
-                    var id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
-                    if (type == 'directory') {
+                    let item;
+                    const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
+                    if (type === 'directory') {
                         item = new DirectoryRecord({
-                            id :        id,
-                            parentId :  parent,
+                            id:         id,
+                            parentId:   parent,
                             name:       i.data.name,
                             address:    parseInt(i.data.address, 16),
                             length:     parseInt(i.data.size, 16),
@@ -72,8 +75,8 @@ function prepareProfile(profile, length) {
                         items = _innerLoop(i, items, id);
                     } else {
                         item = new TextureRecord({
-                            id :        id,
-                            parentId :  parent,
+                            id:         id,
+                            parentId:   parent,
                             name:       i.data.name,
                             address:    parseInt(i.data.address, 16),
                             format:     i.data.format,
@@ -89,15 +92,15 @@ function prepareProfile(profile, length) {
         });
         return items;
     };
-    var id = 'root';
-    var rootItem = new DirectoryRecord({
+    const id = 'root';
+    const rootItem = new DirectoryRecord({
         id:         id,
         name:       'Root',
         address:    0,
         absolute:   0,
         length:     length,
     });
-    var items = Immutable.Map();
+    let items = Immutable.Map();
     items = items.set(id, rootItem);
     if (profile) {
         items = _innerLoop(profile, items, id);
@@ -106,83 +109,164 @@ function prepareProfile(profile, length) {
     return items;
 }
 
-class Workspace {
-    constructor(data, info) {
-        this.data = data;
-        this.path = info.path;
-        this.name = info.name;
-        this.id = info.id;
-        this.root = null;
-        this.selectedDirectory = null;
-        this.selectedTexture = null;
-    }
-}
-
-var store = Reflux.createStore({
-    onSetCurrentDirectory(item){
-        workspaces = workspaces.setIn([currentWorkspace, 'selectedDirectory'], item);
-        this.trigger();
+const store = Reflux.createStore({
+    onSetCurrentDirectory(item) {
+        workspaces = workspaces.setIn([currentWorkspace, 'selectedDirectory'], item.get('id'));
+        this.trigger('directory');
     },
-    onSetCurrentTexture(item){
+    onSetCurrentTexture(item) {
         workspaces = workspaces.setIn([currentWorkspace, 'selectedTexture'], item);
-        this.trigger();
+        this.trigger('texture');
     },
-    onSetCurrentWorkspace(workspace){
+    onSetCurrentWorkspace(workspace) {
         currentWorkspace = workspace.id;
-        this.trigger();
+        this.trigger('workspace');
     },
-    onCreateWorkspace(input){
-        var data = input.data;
-        var filePath = input.path;
-        var name = input.name;
-        var key = data.toString('utf8', 0x3B, 0x3F)+data.readUInt8(0x3F);
-        var id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
+    onCreateWorkspace(input) {
+        const data = input.data;
+        const filePath = input.path;
+        const name = input.name;
+        const key = data.toString('utf8', 0x3B, 0x3F)+data.readUInt8(0x3F);
+        const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
 
-        var workspace = new WorkspaceRecord({
+        let workspace = new WorkspaceRecord({
             id:                 id,
             data:               data,
             path:               filePath,
             name:               name,
             key:                key,
             items:              null,
-            root:               null,
             selectedDirectory:  null,
             selectedTexture:    null,
         });
-
+        workspaces = workspaces.set(id, workspace);
+        currentWorkspace = id;
+        this.trigger('workspace');
         fileHandler.loadProfile(path.join(__dirname, '../', '/profiles/'+key+'/default/fileList.json'), (profile) => {
-            var items = prepareProfile(profile);
+            const items = prepareProfile(profile);
             workspace = workspace.merge({
                 items:              items,
-                root:               items.get('root'),
-                selectedDirectory:  items.get('root'),
+                selectedDirectory:  'root',
             });
             workspaces = workspaces.set(id, workspace);
-            currentWorkspace = id;
-            this.trigger();
+            this.trigger('workspace');
         });
     },
-    init(){
+    init() {
         this.listenTo(actions.setCurrentDirectory, this.onSetCurrentDirectory);
         this.listenTo(actions.setCurrentTexture, this.onSetCurrentTexture);
         this.listenTo(actions.setCurrentWorkspace, this.onSetCurrentWorkspace);
         this.listenTo(actions.createWorkspace, this.onCreateWorkspace);
     },
-    getWorkspaces(){
+    getWorkspaces() {
         return workspaces;
     },
-    getCurrentWorkspace(){
+    getCurrentWorkspace() {
         return workspaces.get(currentWorkspace);
     },
-    getItemAbsoluteAddress(item){
-        var address = item.get('address');
-        var items = this.getCurrentWorkspace().get('items');
+    getDirectories() {
+        if (!currentWorkspace) {
+            return null;
+        }
+        const items = this.getCurrentWorkspace().get('items');
+        if (!items) {
+            return null;
+        }
+        return items.filter(x => x.type === 'directory');
+    },
+    getItemAbsoluteAddress(item) {
+        const items = this.getCurrentWorkspace().get('items');
+        let address = item.get('address');
         while (item.get('parentId') && item.get('parentId') !== 'root') {
             item = items.get(item.get('parentId'));
             address += item.get('address');
         }
         return address;
-    }
+    },
+    getItemHash(item) {
+        const crypto = require('crypto');
+        const md5sum = crypto.createHash('md5');
+        md5sum.update(this.getItemAbsoluteAddress(item).toString());
+        md5sum.update(item.get('width').toString());
+        md5sum.update(item.get('height').toString());
+        md5sum.update(item.get('format').toString());
+        return md5sum.digest('hex');
+    },
+    getItemBuffer(item) {
+        return this.getCurrentWorkspace().get('data').slice(
+            this.getItemAbsoluteAddress(item),
+            this.getItemAbsoluteAddress(item)+item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier()
+        );
+    },
+    getItemPaletteBuffer(item) {
+        const parentId = item.get('parentId');
+        const parent = this.getCurrentWorkspace().getIn(['items', parentId]);
+        if (parent) {
+            return this.getCurrentWorkspace().get('data').slice(
+                this.getItemAbsoluteAddress(parent)+item.get('palette'),
+                this.getItemAbsoluteAddress(parent)+item.get('palette')+0x200
+            );
+        }
+        return null;
+    },
+    itemHasValidData(item) {
+        if (item.get('type') === 'texture') {
+            if (Number.isInteger(item.get('address')) &&
+                Number.isInteger(item.get('width')) &&
+                Number.isInteger(item.get('height')) &&
+                textureManipulator.getFormat(item.get('format')).isValid()) {
+                return true;
+            }
+        }
+        return false;
+    },
+    getItemTexture(item, callback) {
+        if (item.get('type') !== 'texture' || !this.itemHasValidData(item)) {
+            callback(null);
+            return;
+        }
+
+        let palette;
+        const textureFormat = textureManipulator.getFormat(item.get('format'));
+        if (textureFormat.hasPalette()) {
+            palette = this.getItemPaletteBuffer(item);
+        }
+        textureWorker.send({
+            type: 'generateTexture',
+            data: this.getItemBuffer(item),
+            format: textureFormat.toString(),
+            width: item.get('width'),
+            palette: palette,
+        }, function(out) {
+            if (out.img) {
+                out.img.format = textureManipulator.getFormat(out.img.format.data.name); // Construct Format
+                const image = new textureManipulator.TextureObject(out.img); // Construct TextureObject
+                callback(image);
+            } else {
+                callback(null);
+            }
+        });
+    },
+    getItemBlob(item) {
+        const hash = this.getItemHash(item);
+        const crntBlob = blobBank.get(hash);
+        if (!crntBlob) {
+            blobBank = blobBank.set(hash, true);
+            this.getItemTexture(item, (image) => {
+                if (image) {
+                    image.toPNGBlob((blob) => {
+                        blobBank = blobBank.set(hash, URL.createObjectURL(blob));
+                        this.trigger('texture');
+                    });
+                }
+            });
+            return null;
+        }
+        if (crntBlob === true) {
+            return null;
+        }
+        return crntBlob;
+    },
 });
 
 module.exports = store;

@@ -1,5 +1,13 @@
 $tree-item-height: 20px;
 
+.directory-tree {
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
 .tree-view {
     overflow: hidden;
     position: relative;
@@ -69,13 +77,14 @@ $tree-item-height: 20px;
         background: $tree-background-color-selected;
     }
 
-    &.selected > .tree-col .tree-icon {
+    &.selected > .tree-col .tree-icon,
+    &.selected > .tree-row .tree-icon {
         color: $tree-icon-color-selected;
     }
 
 }
 
-.tree-col {
+.tree-col, .tree-row {
     position: relative;
     overflow: hidden;
     line-height: $tree-item-height;
@@ -99,6 +108,12 @@ $tree-item-height: 20px;
     margin-right: 8px;
     vertical-align: top;
     display: inline-block;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .tree-icon[style*="background-image:"] {
