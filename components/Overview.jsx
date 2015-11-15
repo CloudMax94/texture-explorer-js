@@ -36,8 +36,6 @@ const Overview = React.createClass({
         this.setState({focusedItem: item.get('id')});
     },
     render() {
-        console.log('rendering overview!');
-
         if (!this.state.items) {
             return null;
         }
@@ -82,31 +80,4 @@ const Overview = React.createClass({
     },
 });
 
-/*
-const Overview = React.createClass({
-    mixins: [Reflux.ListenerMixin],
-    getInitialState() {
-        return {
-            workspace: workspaceStore.getCurrentWorkspace(),
-        };
-    },
-    componentDidMount() {
-        this.listenTo(workspaceStore, this.onWorkspaceStoreChange);
-    },
-    onWorkspaceStoreChange() {
-        this.setState({
-            workspace: workspaceStore.getCurrentWorkspace(),
-        });
-    },
-    render() {
-        return (
-            <TreeView
-                workspace={this.state.workspace}
-                root={this.state.workspace?this.state.workspace.getIn(['items', 'root']):null}
-                list={true}
-            />
-        );
-    },
-});
-*/
 module.exports = Overview;

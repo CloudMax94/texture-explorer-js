@@ -9,8 +9,20 @@ const TreeItem = React.createClass({
         item: React.PropTypes.object,
         sizes: React.PropTypes.arrayOf(React.PropTypes.number), // Column sizes
         focusedItem: React.PropTypes.string, // Focused item id
-        selectedDirectory: React.PropTypes.string, // Selected directory id
         handleFocus: React.PropTypes.func, // Function for handling item focus
+    },
+
+    shouldComponentUpdate(nextProps) {
+        return this.props.sizes !== nextProps.sizes ||
+                (
+                   this.props.focusedItem !== nextProps.focusedItem &&
+                   (
+                       this.props.item.get('id') === this.props.focusedItem ||
+                       this.props.item.get('id') === nextProps.focusedItem
+                   )
+                )
+                ||
+                !this.props.item.equals(nextProps.item);
     },
 
     handleDoubleClick() {
@@ -33,15 +45,15 @@ const TreeItem = React.createClass({
         const dataList = [
             item.get('name'),
         ];
-        const start = workspaceStore.getItemAbsoluteAddress(item);
+
         dataList.push(...[
+            '0x'+_.padLeft(workspaceStore.getItemOffset(item).toString(16), 8, 0).toUpperCase(), // should be relative!
             '0x'+_.padLeft(item.get('address').toString(16), 8, 0).toUpperCase(),
-            '0x'+_.padLeft(start.toString(16), 8, 0).toUpperCase(),
         ]);
         if (item.get('type') === 'texture') {
             const size = item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier();
             dataList.push(...[
-                '0x'+_.padLeft((start+size).toString(16), 8, 0).toUpperCase(),
+                '0x'+_.padLeft((item.get('address')+size).toString(16), 8, 0).toUpperCase(),
                 '0x'+_.padLeft(size.toString(16), 8, 0).toUpperCase(),
                 item.get('format'),
                 item.get('width'),
@@ -52,16 +64,13 @@ const TreeItem = React.createClass({
             }
         } else if (item.get('type') === 'directory') {
             dataList.push(...[
-                '0x'+_.padLeft((start+item.get('length')).toString(16), 8, 0).toUpperCase(),
+                '0x'+_.padLeft((item.get('address')+item.get('length')).toString(16), 8, 0).toUpperCase(),
                 '0x'+_.padLeft(item.get('length').toString(16), 8, 0).toUpperCase(),
             ]);
         }
         let classes = 'tree-item';
         if (item.get('id') === this.props.focusedItem) {
             classes += ' focused';
-        }
-        if (item.get('id') === this.props.selectedDirectory) {
-            classes += ' selected';
         }
         return (
             <div key={item.get('name')} className={classes}>
@@ -75,7 +84,7 @@ const TreeItem = React.createClass({
                         if (item.get('type') === 'directory') {
                             icon = <i className="tree-icon icon">file_directory</i>;
                         } else if (item.get('type') === 'texture') {
-                            const blob = workspaceStore.getItemBlob(item);
+                            const blob = workspaceStore.getBlobUrl(item.get('blobHash'));
                             if (blob) {
                                 icon = <i className="tree-icon" style={{backgroundImage: 'url('+blob+')'}}>&nbsp;</i>;
                             } else {

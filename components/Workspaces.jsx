@@ -2,7 +2,6 @@ const React = require('react');
 const Reflux  = require('reflux');
 
 const TreeView = require('./TreeView.jsx');
-const TreeHeader = require('./TreeHeader.jsx');
 
 const workspaceStore = require('../stores/workspace');
 const interfaceStore = require('../stores/interface');
@@ -57,10 +56,7 @@ const Workspace = React.createClass({
                     {tabs}
                 </div>
                 <div className="workspace-content">
-                    <div className="tree-view">
-                        <TreeHeader sizes={this.state.sizes} columns={['File', 'Offset', 'Start', 'End', 'Size', 'Format', 'Width', 'Height', 'Palette Address']}/>
-                        <TreeView sizes={this.state.sizes} workspace={this.state.current} root={this.state.current?this.state.current.get('selectedDirectory'):null}/>
-                    </div>
+                    <TreeView sizes={this.state.sizes} workspace={this.state.current}/>
                 </div>
             </div>
         );

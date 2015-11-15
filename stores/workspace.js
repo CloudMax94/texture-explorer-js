@@ -35,7 +35,7 @@ const TextureRecord = Immutable.Record({
     height:         32,
     palette:        0,
     type:           'texture',
-    blob:           null,
+    blobHash:       null,
 });
 
 var WorkspaceRecord = Immutable.Record({
@@ -49,7 +49,24 @@ var WorkspaceRecord = Immutable.Record({
     selectedTexture:    null,
 });
 
+var BlobRecord = Immutable.Record({
+    hash:  null,
+    url:   null,
+    start: null,
+    end:   null,
+});
+
 let blobBank = Immutable.Map();
+
+function getItemHash(item) {
+    const crypto = require('crypto');
+    const md5sum = crypto.createHash('md5');
+    md5sum.update(item.get('address').toString());
+    md5sum.update(item.get('width').toString());
+    md5sum.update(item.get('height').toString());
+    md5sum.update(item.get('format').toString());
+    return md5sum.digest('hex');
+}
 
 const textureWorker = worker('textures');
 let workspaces = Immutable.Map();
@@ -84,6 +101,7 @@ function prepareProfile(profile, length) {
                             height:     parseInt(i.data.height),
                             palette:    parseInt(i.data.palette, 16),
                         });
+                        item = item.set('blobHash', getItemHash(item));
                     }
 
                     items = items.set(id, item);
@@ -149,6 +167,8 @@ const store = Reflux.createStore({
                 selectedDirectory:  'root',
             });
             workspaces = workspaces.set(id, workspace);
+
+            this.updateAllItemBlobs();
             this.trigger('workspace');
         });
     },
@@ -174,28 +194,13 @@ const store = Reflux.createStore({
         }
         return items.filter(x => x.type === 'directory');
     },
-    getItemAbsoluteAddress(item) {
-        const items = this.getCurrentWorkspace().get('items');
-        let address = item.get('address');
-        while (item.get('parentId') && item.get('parentId') !== 'root') {
-            item = items.get(item.get('parentId'));
-            address += item.get('address');
-        }
-        return address;
-    },
-    getItemHash(item) {
-        const crypto = require('crypto');
-        const md5sum = crypto.createHash('md5');
-        md5sum.update(this.getItemAbsoluteAddress(item).toString());
-        md5sum.update(item.get('width').toString());
-        md5sum.update(item.get('height').toString());
-        md5sum.update(item.get('format').toString());
-        return md5sum.digest('hex');
+    getItemOffset(item) {
+        return item.get('address') - this.getCurrentWorkspace().getIn(['items', item.get('parentId'), 'address']);
     },
     getItemBuffer(item) {
         return this.getCurrentWorkspace().get('data').slice(
-            this.getItemAbsoluteAddress(item),
-            this.getItemAbsoluteAddress(item)+item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier()
+            item.get('address'),
+            item.get('address')+item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier()
         );
     },
     getItemPaletteBuffer(item) {
@@ -203,8 +208,8 @@ const store = Reflux.createStore({
         const parent = this.getCurrentWorkspace().getIn(['items', parentId]);
         if (parent) {
             return this.getCurrentWorkspace().get('data').slice(
-                this.getItemAbsoluteAddress(parent)+item.get('palette'),
-                this.getItemAbsoluteAddress(parent)+item.get('palette')+0x200
+                parent.get('address')+item.get('palette'),
+                parent.get('address')+item.get('palette')+0x200
             );
         }
         return null;
@@ -247,25 +252,49 @@ const store = Reflux.createStore({
             }
         });
     },
-    getItemBlob(item) {
-        const hash = this.getItemHash(item);
+    updateAllItemBlobs() {
+        const childTextures = this.getCurrentWorkspace().get('items').filter((i) => {
+            return i.type === 'texture';
+        });
+        let lastTime = 0;
+        let i = 0;
+        const length = childTextures.size;
+        childTextures.forEach((texture) => {
+            this.generateItemBlob(texture, (blob, hash) => {
+                i++;
+                if (lastTime + 1000 < +new Date() || i === length) {
+                    lastTime = +new Date();
+                    this.trigger('texture');
+                }
+            });
+        });
+    },
+    generateItemBlob(item, callback) {
+        const hash = getItemHash(item);
         const crntBlob = blobBank.get(hash);
         if (!crntBlob) {
             blobBank = blobBank.set(hash, true);
             this.getItemTexture(item, (image) => {
                 if (image) {
                     image.toPNGBlob((blob) => {
-                        blobBank = blobBank.set(hash, URL.createObjectURL(blob));
-                        this.trigger('texture');
+                        blobBank = blobBank.set(hash, new BlobRecord({
+                            hash: hash,
+                            url: URL.createObjectURL(blob),
+                            start: item.get('address'),
+                            end: item.get('address')+item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier(),
+                        }));
+                        callback(blob, hash);
                     });
+                } else {
+                    callback(null, hash);
                 }
             });
-            return null;
+        } else {
+            callback(crntBlob, hash);
         }
-        if (crntBlob === true) {
-            return null;
-        }
-        return crntBlob;
+    },
+    getBlobUrl(hash) {
+        return blobBank.getIn([hash, 'url']);
     },
 });
 

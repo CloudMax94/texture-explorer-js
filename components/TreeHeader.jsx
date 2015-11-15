@@ -50,6 +50,9 @@ const TreeHeader = React.createClass({
         columns: React.PropTypes.arrayOf(React.PropTypes.string),
         sizes: React.PropTypes.arrayOf(React.PropTypes.number),
     },
+    shouldComponentUpdate(nextProps) {
+        return this.props.columns !== nextProps.columns || this.props.sizes !== nextProps.sizes;
+    },
     render() {
         return (
             <div className="tree-header">
