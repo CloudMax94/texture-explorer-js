@@ -38,7 +38,7 @@ const Workspace = React.createClass({
     },
     render() {
         const tabs = this.state.workspaces.map((workspace, i) => {
-            let classes = [
+            const classes = [
                 'workspace-tab',
             ];
             if (workspace === this.state.current) {

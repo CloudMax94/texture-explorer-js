@@ -1,10 +1,14 @@
 const React = require('react');
-const Reflux = require('reflux');
 
 const TreeItem = require('./TreeItem.jsx');
 
 const TreeView = React.createClass({
-    mixins: [Reflux.ListenerMixin],
+    propTypes: {
+        workspace: React.PropTypes.object, // Workspace the treeview belongs to
+        root: React.PropTypes.object, // Root item of the treeview
+        sizes: React.PropTypes.arrayOf(React.PropTypes.number), // Column sizes
+        list: React.PropTypes.bool, // Tree should be displayed as a list
+    },
     getInitialState() {
         return {
             focusedItem: null,
@@ -19,9 +23,8 @@ const TreeView = React.createClass({
         }
 
         const selectedDirectory = this.props.workspace.get('selectedDirectory');
-        // let items = this.props.workspace.get('items').toIndexedSeq().sortBy((x) => x.address);
-        let items = this.props.workspace.get('items').toIndexedSeq().sort((a,b) => {
-            var res = 0;
+        let items = this.props.workspace.get('items').toIndexedSeq().sort((a, b) => {
+            let res = 0;
             if (a.type === 'directory') res -= 2;
             if (b.type === 'directory') res += 2;
             return res + (a.address > b.address ? 1 : b.address > a.address ? -1 : 0);
@@ -42,7 +45,6 @@ const TreeView = React.createClass({
                     sizes={this.props.sizes}
                     selectedDirectory={selectedDirectory}
                     traverse={this.props.list?-1:0}
-                    hideTextures={this.props.list}
                     nameOnly={this.props.list}
                 />
             );
@@ -54,7 +56,7 @@ const TreeView = React.createClass({
         if (this.props.list) {
             children = [mapItem(this.props.root, 0)];
         } else {
-            var rootItem = grouped.get(this.props.root.id);
+            const rootItem = grouped.get(this.props.root.id);
             if (rootItem) {
                 children = rootItem.map(mapItem);
             }

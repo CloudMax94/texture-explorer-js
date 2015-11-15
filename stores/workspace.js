@@ -102,7 +102,6 @@ function prepareProfile(profile, length) {
     if (profile) {
         items = _innerLoop(profile, items, id);
     }
-    console.log(items);
     console.timeEnd('Initialize profile and tree');
     return items;
 }
@@ -133,7 +132,6 @@ var store = Reflux.createStore({
         this.trigger();
     },
     onCreateWorkspace(input){
-        console.log('onCreateWorkspace');
         var data = input.data;
         var filePath = input.path;
         var name = input.name;

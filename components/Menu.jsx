@@ -1,50 +1,45 @@
 const React = require('react');
 
-const MenuItem = React.createClass({
-    render() {
-        if (!this.props.data) {
-            return null;
-        }
-
-        if (this.props.data.type === 'separator') {
+const Menu = React.createClass({
+    propTypes: {
+        data: React.PropTypes.object, // Menu Data
+    },
+    renderItem(item, key) {
+        if (item.type === 'separator') {
             return (
-                <div className="menu-separator"></div>
+                <div key={key} className="menu-separator"></div>
             );
         }
 
-        let classes = [
+        const classes = [
             'menu-item',
         ];
 
-        var subMenu = null;
-        if (this.props.data.submenu) {
+        let subMenu = null;
+        if (item.submenu) {
             classes.push('parent');
             subMenu = (
-                <Menu data={this.props.data.submenu}/>
+                <Menu data={item.submenu}/>
             );
         }
         let accelerator = null;
-        if (this.props.data.globalKeyObject) {
-            accelerator = this.props.data.globalKeyObject.text;
+        if (item.globalKeyObject) {
+            accelerator = item.globalKeyObject.text;
         }
         return (
-            <div className={classes.join(' ')} data-accelerator={accelerator} onClick={this.props.data.click}>
-                {this.props.data.label}
+            <div key={key} className={classes.join(' ')} data-accelerator={accelerator} onClick={item.click}>
+                {item.label}
                 {subMenu}
             </div>
         );
     },
-});
 
-const Menu = React.createClass({
     render() {
         if (!this.props.data) {
             return null;
         }
-        const menuItems = this.props.data.items.map(function (item, i) {
-            return (
-                <MenuItem key={i} data={item} />
-            );
+        const menuItems = this.props.data.items.map((item, i) => {
+            return this.renderItem(item, i);
         });
         return (
             <div className="menu">
@@ -53,4 +48,5 @@ const Menu = React.createClass({
         );
     },
 });
+
 module.exports = Menu;

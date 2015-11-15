@@ -6,6 +6,11 @@ const MenuClass = remote.require('menu');
 const interfaceActions = require('../actions/interface');
 
 const PanelGroup = React.createClass({
+    propTypes: {
+        container: React.PropTypes.number, // Container Index
+        index: React.PropTypes.number, // Panel Group Index
+        panels: React.PropTypes.arrayOf(React.PropTypes.object), // Panels
+    },
     getInitialState() {
         return {selected: 0};
     },
@@ -14,7 +19,7 @@ const PanelGroup = React.createClass({
     },
     handleGroupContext(event) {
         event.preventDefault();
-        let menu = new MenuClass;
+        const menu = new MenuClass;
 
         menu.append(new MenuItem({
             label: 'Move Group to Top Container',
@@ -49,7 +54,7 @@ const PanelGroup = React.createClass({
     handleTabContext(index, event) {
         event.preventDefault();
         event.stopPropagation();
-        let menu = new MenuClass;
+        const menu = new MenuClass;
 
         menu.append(new MenuItem({
             label: 'Move Pane to Top Container',
@@ -103,7 +108,7 @@ const PanelGroup = React.createClass({
                 </div>
                 <div className="panel-content">
                     {this.props.panels.map((panel, i) => {
-                        let style = {};
+                        const style = {};
                         if (this.state.selected !== i) {
                             style.display = 'none';
                         }

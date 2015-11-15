@@ -5,9 +5,16 @@ const textureManipulator = require('../lib/textureManipulator');
 const workspaceStore = require('../stores/workspace');
 
 const TreeItem = React.createClass({
-    getInitialState() {
-        return {
-        };
+    propTypes: {
+        item: React.PropTypes.object,
+        items: React.PropTypes.object, // Tree Items Map
+        sizes: React.PropTypes.arrayOf(React.PropTypes.number), // Column sizes
+        depth: React.PropTypes.number, // Current Tree Item depth
+        nameOnly: React.PropTypes.bool, // Only display name column
+        traverse: React.PropTypes.number, // How deep it should traverse
+        focusedItem: React.PropTypes.object, // Current item with focus
+        selectedDirectory: React.PropTypes.object, // Current directory selected
+        handleFocus: React.PropTypes.func, // Function for handling item focus
     },
 
     handleDoubleClick(event) {
@@ -28,7 +35,7 @@ const TreeItem = React.createClass({
     render() {
         const depth = this.props.depth?this.props.depth:0;
         const item = this.props.item;
-        let dataList = [
+        const dataList = [
             item.get('name'),
         ];
         if (this.props.nameOnly !== true) {
@@ -56,7 +63,7 @@ const TreeItem = React.createClass({
                 ]);
             }
         }
-        let children = [];
+        const children = [];
         if (this.props.traverse !== 0) {
             const mapItem = (item, i) => {
                 return (
@@ -91,7 +98,7 @@ const TreeItem = React.createClass({
             <div key={item.get('name')} className={classes}>
                 {dataList.map((data, i) => {
                     let icon = null;
-                    let style = {};
+                    const style = {};
                     if (this.props.sizes) {
                         style.width = this.props.sizes[i]+'px';
                     }
@@ -116,6 +123,6 @@ const TreeItem = React.createClass({
                 </div>
             </div>
         );
-    }
+    },
 });
 module.exports = TreeItem;

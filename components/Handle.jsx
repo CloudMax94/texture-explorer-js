@@ -5,6 +5,11 @@ const interfaceActions = require('../actions/interface');
 const interfaceStore  = require('../stores/interface');
 
 const Handle = React.createClass({
+    propTypes: {
+        index: React.PropTypes.number, // index of the container to resize
+        reverse: React.PropTypes.bool, // false = right/down, true = left/up
+    },
+
     componentWillMount() {
         this.handleMouseMove = _.throttle(this.handleMouseMove, 30);
     },

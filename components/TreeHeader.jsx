@@ -3,6 +3,11 @@ const _ = require('lodash');
 const interfaceActions = require('../actions/interface');
 
 const TreeHandle = React.createClass({
+    propTypes: {
+        index: React.PropTypes.number, // Column Index
+        size: React.PropTypes.number, // Column Size
+    },
+
     componentWillMount() {
         this.handleMouseMove = _.throttle(this.handleMouseMove, 30);
     },
@@ -41,6 +46,10 @@ const TreeHandle = React.createClass({
 });
 
 const TreeHeader = React.createClass({
+    propTypes: {
+        columns: React.PropTypes.arrayOf(React.PropTypes.string),
+        sizes: React.PropTypes.arrayOf(React.PropTypes.number),
+    },
     render() {
         return (
             <div className="tree-header">

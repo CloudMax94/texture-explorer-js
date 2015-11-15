@@ -11,6 +11,10 @@ const Overview        = require('./Overview.jsx');
 const interfaceStore  = require('../stores/interface');
 
 const Container = React.createClass({
+    propTypes: {
+        index: React.PropTypes.number, // Container index
+        direction: React.PropTypes.string, // horizontal / vertical
+    },
     mixins: [Reflux.ListenerMixin],
     getInitialState() {
         return {
@@ -72,14 +76,14 @@ const Container = React.createClass({
             },
         };
         const content = this.state.containers[this.props.index].map((panelNames, i) => {
-            let panels = [];
+            const panels = [];
             _.each(panelNames, (name) => {
                 panels.push(panelItems[name]);
             });
             return <PanelGroup key={i} index={i} container={this.props.index} panels={panels}/>;
         });
         let wrap = null;
-        let style = {};
+        const style = {};
         if (this.props.direction === 'horizontal') {
             style.height = this.state.size+'px';
             wrap = (
