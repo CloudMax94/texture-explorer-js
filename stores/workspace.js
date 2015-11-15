@@ -36,6 +36,7 @@ const TextureRecord = Immutable.Record({
     palette:        0,
     type:           'texture',
     blobHash:       null,
+    blobStamp:      0,
 });
 
 var WorkspaceRecord = Immutable.Record({
@@ -168,7 +169,7 @@ const store = Reflux.createStore({
             });
             workspaces = workspaces.set(id, workspace);
 
-            this.updateAllItemBlobs();
+            this.generateAllItemBlobs();
             this.trigger('workspace');
         });
     },
@@ -252,7 +253,7 @@ const store = Reflux.createStore({
             }
         });
     },
-    updateAllItemBlobs() {
+    generateAllItemBlobs() {
         const childTextures = this.getCurrentWorkspace().get('items').filter((i) => {
             return i.type === 'texture';
         });
@@ -283,6 +284,12 @@ const store = Reflux.createStore({
                             start: item.get('address'),
                             end: item.get('address')+item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier(),
                         }));
+                        const texturesToUpdate = this.getCurrentWorkspace().get('items').filter((i) => {
+                            return i.blobHash === hash;
+                        });
+                        texturesToUpdate.forEach((texture, i) => {
+                            workspaces = workspaces.setIn([currentWorkspace, 'items', i, 'blobStamp'], +new Date());
+                        });
                         callback(blob, hash);
                     });
                 } else {
