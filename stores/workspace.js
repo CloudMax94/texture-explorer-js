@@ -134,7 +134,7 @@ const store = Reflux.createStore({
         this.trigger('directory');
     },
     onSetCurrentTexture(item) {
-        workspaces = workspaces.setIn([currentWorkspace, 'selectedTexture'], item);
+        workspaces = workspaces.setIn([currentWorkspace, 'selectedTexture'], item.get('id'));
         this.trigger('texture');
     },
     onSetCurrentWorkspace(workspace) {
