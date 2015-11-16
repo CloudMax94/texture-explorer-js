@@ -5,6 +5,7 @@ const actions = Reflux.createActions([
     'setCurrentTexture',
     'setCurrentWorkspace',
     'createWorkspace',
+    'insertData',
 ]);
 
 module.exports = actions;

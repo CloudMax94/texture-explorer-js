@@ -34,11 +34,11 @@ const TextureRecord = Immutable.Record({
     height:         32,
     palette:        0,
     type:           'texture',
-    blobHash:       null,
+    blob:           null,
     blobStamp:      0,
 });
 
-var WorkspaceRecord = Immutable.Record({
+const WorkspaceRecord = Immutable.Record({
     id:                 null,
     data:               null,
     path:               null,
@@ -49,28 +49,7 @@ var WorkspaceRecord = Immutable.Record({
     selectedTexture:    null,
 });
 
-var BlobRecord = Immutable.Record({
-    hash:  null,
-    url:   null,
-    start: null,
-    end:   null,
-});
-
-let blobBank = Immutable.Map();
 let idCounter = 0;
-
-function generateBlobHash(item) {
-    const crypto = require('crypto');
-    const md5sum = crypto.createHash('md5');
-    md5sum.update(item.get('address').toString());
-    md5sum.update(item.get('width').toString());
-    md5sum.update(item.get('height').toString());
-    md5sum.update(item.get('format').toString());
-    if (item.get('palette')) {
-        md5sum.update(item.get('palette').toString());
-    }
-    return md5sum.digest('hex');
-}
 
 const textureWorker = worker('textures');
 let workspaces = Immutable.Map();
@@ -105,7 +84,6 @@ function prepareProfile(profile, length) {
                             height:     parseInt(i.data.height),
                             palette:    parseInt(i.data.palette, 16),
                         });
-                        item = item.set('blobHash', generateBlobHash(item));
                     }
 
                     items = items.set(id, item);
@@ -131,10 +109,143 @@ function prepareProfile(profile, length) {
     return items;
 }
 
+function sortItems() {
+    const itemPath = [currentWorkspace, 'items'];
+    const items = workspaces.getIn(itemPath).sort((a, b) => {
+        let res = 0;
+        if (a.get('type') === 'directory') res -= 2;
+        if (b.get('type') === 'directory') res += 2;
+        return res + (a.get('address') > b.get('address') ? 1 : (b.get('address') > a.get('address') ? -1 : 0));
+    });
+    workspaces = workspaces.setIn(itemPath, items);
+}
+
+function getItemBuffer(item) {
+    return workspaces.getIn([currentWorkspace, 'data']).slice(
+        item.get('address'),
+        item.get('address')+item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier()
+    );
+}
+
+function getItemPaletteBuffer(item) {
+    const parentId = item.get('parentId');
+    const parent = workspaces.getIn([currentWorkspace, 'items', parentId]);
+    if (parent) {
+        return workspaces.getIn([currentWorkspace, 'data']).slice(
+            parent.get('address')+item.get('palette'),
+            parent.get('address')+item.get('palette')+0x200
+        );
+    }
+    return null;
+}
+
+function itemHasValidData(item) {
+    if (item.get('type') === 'texture') {
+        if (Number.isInteger(item.get('address')) &&
+            Number.isInteger(item.get('width')) &&
+            Number.isInteger(item.get('height')) &&
+            textureManipulator.getFormat(item.get('format')).isValid()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function getItemTexture(item, callback) {
+    if (item.get('type') !== 'texture' || !itemHasValidData(item)) {
+        callback(null);
+        return;
+    }
+
+    let palette;
+    const textureFormat = textureManipulator.getFormat(item.get('format'));
+    if (textureFormat.hasPalette()) {
+        palette = getItemPaletteBuffer(item);
+    }
+    textureWorker.send({
+        type: 'generateTexture',
+        data: getItemBuffer(item),
+        format: textureFormat.toString(),
+        width: item.get('width'),
+        palette: palette,
+    }, function(out) {
+        if (out.img) {
+            out.img.format = textureManipulator.getFormat(out.img.format.data.name); // Construct Format
+            const image = new textureManipulator.TextureObject(out.img); // Construct TextureObject
+            callback(image);
+        } else {
+            callback(null);
+        }
+    });
+}
+
+function generateItemBlob(item, callback, forced) {
+    if (!forced && workspaces.getIn([currentWorkspace, 'items', item.get('id'), 'blob'])) {
+        callback(null);
+        return;
+    }
+    getItemTexture(item, (image) => {
+        if (image) {
+            image.toPNGBlob((blob) => {
+                workspaces = workspaces.mergeIn([currentWorkspace, 'items', item.get('id')], {
+                    blob: URL.createObjectURL(blob),
+                    blobStamp: +new Date()
+                });
+                callback(blob);
+            });
+        } else {
+            callback(null);
+        }
+    });
+}
+
+function generateItemBlobs(parent, callback) {
+    const childTextures = workspaces.getIn([currentWorkspace, 'items']).filter((i) => {
+        return i.type === 'texture' && i.parentId === parent;
+    });
+    let i = 0;
+    const length = childTextures.size;
+    childTextures.forEach((texture) => {
+        generateItemBlob(texture, (blob) => {
+            i++;
+            callback(blob, i, length);
+        });
+    });
+}
+
+function insertData(data, start, callback) {
+    const dataPath = [currentWorkspace, 'data'];
+    const length = data.length;
+    let buffer = workspaces.getIn(dataPath);
+    workspaces = workspaces.setIn(dataPath, Buffer.concat([buffer.slice(0, start), data, buffer.slice(start + length)]));
+
+    const textures = workspaces.getIn([currentWorkspace, 'items']).filter((texture) => {
+        if (texture.get('type') !== 'texture') {
+            return false;
+        }
+        const textureLength = texture.get('width')*texture.get('height')*textureManipulator.getFormat(texture.get('format')).sizeModifier();
+        return texture.get('address') < start + length && start < texture.get('address') + textureLength;
+    });
+    textures.forEach((texture) => {
+        generateItemBlob(texture, () => {
+            if (callback) {
+                callback(texture);
+            }
+        }, true);
+    });
+}
+
 const store = Reflux.createStore({
     onSetCurrentDirectory(item) {
         workspaces = workspaces.setIn([currentWorkspace, 'selectedDirectory'], item.get('id'));
-        this.generateItemBlobs(item.get('id'));
+        let lastTime = 0;
+        generateItemBlobs(item.get('id'), (blob, i, length) => {
+            // console.log(i, length);
+            if (lastTime + 500 < +new Date() || i === length) {
+                lastTime = +new Date();
+                this.trigger('texture');
+            }
+        });
         this.trigger('directory');
     },
     onSetCurrentTexture(item) {
@@ -144,6 +255,12 @@ const store = Reflux.createStore({
     onSetCurrentWorkspace(workspace) {
         currentWorkspace = workspace.id;
         this.trigger('workspace');
+    },
+    onInsertData(data, start) {
+        insertData(data, start, (texture) => {
+            this.trigger('texture');
+        });
+        this.trigger('texture');
     },
     onCreateWorkspace(input) {
         const data = input.data;
@@ -172,7 +289,7 @@ const store = Reflux.createStore({
                 selectedDirectory:  'root',
             });
             workspaces = workspaces.set(id, workspace);
-            this.sortItems();
+            sortItems();
             this.trigger('workspace');
         });
     },
@@ -181,6 +298,7 @@ const store = Reflux.createStore({
         this.listenTo(actions.setCurrentTexture, this.onSetCurrentTexture);
         this.listenTo(actions.setCurrentWorkspace, this.onSetCurrentWorkspace);
         this.listenTo(actions.createWorkspace, this.onCreateWorkspace);
+        this.listenTo(actions.insertData, this.onInsertData);
     },
     getWorkspaces() {
         return workspaces;
@@ -192,130 +310,14 @@ const store = Reflux.createStore({
         if (!currentWorkspace) {
             return null;
         }
-        const items = this.getCurrentWorkspace().get('items');
+        const items = workspaces.getIn([currentWorkspace, 'items']);
         if (!items) {
             return null;
         }
         return items.filter(x => x.type === 'directory');
     },
-    sortItems() {
-        const itemPath = [currentWorkspace, 'items'];
-        const items = workspaces.getIn(itemPath).sort((a, b) => {
-            let res = 0;
-            if (a.get('type') === 'directory') res -= 2;
-            if (b.get('type') === 'directory') res += 2;
-            return res + (a.get('address') > b.get('address') ? 1 : (b.get('address') > a.get('address') ? -1 : 0));
-        });
-        workspaces = workspaces.setIn(itemPath, items);
-    },
     getItemOffset(item) {
-        return item.get('address') - this.getCurrentWorkspace().getIn(['items', item.get('parentId'), 'address']);
-    },
-    getItemBuffer(item) {
-        return this.getCurrentWorkspace().get('data').slice(
-            item.get('address'),
-            item.get('address')+item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier()
-        );
-    },
-    getItemPaletteBuffer(item) {
-        const parentId = item.get('parentId');
-        const parent = this.getCurrentWorkspace().getIn(['items', parentId]);
-        if (parent) {
-            return this.getCurrentWorkspace().get('data').slice(
-                parent.get('address')+item.get('palette'),
-                parent.get('address')+item.get('palette')+0x200
-            );
-        }
-        return null;
-    },
-    itemHasValidData(item) {
-        if (item.get('type') === 'texture') {
-            if (Number.isInteger(item.get('address')) &&
-                Number.isInteger(item.get('width')) &&
-                Number.isInteger(item.get('height')) &&
-                textureManipulator.getFormat(item.get('format')).isValid()) {
-                return true;
-            }
-        }
-        return false;
-    },
-    getItemTexture(item, callback) {
-        if (item.get('type') !== 'texture' || !this.itemHasValidData(item)) {
-            callback(null);
-            return;
-        }
-
-        let palette;
-        const textureFormat = textureManipulator.getFormat(item.get('format'));
-        if (textureFormat.hasPalette()) {
-            palette = this.getItemPaletteBuffer(item);
-        }
-        textureWorker.send({
-            type: 'generateTexture',
-            data: this.getItemBuffer(item),
-            format: textureFormat.toString(),
-            width: item.get('width'),
-            palette: palette,
-        }, function(out) {
-            if (out.img) {
-                out.img.format = textureManipulator.getFormat(out.img.format.data.name); // Construct Format
-                const image = new textureManipulator.TextureObject(out.img); // Construct TextureObject
-                callback(image);
-            } else {
-                callback(null);
-            }
-        });
-    },
-    generateItemBlobs(parent) {
-        const childTextures = this.getCurrentWorkspace().get('items').filter((i) => {
-            return i.type === 'texture' && i.parentId === parent;
-        });
-        let lastTime = 0;
-        let i = 0;
-        const length = childTextures.size;
-        childTextures.forEach((texture) => {
-            this.generateItemBlob(texture, (blob, hash) => {
-                i++;
-                // console.log(i, length);
-                if (lastTime + 500 < +new Date() || i === length) {
-                    lastTime = +new Date();
-                    this.trigger('texture');
-                }
-            });
-        });
-    },
-    generateItemBlob(item, callback) {
-        const hash = item.get('blobHash');
-        const crntBlob = blobBank.get(hash);
-        if (!crntBlob) {
-            blobBank = blobBank.set(hash, true);
-            this.getItemTexture(item, (image) => {
-                if (image) {
-                    image.toPNGBlob((blob) => {
-                        blobBank = blobBank.set(hash, new BlobRecord({
-                            hash: hash,
-                            url: URL.createObjectURL(blob),
-                            start: item.get('address'),
-                            end: item.get('address')+item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier(),
-                        }));
-                        const texturesToUpdate = this.getCurrentWorkspace().get('items').filter((i) => {
-                            return i.blobHash === hash;
-                        });
-                        texturesToUpdate.forEach((texture, i) => {
-                            workspaces = workspaces.setIn([currentWorkspace, 'items', i, 'blobStamp'], +new Date());
-                        });
-                        callback(blob, hash);
-                    });
-                } else {
-                    callback(null, hash);
-                }
-            });
-        } else {
-            callback(crntBlob, hash);
-        }
-    },
-    getBlobUrl(hash) {
-        return blobBank.getIn([hash, 'url']);
+        return item.get('address') - workspaces.getIn([currentWorkspace, 'items', item.get('parentId'), 'address']);
     },
 });
 

@@ -75,9 +75,8 @@ const TreeItem = React.createClass({
                         if (item.get('type') === 'directory') {
                             icon = <i className="tree-icon icon">file_directory</i>;
                         } else if (item.get('type') === 'texture') {
-                            const blob = workspaceStore.getBlobUrl(item.get('blobHash'));
-                            if (blob) {
-                                icon = <i className="tree-icon" style={{backgroundImage: 'url('+blob+')'}}>&nbsp;</i>;
+                            if (item.get('blob')) {
+                                icon = <i className="tree-icon" style={{backgroundImage: 'url('+item.get('blob')+')'}}>&nbsp;</i>;
                             } else {
                                 icon = <i className="tree-icon icon">file_media</i>;
                             }
