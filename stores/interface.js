@@ -1,16 +1,15 @@
 require('../lib/menu');
 
-var React   = require('react');
-var Reflux  = require('reflux');
-var _       = require('lodash');
+const Reflux  = require('reflux');
+const _       = require('lodash');
 
-var actions = require('../actions/interface');
+const actions = require('../actions/interface');
 
-var settings = {
+const defaultSettings = {
     layout: [
         [],
         [['overview']],
-        [['itemSettings'],['itemPreview', 'dummy']],
+        [['itemSettings'], ['itemPreview']],
         [['settings', 'profileManager', 'finder']],
     ],
     panels: {
@@ -36,18 +35,20 @@ var settings = {
             hidden: false,
         },
     },
-    containerSizes: [160,300,300,160],
-    treeSizes: [300,120,120,120,120,120,120,120,120],
+    containerSizes: [160, 300, 300, 160],
+    treeSizes: [300, 120, 120, 120, 120, 120, 120, 120, 120],
 };
-var status = null;
-var menu = null;
 
-var store = Reflux.createStore({
+let settings = _.assign({}, defaultSettings);
+let status = null;
+let menu = null;
+
+const store = Reflux.createStore({
     onInterfaceChange() {
         localStorage.setItem('interfaceSettings', JSON.stringify(settings));
     },
     loadInterfaceSettings() {
-        var data = localStorage.getItem('interfaceSettings');
+        let data = localStorage.getItem('interfaceSettings');
         if (data !== null) {
             try {
                 data = JSON.parse(data);
@@ -57,7 +58,7 @@ var store = Reflux.createStore({
             settings = _.assign(settings, data);
         }
     },
-    init(){
+    init() {
         this.loadInterfaceSettings();
 
         this.listenTo(actions.setApplicationMenu, (newMenu) => {
@@ -68,17 +69,23 @@ var store = Reflux.createStore({
             status = newStatus;
             this.trigger();
         });
+        this.listenTo(actions.resetPanels, () => {
+            settings = _.assign(settings, {
+                layout: defaultSettings.layout,
+            });
+            this.trigger();
+        });
         this.listenTo(actions.movePanelToContainer, (container, groupIndex, index, newContainer) => {
-            var panel = settings.layout[container][groupIndex].splice(index, 1)[0];
+            const panel = settings.layout[container][groupIndex].splice(index, 1)[0];
             settings.layout[newContainer].push([panel]);
-            if (settings.layout[container][groupIndex].length == 0) {
+            if (settings.layout[container][groupIndex].length === 0) {
                 settings.layout[container].splice(groupIndex, 1);
             }
             this.onInterfaceChange();
             this.trigger();
         });
         this.listenTo(actions.movePanelGroupToContainer, (container, index, newContainer) => {
-            var group = settings.layout[container].splice(index, 1)[0];
+            const group = settings.layout[container].splice(index, 1)[0];
             settings.layout[newContainer].push(group);
             this.onInterfaceChange();
             this.trigger();
@@ -94,21 +101,21 @@ var store = Reflux.createStore({
             this.trigger('tree');
         });
     },
-    getApplicationMenu(){
+    getApplicationMenu() {
         return menu;
     },
-    getStatus(){
+    getStatus() {
         return status;
     },
-    getContainers(){
+    getContainers() {
         return settings.layout.slice();
     },
-    getContainerSize(container){
+    getContainerSize(container) {
         return settings.containerSizes[container];
     },
-    getTreeSizes(){
+    getTreeSizes() {
         return settings.treeSizes.slice();
-    }
+    },
 });
 
 module.exports = store;

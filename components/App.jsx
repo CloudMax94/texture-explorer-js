@@ -27,12 +27,7 @@ const App = React.createClass({
         _.each(argv._, (filePath) => {
             fs.exists(filePath, (exists) => {
                 if (exists) {
-                    fileHandler.openFile(filePath, (data) => {
-                        workspaceActions.createWorkspace({
-                            data: data,
-                            path: filePath,
-                            name: path.basename(filePath),
-                        });
+                    fileHandler.openFile(filePath, () => {
                     });
                 }
             });

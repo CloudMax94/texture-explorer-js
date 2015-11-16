@@ -7,6 +7,7 @@ const actions = Reflux.createActions([
     'movePanelGroupToContainer',
     'setContainerSize',
     'setTreeSize',
+    'resetPanels',
 ]);
 
 module.exports = actions;
