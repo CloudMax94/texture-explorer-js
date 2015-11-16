@@ -49,14 +49,18 @@ const Workspace = React.createClass({
                     <span className="closeBtn">x</span>
                 </div>
             );
-        });
+        }).toArray();
+        let items = null;
+        if (this.state.current && this.state.current.get('selectedDirectory')) {
+            items = this.state.current.get('items').filter(x => x.parentId === this.state.current.get('selectedDirectory'));
+        }
         return (
             <div className="workspace">
                 <div className="workspace-tabs">
                     {tabs}
                 </div>
                 <div className="workspace-content">
-                    <TreeView sizes={this.state.sizes} workspace={this.state.current}/>
+                    <TreeView sizes={this.state.sizes} items={items}/>
                 </div>
             </div>
         );

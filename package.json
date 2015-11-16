@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "main": "main.js",
   "dependencies": {
-    "babel": "~4.7.16",
-    "immutable": "^3.7.3",
-    "lodash": "~3.5.0",
-    "minimist": "~1.1.1",
+    "babel": "^5.8.34",
+    "immutable": "^3.7.5",
+    "lodash": "^3.10.1",
+    "minimist": "^1.2.0",
     "node-sass": "^3.4.2",
-    "png-stream": "~1.0.4",
-    "react": "^0.13.3",
-    "reflux": "^0.2.7",
-    "xml2js": "~0.4.5"
+    "png-stream": "^1.0.4",
+    "react": "^0.14.2",
+    "react-dom": "^0.14.2",
+    "reflux": "^0.3.0",
+    "xml2js": "^0.4.15"
   },
   "devDependencies": {
     "aliasify": "~1.7.2",
@@ -30,6 +31,7 @@
     "gulp-uglify": "^1.1.0",
     "gulp-util": "~3.0.4",
     "gulp-watch": "~4.2.0",
+    "react-addons-perf": "^0.14.2",
     "vinyl-buffer": "~1.0.0",
     "vinyl-source-stream": "~1.1.0",
     "watchify": "~2.4.0"

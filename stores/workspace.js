@@ -1,6 +1,5 @@
 const Reflux      = require('reflux');
 const actions     = require('../actions/workspace');
-const _           = require('lodash');
 const Immutable   = require('immutable');
 const worker      = require('../lib/worker');
 const fileHandler = require('../lib/fileHandler');
@@ -58,14 +57,18 @@ var BlobRecord = Immutable.Record({
 });
 
 let blobBank = Immutable.Map();
+let idCounter = 0;
 
-function getItemHash(item) {
+function generateBlobHash(item) {
     const crypto = require('crypto');
     const md5sum = crypto.createHash('md5');
     md5sum.update(item.get('address').toString());
     md5sum.update(item.get('width').toString());
     md5sum.update(item.get('height').toString());
     md5sum.update(item.get('format').toString());
+    if (item.get('palette')) {
+        md5sum.update(item.get('palette').toString());
+    }
     return md5sum.digest('hex');
 }
 
@@ -81,7 +84,7 @@ function prepareProfile(profile, length) {
             if (input[itemFormatPlural(type)]) {
                 input[itemFormatPlural(type)].forEach((i, index) => {
                     let item;
-                    const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
+                    const id = (idCounter++).toString(36);
                     if (type === 'directory') {
                         item = new DirectoryRecord({
                             id:         id,
@@ -102,7 +105,7 @@ function prepareProfile(profile, length) {
                             height:     parseInt(i.data.height),
                             palette:    parseInt(i.data.palette, 16),
                         });
-                        item = item.set('blobHash', getItemHash(item));
+                        item = item.set('blobHash', generateBlobHash(item));
                     }
 
                     items = items.set(id, item);
@@ -131,6 +134,7 @@ function prepareProfile(profile, length) {
 const store = Reflux.createStore({
     onSetCurrentDirectory(item) {
         workspaces = workspaces.setIn([currentWorkspace, 'selectedDirectory'], item.get('id'));
+        this.generateItemBlobs(item.get('id'));
         this.trigger('directory');
     },
     onSetCurrentTexture(item) {
@@ -146,7 +150,7 @@ const store = Reflux.createStore({
         const filePath = input.path;
         const name = input.name;
         const key = data.toString('utf8', 0x3B, 0x3F)+data.readUInt8(0x3F);
-        const id = (+new Date() + Math.floor(Math.random() * 999999)).toString(36);
+        const id = (idCounter++).toString(36);
 
         let workspace = new WorkspaceRecord({
             id:                 id,
@@ -168,8 +172,7 @@ const store = Reflux.createStore({
                 selectedDirectory:  'root',
             });
             workspaces = workspaces.set(id, workspace);
-
-            this.generateAllItemBlobs();
+            this.sortItems();
             this.trigger('workspace');
         });
     },
@@ -194,6 +197,16 @@ const store = Reflux.createStore({
             return null;
         }
         return items.filter(x => x.type === 'directory');
+    },
+    sortItems() {
+        const itemPath = [currentWorkspace, 'items'];
+        const items = workspaces.getIn(itemPath).sort((a, b) => {
+            let res = 0;
+            if (a.get('type') === 'directory') res -= 2;
+            if (b.get('type') === 'directory') res += 2;
+            return res + (a.get('address') > b.get('address') ? 1 : (b.get('address') > a.get('address') ? -1 : 0));
+        });
+        workspaces = workspaces.setIn(itemPath, items);
     },
     getItemOffset(item) {
         return item.get('address') - this.getCurrentWorkspace().getIn(['items', item.get('parentId'), 'address']);
@@ -253,9 +266,9 @@ const store = Reflux.createStore({
             }
         });
     },
-    generateAllItemBlobs() {
+    generateItemBlobs(parent) {
         const childTextures = this.getCurrentWorkspace().get('items').filter((i) => {
-            return i.type === 'texture';
+            return i.type === 'texture' && i.parentId === parent;
         });
         let lastTime = 0;
         let i = 0;
@@ -263,7 +276,8 @@ const store = Reflux.createStore({
         childTextures.forEach((texture) => {
             this.generateItemBlob(texture, (blob, hash) => {
                 i++;
-                if (lastTime + 1000 < +new Date() || i === length) {
+                // console.log(i, length);
+                if (lastTime + 500 < +new Date() || i === length) {
                     lastTime = +new Date();
                     this.trigger('texture');
                 }
@@ -271,7 +285,7 @@ const store = Reflux.createStore({
         });
     },
     generateItemBlob(item, callback) {
-        const hash = getItemHash(item);
+        const hash = item.get('blobHash');
         const crntBlob = blobBank.get(hash);
         if (!crntBlob) {
             blobBank = blobBank.set(hash, true);

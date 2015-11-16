@@ -1,5 +1,6 @@
 const React = require('react');
 const Reflux  = require('reflux');
+const Immutable = require('immutable');
 
 const workspaceStore  = require('../stores/workspace');
 const workspaceActions = require('../actions/workspace');
@@ -16,6 +17,13 @@ const Overview = React.createClass({
     componentDidMount() {
         this.listenTo(workspaceStore, this.onWorkspaceStoreChange);
     },
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return !Immutable.is(this.state.items, nextState.items) ||
+                !Immutable.is(this.state.selectedDirectory, nextState.selectedDirectory) ||
+                !Immutable.is(this.state.focusedItem, nextState.focusedItem);
+    },
+
     onWorkspaceStoreChange(data) {
         if (data !== 'workspace' && data !== 'directory') {
             return;
@@ -40,10 +48,7 @@ const Overview = React.createClass({
             return null;
         }
 
-        const directories = this.state.items.sort((a, b) => {
-            return (a.address > b.address ? 1 : (b.address > a.address ? -1 : 0));
-        });
-        const groupedDirectories = directories.groupBy(x => x.parentId);
+        const groupedDirectories = this.state.items.groupBy(x => x.parentId);
 
         const traverseDirectories = (id, depth = 0) => {
             const children = groupedDirectories.get(id);
@@ -67,7 +72,7 @@ const Overview = React.createClass({
                         {traverseDirectories(directory.get('id'), depth+1)}
                     </div>
                 );
-            });
+            }).toArray();
         };
 
         return (

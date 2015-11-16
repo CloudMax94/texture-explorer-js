@@ -5,7 +5,7 @@ const TreeHeader = require('./TreeHeader.jsx');
 
 const TreeView = React.createClass({
     propTypes: {
-        workspace: React.PropTypes.object, // Workspace the treeview belongs to
+        items: React.PropTypes.object, // Items
         sizes: React.PropTypes.arrayOf(React.PropTypes.number), // Column sizes
     },
     getInitialState() {
@@ -17,30 +17,25 @@ const TreeView = React.createClass({
         this.setState({focusedItem: item.get('id')});
     },
     render() {
-        if (!this.props.workspace || !this.props.workspace.get('selectedDirectory')) {
+        if (!this.props.items) {
             return null;
         }
 
-        let children = null;
-        const childItems = this.props.workspace.get('items').sort((a, b) => {
-            let res = 0;
-            if (a.type === 'directory') res -= 2;
-            if (b.type === 'directory') res += 2;
-            return res + (a.address > b.address ? 1 : b.address > a.address ? -1 : 0);
-        }).filter(x => x.parentId === this.props.workspace.get('selectedDirectory'));
-        if (childItems) {
-            children = childItems.map((item, i) => {
-                return (
-                    <TreeItem
-                        key={item.get('name')}
-                        item={item}
-                        focusedItem={this.state.focusedItem}
-                        handleFocus={this.focusItem}
-                        sizes={this.props.sizes}
-                    />
-                );
-            });
-        }
+        const children = this.props.items.map((item, i) => {
+            let className = '';
+            if (i === this.state.focusedItem) {
+                className = 'focused';
+            }
+            return (
+                <TreeItem
+                    key={i}
+                    item={item}
+                    className={className}
+                    handleFocus={this.focusItem}
+                    sizes={this.props.sizes}
+                />
+            );
+        }).toArray();
 
         return (
             <div className="tree-view">

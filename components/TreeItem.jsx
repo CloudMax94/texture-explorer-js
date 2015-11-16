@@ -1,5 +1,6 @@
 const React = require('react');
 const _ = require('lodash');
+const Immutable = require('immutable');
 const workspaceActions = require('../actions/workspace');
 const textureManipulator = require('../lib/textureManipulator');
 const workspaceStore = require('../stores/workspace');
@@ -8,21 +9,14 @@ const TreeItem = React.createClass({
     propTypes: {
         item: React.PropTypes.object,
         sizes: React.PropTypes.arrayOf(React.PropTypes.number), // Column sizes
-        focusedItem: React.PropTypes.string, // Focused item id
+        className: React.PropTypes.string, // Classes to add to item
         handleFocus: React.PropTypes.func, // Function for handling item focus
     },
 
     shouldComponentUpdate(nextProps) {
         return this.props.sizes !== nextProps.sizes ||
-                (
-                   this.props.focusedItem !== nextProps.focusedItem &&
-                   (
-                       this.props.item.get('id') === this.props.focusedItem ||
-                       this.props.item.get('id') === nextProps.focusedItem
-                   )
-                )
-                ||
-                !this.props.item.equals(nextProps.item);
+                !Immutable.is(this.props.className, nextProps.className) ||
+                !Immutable.is(this.props.item, nextProps.item);
     },
 
     handleDoubleClick() {
@@ -42,17 +36,17 @@ const TreeItem = React.createClass({
 
     render() {
         const item = this.props.item;
-        const dataList = [
+        const columns = [
             item.get('name'),
         ];
 
-        dataList.push(...[
+        columns.push(...[
             '0x'+_.padLeft(workspaceStore.getItemOffset(item).toString(16), 8, 0).toUpperCase(), // should be relative!
             '0x'+_.padLeft(item.get('address').toString(16), 8, 0).toUpperCase(),
         ]);
         if (item.get('type') === 'texture') {
             const size = item.get('width')*item.get('height')*textureManipulator.getFormat(item.get('format')).sizeModifier();
-            dataList.push(...[
+            columns.push(...[
                 '0x'+_.padLeft((item.get('address')+size).toString(16), 8, 0).toUpperCase(),
                 '0x'+_.padLeft(size.toString(16), 8, 0).toUpperCase(),
                 item.get('format'),
@@ -60,21 +54,18 @@ const TreeItem = React.createClass({
                 item.get('height'),
             ]);
             if (textureManipulator.getFormat(item.get('format')).hasPalette()) {
-                dataList.push('0x'+_.padLeft(item.get('palette').toString(16), 8, 0).toUpperCase());
+                columns.push('0x'+_.padLeft(item.get('palette').toString(16), 8, 0).toUpperCase());
             }
         } else if (item.get('type') === 'directory') {
-            dataList.push(...[
+            columns.push(...[
                 '0x'+_.padLeft((item.get('address')+item.get('length')).toString(16), 8, 0).toUpperCase(),
                 '0x'+_.padLeft(item.get('length').toString(16), 8, 0).toUpperCase(),
             ]);
         }
-        let classes = 'tree-item';
-        if (item.get('id') === this.props.focusedItem) {
-            classes += ' focused';
-        }
+        const classes = 'tree-item ' + this.props.className;
         return (
-            <div key={item.get('name')} className={classes}>
-                {dataList.map((data, i) => {
+            <div className={classes}>
+                {columns.map((data, i) => {
                     let icon = null;
                     const style = {};
                     if (this.props.sizes) {

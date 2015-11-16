@@ -1,16 +1,10 @@
 (function(){
     require("babel/register");
     var React = require('react');
+    var ReactDOM = require('react-dom');
     var App = require('./components/App.jsx');
-    React.render(React.createElement(App), document.getElementById('container'));
+    ReactDOM.render(React.createElement(App), document.getElementById('container'));
 
-    var head = document.head || document.getElementsByTagName('head')[0];
-    var link = document.createElement('link');
-
-    link.rel = 'stylesheet';
-    link.type = 'text/css';
-    link.href = 'data:text/css,' + encodeURIComponent('#container {display:none}');
-    head.appendChild(link);
 
     var sass = require('node-sass');
     var result = sass.render({
@@ -31,6 +25,11 @@
             css = result.css.toString();
 
         }
+        var head = document.head || document.getElementsByTagName('head')[0];
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
         link.href = 'data:text/css,' + encodeURIComponent(css);
+        head.appendChild(link);
     });
 })();

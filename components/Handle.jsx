@@ -1,4 +1,5 @@
 const React = require('react');
+const ReactDOM = require('react-dom');
 const _ = require('lodash');
 
 const interfaceActions = require('../actions/interface');
@@ -24,7 +25,7 @@ const Handle = React.createClass({
     },
 
     handleMouseMove(event) {
-        const ele = React.findDOMNode(this.refs.handle);
+        const ele = ReactDOM.findDOMNode(this.refs.handle);
         const direction = window.getComputedStyle(ele.parentElement).getPropertyValue('flex-direction');
 
         let offset = 0;
@@ -48,7 +49,7 @@ const Handle = React.createClass({
     },
 
     handleMouseDown(event) {
-        const ele = React.findDOMNode(this.refs.handle);
+        const ele = ReactDOM.findDOMNode(this.refs.handle);
         const direction = window.getComputedStyle(ele.parentElement).getPropertyValue('flex-direction');
         if (direction === 'column') {
             this.startPos = event.clientY;

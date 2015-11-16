@@ -1,4 +1,4 @@
-const React   = require('react/addons');
+const React   = require('react');
 const Reflux  = require('reflux');
 const _       = require('lodash');
 const fs      = require('fs');
