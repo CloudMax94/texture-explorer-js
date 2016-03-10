@@ -82,7 +82,7 @@ function prepareProfile(profile, length) {
                             format:     i.data.format,
                             width:      parseInt(i.data.width),
                             height:     parseInt(i.data.height),
-                            palette:    parseInt(i.data.palette, 16),
+                            palette:    parseInt(i.data.palette, 16) || 0,
                         });
                     }
 

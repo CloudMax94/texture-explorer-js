@@ -36,8 +36,9 @@ const TextureViewer = React.createClass({
 
         reader.onloadend = (e) => {
             const pngBuffer = new Buffer(new Uint8Array(e.target.result));
-            textureManipulator.pngToData(pngBuffer, (buffer) => {
+            textureManipulator.pngToPixelData(pngBuffer, (pixelData, format) => {
                 const texture = this.state.workspace.getIn(['items', this.state.workspace.get('selectedTexture')]);
+                const buffer = textureManipulator.pixelDataToRaw(pixelData, texture.get('format'));
                 workspaceActions.insertData(buffer, texture.get('address'));
             });
         };
@@ -47,8 +48,10 @@ const TextureViewer = React.createClass({
         if (!this.state.workspace || !this.state.workspace.get('selectedTexture')) {
             return null;
         }
+
         const texture = this.state.workspace.getIn(['items', this.state.workspace.get('selectedTexture')]);
         const blob = texture.get('blob');
+
         return (
             <div className="texture-viewer">
                 <div className="texture-viewer-inner">
