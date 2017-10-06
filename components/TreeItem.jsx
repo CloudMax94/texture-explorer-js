@@ -1,20 +1,24 @@
 import React from 'react'
 import { padStart } from 'lodash'
 import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
-import { setCurrentDirectory, setCurrentTexture } from '../actions/workspace'
 import textureManipulator from '../lib/textureManipulator'
 import ImmutablePureComponent from './ImmutablePureComponent.jsx'
 
 class TreeItem extends ImmutablePureComponent {
+  componentDidUpdate = (prevProps) => {
+    if (this.props.focused === true && prevProps.focused === false) {
+      let parent = this.ele.parentElement
+      if (this.ele.offsetTop < parent.scrollTop) {
+        this.ele.scrollIntoView()
+      } else if (this.ele.offsetTop > parent.scrollTop + parent.offsetHeight - this.ele.offsetHeight) {
+        this.ele.scrollIntoView(false)
+      }
+    }
+  }
+
   handleDoubleClick = (event) => {
     event.preventDefault()
-    const item = this.props.item
-    if (item.get('type') === 'directory') {
-      this.props.setCurrentDirectory(item)
-    } else if (item.get('type') === 'texture') {
-      this.props.setCurrentTexture(item)
-    }
+    this.props.handleDoubleClick(this.props.item)
   }
 
   handleClick = (event) => {
@@ -49,9 +53,9 @@ class TreeItem extends ImmutablePureComponent {
         '0x' + padStart(item.get('length').toString(16), 6, 0).toUpperCase()
       ])
     }
-    const classes = 'tree-item ' + this.props.className
+    const classes = 'tree-item ' + (this.props.focused ? 'focused' : '')
     return (
-      <div className={classes}>
+      <div className={classes} ref={(ele) => { this.ele = ele }}>
         {columns.map((data, i) => {
           let icon = null
           const style = {}
@@ -87,8 +91,4 @@ function mapStateToProps (state, ownProps) {
   }
 }
 
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({setCurrentDirectory, setCurrentTexture}, dispatch)
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(TreeItem)
+export default connect(mapStateToProps)(TreeItem)

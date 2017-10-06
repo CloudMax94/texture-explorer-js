@@ -7,6 +7,7 @@ import Columns from './Columns.jsx'
 import PanelGroup from './PanelGroup.jsx'
 import TextureViewer from './TextureViewer.jsx'
 import Overview from './Overview.jsx'
+import ItemSettings from './ItemSettings.jsx'
 
 class Container extends React.Component {
   constructor (props) {
@@ -15,9 +16,17 @@ class Container extends React.Component {
   }
   render () {
     const panelItems = {
-      itemSettings: {
-        name: 'Item Settings',
-        item: (<span>Ah!</span>)
+      textureSettings: {
+        name: 'Texture Settings',
+        item: (
+          <ItemSettings type={'texture'} />
+        )
+      },
+      directorySettings: {
+        name: 'Directory Settings',
+        item: (
+          <ItemSettings type={'directory'} />
+        )
       },
       itemPreview: {
         name: 'Image Preview',

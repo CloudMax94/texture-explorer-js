@@ -21,20 +21,21 @@ class TextureViewer extends React.Component {
     openFile(event.dataTransfer.files[0], ({data}) => {
       const pngBuffer = Buffer.from(data)
       textureManipulator.pngToPixelData(pngBuffer, (pixelData, format) => {
-        const texture = this.props.workspace.getIn(['items', this.props.workspace.get('selectedTexture')])
+        const { texture } = this.props
         const buffer = textureManipulator.pixelDataToRaw(pixelData, texture.get('format'))
         this.props.insertData(buffer, texture.get('address'))
       })
     })
   }
   render () {
-    if (!this.props.workspace || !this.props.workspace.get('selectedTexture')) {
+    const { texture } = this.props
+    if (!texture) {
       return null
     }
-
-    const texture = this.props.workspace.getIn(['items', this.props.workspace.get('selectedTexture')])
     const blob = texture.get('blob')
-
+    if (!blob) {
+      return null
+    }
     return (
       <div className='texture-viewer'>
         <div className='texture-viewer-inner'>
@@ -46,8 +47,16 @@ class TextureViewer extends React.Component {
 }
 
 function mapStateToProps (state) {
+  let workspace = state.workspace.getIn(['workspaces', state.workspace.get('currentWorkspace')])
+  let texture
+  if (workspace) {
+    let id = workspace.get('selectedTexture')
+    if (id) {
+      texture = workspace.getIn(['items', id])
+    }
+  }
   return {
-    workspace: state.workspace.getIn(['workspaces', state.workspace.get('currentWorkspace')])
+    texture
   }
 }
 

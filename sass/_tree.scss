@@ -54,6 +54,7 @@ $tree-item-height: 20px;
 }
 
 .tree-content {
+    position: relative;
     overflow: auto;
     flex: 1;
     background: $tree-background-color;
@@ -73,7 +74,10 @@ $tree-item-height: 20px;
         width: 100%;
         top: 0;
         height: $tree-item-height;
-        background: $tree-background-color-selected;
+        background: darken($tree-background-color-selected, 15%);
+        .tree-content:focus & {
+            background: $tree-background-color-selected;
+        }
     }
 
     &.selected > .tree-col .tree-icon,

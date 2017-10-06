@@ -4,8 +4,8 @@ import * as INTERFACE from '../constants/interface'
 const defaultLayout = [
   [],
   [['overview']],
-  [['itemSettings'], ['itemPreview']],
-  [['settings', 'profileManager', 'finder']]
+  [['settings', 'profileManager', 'finder']],
+  [['directorySettings'], ['textureSettings'], ['itemPreview']]
 ]
 export default function ui (state = fromJS({
   settings: {
@@ -33,8 +33,8 @@ export default function ui (state = fromJS({
         hidden: false
       }
     },
-    containerSizes: [160, 300, 300, 160],
-    treeSizes: [300, 115, 115, 115, 95, 85, 60, 60, 125]
+    containerSizes: [160, 300, 300, 210],
+    treeSizes: [300, 115, 115, 115, 95, 85, 60, 60, 130]
   },
   status: null,
   menu: null

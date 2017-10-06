@@ -27,7 +27,7 @@ class Workspace extends React.Component {
     }).toArray()
     let items = null
     if (this.props.current && this.props.current.get('selectedDirectory')) {
-      items = this.props.current.get('items').filter(x => x.parentId === this.props.current.get('selectedDirectory'))
+      items = this.props.current.get('items').toList().filter(item => item.get('parentId') === this.props.current.get('selectedDirectory'))
     }
     return (
       <div className='workspace'>
