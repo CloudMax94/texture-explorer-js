@@ -1,13 +1,10 @@
-const React = require('react');
+import React from 'react'
 
-const Rows = React.createClass({
-    propTypes: {
-        children: React.PropTypes.arrayOf(React.PropTypes.element),
-    },
-    render() {
-        return (
-            <div className="rows">{this.props.children}</div>
-        );
-    },
-});
-module.exports = Rows;
+class Rows extends React.Component {
+  render () {
+    return (
+      <div className='rows'>{this.props.children}</div>
+    )
+  }
+}
+export default Rows

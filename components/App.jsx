@@ -1,77 +1,87 @@
-const React   = require('react');
-const Reflux  = require('reflux');
-const _       = require('lodash');
-const fs      = require('fs');
-const path    = require('path');
+import React from 'react'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
+import { createWorkspace } from '../actions/workspace'
+import { setApplicationMenu } from '../actions/interface'
+import { each } from 'lodash'
+import { exists } from 'fs'
+import { remote } from 'electron'
 
-const fileHandler     = require('../lib/fileHandler');
-const argv            = require('remote').getGlobal('argv');
+import initializeMenu from '../lib/menu'
+import { openFile } from '../lib/fileHandler'
 
-const workspaceActions = require('../actions/workspace');
+import Columns from './Columns.jsx'
+import Container from './Container.jsx'
+import Handle from './Handle.jsx'
+import Workspaces from './Workspaces.jsx'
+import ApplicationMenu from './ApplicationMenu.jsx'
+import StatusBar from './StatusBar.jsx'
+// import Dialog from './Dialog.jsx'
 
-const Columns         = require('./Columns.jsx');
-const Container       = require('./Container.jsx');
-const Handle          = require('./Handle.jsx');
-const Workspaces      = require('./Workspaces.jsx');
-const ApplicationMenu = require('./ApplicationMenu.jsx');
-const StatusBar       = require('./StatusBar.jsx');
-const Dialog          = require('./Dialog.jsx');
+const argv = remote.getGlobal('argv')
 
-const App = React.createClass({
-    mixins: [Reflux.ListenerMixin],
-    getInitialState() {
-        return {
-        };
-    },
-    componentDidMount() {
-        _.each(argv._, (filePath) => {
-            fs.exists(filePath, (exists) => {
-                if (exists) {
-                    fileHandler.openFile(filePath, () => {
-                    });
-                }
-            });
-        });
-    },
-    handleDragOver(event) {
-        event.preventDefault();
-        console.log('handleDragOver');
-    },
-    handleDragEnd(event) {
-        event.preventDefault();
-        console.log('handleDragEnd');
-    },
-    handleDrop(event) {
-        const file = event.dataTransfer.files[0];
-        const reader = new FileReader();
-        event.preventDefault();
-        reader.onloadend = (e) => {
-            workspaceActions.createWorkspace({
-                data: new Buffer(new Uint8Array(e.target.result)),
-                path: file.path,
-                name: file.name,
-            });
-        };
-        reader.readAsArrayBuffer(file);
-    },
-    render() {
-        return (
-            <div className="app" onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop}>
-                <ApplicationMenu/>
-                <Container index={0} direction="horizontal"/>
-                <Handle index={0}/>
-                <Columns>
-                    <Container index={1} direction="vertical"/>
-                    <Handle index={1}/>
-                    <Workspaces/>
-                    <Handle index={2} reverse={true}/>
-                    <Container index={2} direction="vertical"/>
-                </Columns>
-                <Handle index={3} reverse={true}/>
-                <Container index={3} direction="horizontal"/>
-                <StatusBar/>
-            </div>
-        );
-    },
-});
-module.exports = App;
+class App extends React.Component {
+  componentDidMount () {
+    let menu = initializeMenu(this.props.dispatch)
+    if (process.browser || argv._.indexOf('browsermenu') > -1) {
+      this.props.setApplicationMenu(menu)
+    }
+    each(argv._, (filePath) => {
+      if (filePath !== 'main.js') {
+        exists(filePath, (exists) => {
+          if (exists) {
+            openFile(filePath, (data) => {
+              this.props.createWorkspace(data)
+            })
+          }
+        })
+      }
+    })
+  }
+  handleDragOver = (event) => {
+    event.preventDefault()
+  }
+  handleDragEnd = (event) => {
+    event.preventDefault()
+  }
+  handleDrop = (event) => {
+    openFile(event.dataTransfer.files[0], (data) => {
+      this.props.createWorkspace(data)
+    })
+  }
+  render () {
+    return (
+      <div className='app' onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop}>
+        <ApplicationMenu />
+        <Container index={0} direction='horizontal' />
+        <Handle index={0} />
+        <Columns>
+          <Container index={1} direction='vertical' />
+          <Handle index={1} />
+          <Workspaces />
+          <Handle index={2} reverse />
+          <Container index={2} direction='vertical' />
+        </Columns>
+        <Handle index={3} reverse />
+        <Container index={3} direction='horizontal' />
+        <StatusBar />
+      </div>
+    )
+  }
+}
+
+function mapStateToProps (state) {
+  return {}
+}
+
+function mapDispatchToProps (dispatch) {
+  return {
+    dispatch,
+    ...bindActionCreators({
+      createWorkspace,
+      setApplicationMenu
+    }, dispatch)
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)

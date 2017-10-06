@@ -54,8 +54,7 @@ $tree-item-height: 20px;
 }
 
 .tree-content {
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: auto;
     flex: 1;
     background: $tree-background-color;
     outline: 0;

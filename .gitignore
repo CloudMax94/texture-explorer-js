@@ -1,8 +1,10 @@
 logs
 *.log
+*.z64
 node_modules
 ncp-debug.log
 npm-debug.log
+package-lock.json
 browser
 profiles
 .sass-cache/

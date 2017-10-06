@@ -1,27 +1,18 @@
-const React   = require('react');
-const Reflux  = require('reflux');
+import React from 'react'
+import { connect } from 'react-redux'
 
-const interfaceStore  = require('../stores/interface');
+class StatusBar extends React.Component {
+  render () {
+    return (
+      <div className='status-bar'>{this.props.status}</div>
+    )
+  }
+}
 
-const StatusBar = React.createClass({
-    mixins: [Reflux.ListenerMixin],
-    getInitialState() {
-        return {
-            status: interfaceStore.getStatus(),
-        };
-    },
-    componentDidMount() {
-        this.listenTo(interfaceStore, this.oninterfaceStoreChange);
-    },
-    oninterfaceStoreChange() {
-        this.setState({
-            status: interfaceStore.getStatus(),
-        });
-    },
-    render() {
-        return (
-            <div className="status-bar">{this.state.status}</div>
-        );
-    },
-});
-module.exports = StatusBar;
+function mapStateToProps (state) {
+  return {
+    status: state.ui.get('status')
+  }
+}
+
+export default connect(mapStateToProps)(StatusBar)

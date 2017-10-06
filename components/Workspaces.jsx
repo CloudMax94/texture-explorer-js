@@ -1,69 +1,57 @@
-const React = require('react');
-const Reflux  = require('reflux');
+import React from 'react'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
+import { setCurrentWorkspace } from '../actions/workspace'
 
-const TreeView = require('./TreeView.jsx');
+import TreeView from './TreeView.jsx'
 
-const workspaceStore = require('../stores/workspace');
-const interfaceStore = require('../stores/interface');
-const workspaceActions = require('../actions/workspace');
+class Workspace extends React.Component {
+  handleTabClick (workspace) {
+    this.props.setCurrentWorkspace(workspace)
+  }
 
-const Workspace = React.createClass({
-    mixins: [Reflux.ListenerMixin],
-    getInitialState() {
-        return {
-            sizes: interfaceStore.getTreeSizes(),
-            workspaces: workspaceStore.getWorkspaces(),
-            current: workspaceStore.getCurrentWorkspace(),
-        };
-    },
-    componentDidMount() {
-        this.listenTo(workspaceStore, this.onWorkspaceStoreChange);
-        this.listenTo(interfaceStore, this.onInterfaceStoreChange);
-    },
-    onWorkspaceStoreChange() {
-        this.setState({
-            workspaces: workspaceStore.getWorkspaces(),
-            current: workspaceStore.getCurrentWorkspace(),
-        });
-    },
-    onInterfaceStoreChange(data) {
-        if (data !== 'tree') return;
-        this.setState({
-            sizes: interfaceStore.getTreeSizes(),
-        });
-    },
-    handleTabClick(workspace) {
-        workspaceActions.setCurrentWorkspace(workspace);
-    },
-    render() {
-        const tabs = this.state.workspaces.map((workspace, i) => {
-            const classes = [
-                'workspace-tab',
-            ];
-            if (workspace === this.state.current) {
-                classes.push('selected');
-            }
-            return (
-                <div key={i} className={classes.join(' ')} onClick={this.handleTabClick.bind(this, workspace)}>
-                    <span className="btnText">{workspace.get('name')}</span>
-                    <span className="closeBtn">x</span>
-                </div>
-            );
-        }).toArray();
-        let items = null;
-        if (this.state.current && this.state.current.get('selectedDirectory')) {
-            items = this.state.current.get('items').filter(x => x.parentId === this.state.current.get('selectedDirectory'));
-        }
-        return (
-            <div className="workspace">
-                <div className="workspace-tabs">
-                    {tabs}
-                </div>
-                <div className="workspace-content">
-                    <TreeView sizes={this.state.sizes} items={items}/>
-                </div>
-            </div>
-        );
-    },
-});
-module.exports = Workspace;
+  render () {
+    const tabs = this.props.workspaces.map((workspace, i) => {
+      const classes = [
+        'workspace-tab'
+      ]
+      if (workspace === this.props.current) {
+        classes.push('selected')
+      }
+      return (
+        <div key={i} className={classes.join(' ')} onClick={this.handleTabClick.bind(this, workspace)}>
+          <span className='btnText'>{workspace.get('name')}</span>
+          <span className='closeBtn'>x</span>
+        </div>
+      )
+    }).toArray()
+    let items = null
+    if (this.props.current && this.props.current.get('selectedDirectory')) {
+      items = this.props.current.get('items').filter(x => x.parentId === this.props.current.get('selectedDirectory'))
+    }
+    return (
+      <div className='workspace'>
+        <div className='workspace-tabs'>
+          {tabs}
+        </div>
+        <div className='workspace-content'>
+          <TreeView sizes={this.props.sizes} items={items} />
+        </div>
+      </div>
+    )
+  }
+}
+
+function mapStateToProps (state) {
+  return {
+    sizes: state.ui.getIn(['settings', 'treeSizes']),
+    workspaces: state.workspace.get('workspaces'),
+    current: state.workspace.getIn(['workspaces', state.workspace.get('currentWorkspace')])
+  }
+}
+
+function mapDispatchToProps (dispatch) {
+  return bindActionCreators({setCurrentWorkspace}, dispatch)
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Workspace)

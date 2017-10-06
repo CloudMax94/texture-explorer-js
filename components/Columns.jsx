@@ -1,13 +1,10 @@
-const React = require('react');
+import React from 'react'
 
-const Columns = React.createClass({
-    propTypes: {
-        children: React.PropTypes.arrayOf(React.PropTypes.element),
-    },
-    render() {
-        return (
-            <div className="columns">{this.props.children}</div>
-        );
-    },
-});
-module.exports = Columns;
+class Columns extends React.Component {
+  render () {
+    return (
+      <div className='columns'>{this.props.children}</div>
+    )
+  }
+}
+export default Columns

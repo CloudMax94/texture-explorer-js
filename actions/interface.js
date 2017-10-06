@@ -1,13 +1,56 @@
-const Reflux = require('reflux');
+import * as INTERFACE from '../constants/interface'
 
-const actions = Reflux.createActions([
-    'setApplicationMenu',
-    'setStatus',
-    'movePanelToContainer',
-    'movePanelGroupToContainer',
-    'setContainerSize',
-    'setTreeSize',
-    'resetPanels',
-]);
+export function setApplicationMenu (menu) {
+  return {
+    type: INTERFACE.SET_APPLICATION_MENU,
+    menu
+  }
+}
 
-module.exports = actions;
+export function setStatus (status) {
+  return {
+    type: INTERFACE.SET_STATUS,
+    status
+  }
+}
+
+export function movePanelToContainer (container, groupIndex, index, newContainer) {
+  return {
+    type: INTERFACE.MOVE_PANEL_TO_CONTAINER,
+    container,
+    groupIndex,
+    index,
+    newContainer
+  }
+}
+
+export function movePanelGroupToContainer (container, index, newContainer) {
+  return {
+    type: INTERFACE.MOVE_PANEL_GROUP_TO_CONTAINER,
+    container,
+    index,
+    newContainer
+  }
+}
+
+export function setContainerSize (container, size) {
+  return {
+    type: INTERFACE.SET_CONTAINER_SIZE,
+    container,
+    size
+  }
+}
+
+export function setTreeSize (column, size) {
+  return {
+    type: INTERFACE.SET_TREE_SIZE,
+    column,
+    size
+  }
+}
+
+export function resetPanels () {
+  return {
+    type: INTERFACE.RESET_PANELS
+  }
+}

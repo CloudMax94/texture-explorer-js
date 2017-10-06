@@ -82,6 +82,7 @@ $menu-popup-separator-margin:   5px 0;
     justify-content: space-between;
 
     &[data-accelerator]:after {
+        color: darken($menu-color, 15%);
         cursor: pointer;
         content: attr(data-accelerator);
         margin-left: 8px;
