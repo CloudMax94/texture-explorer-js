@@ -61,7 +61,7 @@ gulp.task('sass-browser', function () {
 gulp.task('watch-browser', ['sass-browser'], function () {
   mainBundle()
   var pattern
-  pattern = ['./assets/**/*.*', './favicon.ico', 'FileSaver.min.js']
+  pattern = ['./assets/**/*.*', './favicon.ico', 'index.html']
   gulp.src(pattern, {base: './'})
     .pipe(watch(pattern))
     .pipe(gulp.dest('./browser'))
