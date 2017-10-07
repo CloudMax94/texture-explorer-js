@@ -16,12 +16,12 @@ class TreeItem extends ImmutablePureComponent {
   }
 
   render () {
-    const item = this.props.item
+    const { item, offset, focused } = this.props
     const columns = [
       item.get('name')
     ]
     columns.push(...[
-      '0x' + padStart(this.props.offset.toString(16), 8, 0).toUpperCase(), // should be relative!
+      (offset < 0 ? '-' : '') + '0x' + padStart(Math.abs(offset).toString(16), 8, 0).toUpperCase(),
       '0x' + padStart(item.get('address').toString(16), 8, 0).toUpperCase()
     ])
     if (item.get('type') === 'texture') {
@@ -42,7 +42,7 @@ class TreeItem extends ImmutablePureComponent {
         '0x' + padStart(item.get('length').toString(16), 6, 0).toUpperCase()
       ])
     }
-    const classes = 'tree-item ' + (this.props.focused ? 'focused' : '')
+    const classes = 'tree-item ' + (focused ? 'focused' : '')
     return (
       <div className={classes} ref={(ele) => { this.ele = ele }}>
         {columns.map((data, i) => {

@@ -1,18 +1,29 @@
 @import 'spinner';
 
-input {
+input,
+select {
     font-family: $font-monospace;
     background: #373737;
     border: 1px solid #2c2c2c;
     box-shadow: 0 1px 1px rgba(255, 255, 255, .1);
     color: #fff;
-    cursor: text;
     font-size: 12px;
 
     &:focus {
         outline: 0;
+        background: #404040;
     }
 
+    &:disabled,
+    &[readonly] {
+        background: #494949;
+        border-color: #3f3f3f;
+        box-shadow: 0 1px 1px rgba(255, 255, 255, .05);
+        cursor: default !important;
+    }
+}
+
+input {
     &[type=text] {
         padding: 0 4px;
     }
@@ -21,13 +32,15 @@ input {
         padding: 0 0 0 4px;
     }
 
-    &:disabled,
-    &[readonly] {
-        background: #494949;
-        border-color: #3f3f3f;
-        box-shadow: 0 1px 1px rgba(255, 255, 255, .05);
-        cursor: default;
+    &[type=text],
+    &[type=number] {
+        cursor: text;
+        padding: 0 0 0 4px;
     }
+}
+
+select {
+    cursor: pointer;
 }
 
 .input-columns {
@@ -40,13 +53,15 @@ input {
         line-height: 20px;
     }
 
-    input {
+    input,
+    select {
         height: 20px;
         width: 100%;
     }
 
     label,
-    input {
+    input,
+    select {
         margin-top: 4px;
     }
 

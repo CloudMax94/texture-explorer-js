@@ -2,6 +2,7 @@ import * as WORKSPACE from '../constants/workspace'
 
 import { Record, Map } from 'immutable'
 import { join } from 'path'
+import { throttle } from 'lodash'
 import { loadProfile, saveFileAs } from '../lib/fileHandler'
 import worker from '../lib/worker'
 import textureManipulator from '../lib/textureManipulator'
@@ -41,6 +42,38 @@ const TextureRecord = Record({
   type: 'texture',
   blob: null
 })
+
+function asyncThrottle (func, cbArg, timeout) {
+  let running = false
+  let queued = null
+  let queueFunc = (...args) => {
+    if (running) {
+      queued = args
+      return
+    }
+    running = true
+    let cb = args[cbArg]
+    args[cbArg] = (...argss) => {
+      cb(...argss)
+      if (queued) {
+        setTimeout(() => {
+          let args = queued
+          queued = null
+          running = false
+          queueFunc(...args)
+        }, timeout)
+      } else {
+        running = false
+      }
+    }
+    func(...args)
+  }
+  if (timeout > 0) {
+    return throttle(queueFunc, timeout)
+  } else {
+    return queueFunc
+  }
+}
 
 function itemFormatPlural (format) {
   if (format.toLowerCase() === 'texture') {
@@ -195,7 +228,7 @@ export function setCurrentDirectory (item) {
             type: WORKSPACE.UPDATE_ITEM_BLOB,
             workspace: currentWorkspace.get('id'),
             item: texture.get('id'),
-            blob: URL.createObjectURL(blob)
+            blob: blob
           })
         }
       })
@@ -214,6 +247,47 @@ export function setCurrentWorkspace (workspace) {
   return {
     type: WORKSPACE.SET_CURRENT_WORKSPACE,
     workspace
+  }
+}
+
+const throttledGenerateItemBlob = asyncThrottle(generateItemBlob, 2, 100)
+export function setItemData (workspace, item, key, value) {
+  return async (dispatch, getState) => {
+    if (key === 'offset') {
+      key = 'address'
+      let items = getState().workspace.getIn(['workspaces', workspace, 'items'])
+      let parentId = items.getIn([item, 'parentId'])
+      value += items.getIn([parentId, 'address'])
+    }
+
+    dispatch({
+      type: WORKSPACE.SET_ITEM_DATA,
+      workspace,
+      item,
+      key,
+      value
+    })
+
+    let currentWorkspace = getState().workspace.getIn(['workspaces', workspace])
+    let texture = currentWorkspace.getIn(['items', item])
+    if (texture.get('type') === 'texture') {
+      if (
+        key === 'address' ||
+        key === 'format' ||
+        key === 'width' ||
+        key === 'height' ||
+        key === 'palette'
+      ) {
+        throttledGenerateItemBlob(texture, currentWorkspace, (blob) => {
+          dispatch({
+            type: WORKSPACE.UPDATE_ITEM_BLOB,
+            workspace: workspace,
+            item: item,
+            blob: blob
+          })
+        }, true)
+      }
+    }
   }
 }
 
@@ -281,14 +355,12 @@ export function insertData (data, start) {
     })
     textures.forEach((texture) => {
       generateItemBlob(texture, currentWorkspace, (blob) => {
-        if (blob) {
-          dispatch({
-            type: WORKSPACE.UPDATE_ITEM_BLOB,
-            workspace: currentWorkspace.get('id'),
-            item: texture.get('id'),
-            blob: URL.createObjectURL(blob)
-          })
-        }
+        dispatch({
+          type: WORKSPACE.UPDATE_ITEM_BLOB,
+          workspace: currentWorkspace.get('id'),
+          item: texture.get('id'),
+          blob: blob
+        })
       }, true)
     })
   }

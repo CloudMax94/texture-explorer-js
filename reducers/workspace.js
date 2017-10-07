@@ -22,7 +22,18 @@ export default function workspace (state = fromJS({
     case WORKSPACE.ADD_WORKSPACE:
       return state.setIn(['workspaces', action.workspace.get('id')], action.workspace)
     case WORKSPACE.UPDATE_ITEM_BLOB:
-      return state.setIn(['workspaces', action.workspace, 'items', action.item, 'blob'], action.blob)
+      return state.updateIn(['workspaces', action.workspace, 'items', action.item], (item) => {
+        let oldBlob = item.get('blob')
+        if (oldBlob) {
+          URL.revokeObjectURL(oldBlob)
+        }
+        if (!action.blob) {
+          return item.set('blob', null)
+        }
+        return item.set('blob', URL.createObjectURL(action.blob))
+      })
+    case WORKSPACE.SET_ITEM_DATA:
+      return state.setIn(['workspaces', action.workspace, 'items', action.item, action.key], action.value)
     default:
       return state
   }
