@@ -68,6 +68,15 @@ export default function ui (state = fromJS({
       })
     }
     case INTERFACE.SET_CONTAINER_SIZE:
+      // NOTE: When top/bottom container is resized, we need to trigger a resize
+      //       event on all .tree-view .tree-content to update the virtual lists
+      if (action.container === 0 || action.container === 3) {
+        var evt = new Event('resize')
+        var el = document.querySelectorAll('.tree-view .tree-content')
+        for (var i = 0, l = el.length; i < l; i++) {
+          el[i].dispatchEvent(evt)
+        }
+      }
       return state.setIn(['settings', 'containerSizes', action.container], action.size)
     case INTERFACE.SET_TREE_SIZE:
       return state.setIn(['settings', 'treeSizes', action.column], action.size)

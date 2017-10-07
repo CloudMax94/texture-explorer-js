@@ -3,10 +3,35 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { uniqueId } from 'lodash'
+import VirtualList from 'react-virtual-list'
 import { setCurrentDirectory, setCurrentTexture } from '../actions/workspace'
 
 import TreeItem from './TreeItem.jsx'
 import TreeHeader from './TreeHeader.jsx'
+
+const VirtualTreeView = ({
+  virtual,
+  itemHeight,
+  handleFocus,
+  handleDoubleClick,
+  focusedItem,
+  scrollContainer
+}) => (
+  <div style={virtual.style}>
+    {virtual.items.map(item => {
+      return (
+        <TreeItem
+          key={item.get('id')}
+          item={item}
+          focused={item.get('id') === focusedItem}
+          handleFocus={handleFocus}
+          handleDoubleClick={handleDoubleClick}
+          scrollContainer={scrollContainer}
+        />
+      )
+    })}
+  </div>
+)
 
 class TreeView extends React.Component {
   constructor (props) {
@@ -17,6 +42,11 @@ class TreeView extends React.Component {
   }
   componentWillMount () {
     this.id = uniqueId('workspace_content_')
+  }
+  componentDidMount () {
+    this.VirtualList = VirtualList({
+      container: this.scrollContainer
+    })(VirtualTreeView)
   }
   focusItem = (item) => {
     this.setState({focusedItem: item.get('id')})
@@ -63,34 +93,24 @@ class TreeView extends React.Component {
     }
   }
   render () {
-    let children = null
-    if (this.props.items) {
-      children = this.props.items.map((item, i) => {
-        return (
-          <TreeItem
-            key={item.get('id')}
-            item={item}
-            focused={item.get('id') === this.state.focusedItem}
-            handleFocus={this.focusItem}
-            handleDoubleClick={this.selectItem}
-          />
-        )
-      }).toArray()
-    }
-
     let style = ''
     this.props.sizes.forEach((item, i) => {
-      style += `#${this.id} .tree-col:nth-child(${i + 1}) {
-        width: ${item}px;
-      }`
+      style += `#${this.id} .tree-col:nth-child(${i + 1}) {width: ${item}px}`
     })
-
     return (
       <div className='tree-view' id={this.id}>
         <style>{style}</style>
         <TreeHeader sizes={this.props.sizes} columns={['File', 'Offset', 'Start', 'End', 'Size', 'Format', 'Width', 'Height', 'Palette Address']} />
-        <div className='tree-content' tabIndex='0' onKeyDown={this.handleKeyDown}>
-          {children}
+        <div className='tree-content' tabIndex='0' onKeyDown={this.handleKeyDown} ref={(scrollContainer) => { this.scrollContainer = scrollContainer }}>
+          {this.props.items ? <this.VirtualList
+            items={this.props.items.toArray()}
+            itemHeight={20}
+            itemBuffer={1} // We have a buffer for the scrollIntoView code on <TreeItem />
+            handleFocus={this.focusItem}
+            handleDoubleClick={this.selectItem}
+            focusedItem={this.state.focusedItem}
+            scrollContainer={this.scrollContainer}
+          /> : null}
         </div>
       </div>
     )

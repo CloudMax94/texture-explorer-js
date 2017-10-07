@@ -6,12 +6,14 @@ import ImmutablePureComponent from './ImmutablePureComponent.jsx'
 
 class TreeItem extends ImmutablePureComponent {
   componentDidUpdate = (prevProps) => {
-    if (this.props.focused === true && prevProps.focused === false) {
-      let parent = this.ele.parentElement
-      if (this.ele.offsetTop < parent.scrollTop) {
-        this.ele.scrollIntoView()
-      } else if (this.ele.offsetTop > parent.scrollTop + parent.offsetHeight - this.ele.offsetHeight) {
-        this.ele.scrollIntoView(false)
+    let { focused, scrollContainer } = this.props
+    if (scrollContainer) {
+      if (focused === true && prevProps.focused === false) {
+        if (this.ele.offsetTop < scrollContainer.scrollTop) {
+          this.ele.scrollIntoView()
+        } else if (this.ele.offsetTop > scrollContainer.scrollTop + scrollContainer.offsetHeight - this.ele.offsetHeight) {
+          this.ele.scrollIntoView(false)
+        }
       }
     }
   }
