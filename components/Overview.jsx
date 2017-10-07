@@ -43,7 +43,7 @@ class Overview extends React.Component {
       if (!children) {
         return null
       }
-      return children.map((directory, i) => {
+      let a = children.toList().map((directory, i) => {
         let classes = 'tree-item'
         if (directory.get('id') === this.props.selectedDirectory) {
           classes += ' selected'
@@ -60,7 +60,8 @@ class Overview extends React.Component {
             {traverseDirectories(directory.get('id'), depth + 1)}
           </div>
         )
-      }).toArray()
+      })
+      return a
     }
 
     return (

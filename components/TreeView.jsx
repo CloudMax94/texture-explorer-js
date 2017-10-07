@@ -4,7 +4,11 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { uniqueId } from 'lodash'
 import VirtualList from 'react-virtual-list'
-import { setCurrentDirectory, setCurrentTexture } from '../actions/workspace'
+import {
+  setCurrentDirectory,
+  setCurrentTexture,
+  deleteItem
+} from '../actions/workspace'
 
 import TreeItem from './TreeItem.jsx'
 import TreeHeader from './TreeHeader.jsx'
@@ -101,6 +105,20 @@ class TreeView extends React.Component {
             this.setState({focusedItem: items.getIn([currentIndex + 1, 'id'])})
           }
           break
+        case 46: // Delete
+          event.preventDefault()
+          if (items.size > 1) {
+            currentIndex = items.findIndex((item) => item.get('id') === focusedItem)
+            if (currentIndex < items.size - 1) {
+              this.setState({focusedItem: items.getIn([currentIndex + 1, 'id'])})
+            } else {
+              this.setState({focusedItem: items.getIn([items.size, 'id'])})
+            }
+          } else {
+            this.setState({focusedItem: null})
+          }
+          this.props.deleteItem(focusedItem)
+          break
       }
     } else {
       switch (event.keyCode) {
@@ -139,7 +157,11 @@ function mapStateToProps (state, ownProps) {
 }
 
 function mapDispatchToProps (dispatch) {
-  return bindActionCreators({setCurrentDirectory, setCurrentTexture}, dispatch)
+  return bindActionCreators({
+    setCurrentDirectory,
+    setCurrentTexture,
+    deleteItem
+  }, dispatch)
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TreeView)

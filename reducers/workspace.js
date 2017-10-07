@@ -1,7 +1,22 @@
 // @flow
-import { fromJS } from 'immutable'
+import { fromJS, List } from 'immutable'
 import * as WORKSPACE from '../constants/workspace'
 // import textureManipulator from '../lib/textureManipulator'
+
+function getSuccessors (items, item) {
+  let successors = []
+  function traverse (parentId) {
+    items.forEach((i) => {
+      if (i.get('parentId') === parentId) {
+        let id = i.get('id')
+        successors.push(id)
+        traverse(id)
+      }
+    })
+  }
+  traverse(item)
+  return successors
+}
 
 export default function workspace (state = fromJS({
   workspaces: {},
@@ -23,6 +38,19 @@ export default function workspace (state = fromJS({
       return state.setIn(['workspaces', action.workspace.get('id')], action.workspace)
     case WORKSPACE.ADD_ITEM:
       return state.setIn(['workspaces', action.workspace, 'items', action.item.get('id')], action.item)
+    case WORKSPACE.DELETE_ITEM:
+      return state.updateIn(['workspaces', action.workspace], (workspace) => {
+        if (workspace.get('selectedDirectory') === action.item) {
+          workspace = workspace.set('selectedDirectory', null)
+        }
+        if (workspace.get('selectedTexture') === action.item) {
+          workspace = workspace.set('selectedTexture', null)
+        }
+        return workspace.update('items', (items) => {
+          let successors = getSuccessors(items, action.item)
+          return items.deleteAll([action.item, ...successors])
+        })
+      })
     case WORKSPACE.UPDATE_ITEM_BLOB:
       return state.updateIn(['workspaces', action.workspace, 'items', action.item], (item) => {
         let oldBlob = item.get('blob')

@@ -394,6 +394,21 @@ export function createTexture () {
   }
 }
 
+export function deleteItem (item) {
+  return async (dispatch, getState) => {
+    let state = getState().workspace
+    let workspace = state.get('currentWorkspace')
+    if (!workspace) {
+      return
+    }
+    dispatch({
+      type: WORKSPACE.DELETE_ITEM,
+      workspace: workspace,
+      item: item
+    })
+  }
+}
+
 export function insertData (data, start) {
   return async (dispatch, getState) => {
     dispatch({

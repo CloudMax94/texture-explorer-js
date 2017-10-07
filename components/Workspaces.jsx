@@ -13,7 +13,7 @@ class Workspace extends React.Component {
 
   render () {
     const { workspaces, current, sizes } = this.props
-    const tabs = workspaces.map((workspace, i) => {
+    const tabs = workspaces.toList().map((workspace, i) => {
       const classes = [
         'workspace-tab'
       ]
@@ -26,7 +26,7 @@ class Workspace extends React.Component {
           <span className='closeBtn'>x</span>
         </div>
       )
-    }).toArray()
+    })
     let items = null
     let currentDirectory
     if (current) {
