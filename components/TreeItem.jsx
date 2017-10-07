@@ -5,19 +5,6 @@ import textureManipulator from '../lib/textureManipulator'
 import ImmutablePureComponent from './ImmutablePureComponent.jsx'
 
 class TreeItem extends ImmutablePureComponent {
-  componentDidUpdate = (prevProps) => {
-    let { focused, scrollContainer } = this.props
-    if (scrollContainer) {
-      if (focused === true && prevProps.focused === false) {
-        if (this.ele.offsetTop < scrollContainer.scrollTop) {
-          this.ele.scrollIntoView()
-        } else if (this.ele.offsetTop > scrollContainer.scrollTop + scrollContainer.offsetHeight - this.ele.offsetHeight) {
-          this.ele.scrollIntoView(false)
-        }
-      }
-    }
-  }
-
   handleDoubleClick = (event) => {
     event.preventDefault()
     this.props.handleDoubleClick(this.props.item)

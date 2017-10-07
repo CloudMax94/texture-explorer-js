@@ -11,11 +11,12 @@ class Workspace extends React.Component {
   }
 
   render () {
-    const tabs = this.props.workspaces.map((workspace, i) => {
+    const { workspaces, current, sizes } = this.props
+    const tabs = workspaces.map((workspace, i) => {
       const classes = [
         'workspace-tab'
       ]
-      if (workspace === this.props.current) {
+      if (workspace === current) {
         classes.push('selected')
       }
       return (
@@ -26,8 +27,12 @@ class Workspace extends React.Component {
       )
     }).toArray()
     let items = null
-    if (this.props.current && this.props.current.get('selectedDirectory')) {
-      items = this.props.current.get('items').toList().filter(item => item.get('parentId') === this.props.current.get('selectedDirectory'))
+    let currentDirectory
+    if (current) {
+      currentDirectory = current.get('selectedDirectory')
+      if (current.get('selectedDirectory')) {
+        items = current.get('items').toList().filter(item => item.get('parentId') === currentDirectory)
+      }
     }
     return (
       <div className='workspace'>
@@ -35,7 +40,7 @@ class Workspace extends React.Component {
           {tabs}
         </div>
         <div className='workspace-content'>
-          <TreeView sizes={this.props.sizes} items={items} />
+          <TreeView sizes={sizes} items={items} directory={currentDirectory} />
         </div>
       </div>
     )

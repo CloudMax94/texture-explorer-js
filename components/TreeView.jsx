@@ -9,29 +9,30 @@ import { setCurrentDirectory, setCurrentTexture } from '../actions/workspace'
 import TreeItem from './TreeItem.jsx'
 import TreeHeader from './TreeHeader.jsx'
 
+const ItemHeight = 20
+
 const VirtualTreeView = ({
   virtual,
-  itemHeight,
   handleFocus,
   handleDoubleClick,
-  focusedItem,
-  scrollContainer
-}) => (
-  <div style={virtual.style}>
-    {virtual.items.map(item => {
-      return (
-        <TreeItem
-          key={item.get('id')}
-          item={item}
-          focused={item.get('id') === focusedItem}
-          handleFocus={handleFocus}
-          handleDoubleClick={handleDoubleClick}
-          scrollContainer={scrollContainer}
-        />
-      )
-    })}
-  </div>
-)
+  focusedItem
+}) => {
+  return (
+    <div style={virtual.style}>
+      {virtual.items.map(item => {
+        return (
+          <TreeItem
+            key={item.get('id')}
+            item={item}
+            focused={item.get('id') === focusedItem}
+            handleFocus={handleFocus}
+            handleDoubleClick={handleDoubleClick}
+          />
+        )
+      })}
+    </div>
+  )
+}
 
 class TreeView extends React.Component {
   constructor (props) {
@@ -47,6 +48,24 @@ class TreeView extends React.Component {
     this.VirtualList = VirtualList({
       container: this.scrollContainer
     })(VirtualTreeView)
+  }
+  componentWillUpdate (nextProps, nextState) {
+    if (this.props.directory !== nextProps.directory) {
+      // We scroll to top when directory changes
+      this.scrollContainer.scrollTop = 0
+    } else if (this.state.focusedItem !== nextState.focusedItem && nextState.focusedItem) {
+      // When focused item changes, scroll the new one into view
+      let index = nextProps.items.findIndex((item) => item.get('id') === nextState.focusedItem)
+      if (index > -1) {
+        let position = ItemHeight * index
+        let { scrollTop, offsetHeight } = this.scrollContainer
+        if (position < scrollTop) {
+          this.scrollContainer.scrollTop = position
+        } else if (position > scrollTop + offsetHeight - ItemHeight) {
+          this.scrollContainer.scrollTop = position - offsetHeight + ItemHeight
+        }
+      }
+    }
   }
   focusItem = (item) => {
     this.setState({focusedItem: item.get('id')})
@@ -104,12 +123,10 @@ class TreeView extends React.Component {
         <div className='tree-content' tabIndex='0' onKeyDown={this.handleKeyDown} ref={(scrollContainer) => { this.scrollContainer = scrollContainer }}>
           {this.props.items ? <this.VirtualList
             items={this.props.items.toArray()}
-            itemHeight={20}
-            itemBuffer={1} // We have a buffer for the scrollIntoView code on <TreeItem />
+            itemHeight={ItemHeight}
             handleFocus={this.focusItem}
             handleDoubleClick={this.selectItem}
             focusedItem={this.state.focusedItem}
-            scrollContainer={this.scrollContainer}
           /> : null}
         </div>
       </div>
