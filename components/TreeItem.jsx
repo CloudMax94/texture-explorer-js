@@ -58,10 +58,6 @@ class TreeItem extends ImmutablePureComponent {
       <div className={classes} ref={(ele) => { this.ele = ele }}>
         {columns.map((data, i) => {
           let icon = null
-          const style = {}
-          if (this.props.sizes) {
-            style.width = this.props.sizes.get(i) + 'px'
-          }
           if (i === 0) {
             if (item.get('type') === 'directory') {
               icon = <i className='tree-icon icon'>file_directory</i>
@@ -74,7 +70,7 @@ class TreeItem extends ImmutablePureComponent {
             }
           }
           return (
-            <div key={i} className='tree-col' style={style} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick}>{icon}{data}</div>
+            <div key={i} className='tree-col' onClick={this.handleClick} onDoubleClick={this.handleDoubleClick}>{icon}{data}</div>
           )
         })}
       </div>

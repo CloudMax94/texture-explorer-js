@@ -30,10 +30,10 @@ class ItemSettings extends React.Component {
 
       extraLabels = (
         <div>
-          <label for={this.id + '_format'}>Format: </label>
-          <label for={this.id + '_width'}>Width: </label>
-          <label for={this.id + '_height'}>Height: </label>
-          {hasPalette ? <label for={this.id + '_palette'}>Palette: </label> : null}
+          <label htmlFor={this.id + '_format'}>Format: </label>
+          <label htmlFor={this.id + '_width'}>Width: </label>
+          <label htmlFor={this.id + '_height'}>Height: </label>
+          {hasPalette ? <label htmlFor={this.id + '_palette'}>Palette: </label> : null}
         </div>
       )
       extraInputs = (
@@ -58,9 +58,9 @@ class ItemSettings extends React.Component {
     return (
       <div className='input-columns'>
         <div>
-          <label for={this.id + '_name'}>Name: </label>
-          <label for={this.id + '_offset'}>Offset: </label>
-          <label for={this.id + '_address'}>Address: </label>
+          <label htmlFor={this.id + '_name'}>Name: </label>
+          <label htmlFor={this.id + '_offset'}>Offset: </label>
+          <label htmlFor={this.id + '_address'}>Address: </label>
           {extraLabels}
         </div>
         <div>

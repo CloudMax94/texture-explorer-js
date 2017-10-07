@@ -2,6 +2,7 @@ import React from 'react'
 
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
+import { uniqueId } from 'lodash'
 import { setCurrentDirectory, setCurrentTexture } from '../actions/workspace'
 
 import TreeItem from './TreeItem.jsx'
@@ -13,6 +14,9 @@ class TreeView extends React.Component {
     this.state = {
       focusedItem: null
     }
+  }
+  componentWillMount () {
+    this.id = uniqueId('workspace_content_')
   }
   focusItem = (item) => {
     this.setState({focusedItem: item.get('id')})
@@ -68,15 +72,22 @@ class TreeView extends React.Component {
             item={item}
             focused={item.get('id') === this.state.focusedItem}
             handleFocus={this.focusItem}
-            sizes={this.props.sizes}
             handleDoubleClick={this.selectItem}
           />
         )
       }).toArray()
     }
 
+    let style = ''
+    this.props.sizes.forEach((item, i) => {
+      style += `#${this.id} .tree-col:nth-child(${i + 1}) {
+        width: ${item}px;
+      }`
+    })
+
     return (
-      <div className='tree-view'>
+      <div className='tree-view' id={this.id}>
+        <style>{style}</style>
         <TreeHeader sizes={this.props.sizes} columns={['File', 'Offset', 'Start', 'End', 'Size', 'Format', 'Width', 'Height', 'Palette Address']} />
         <div className='tree-content' tabIndex='0' onKeyDown={this.handleKeyDown}>
           {children}

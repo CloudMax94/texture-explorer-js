@@ -45,6 +45,8 @@ class App extends React.Component {
     event.preventDefault()
   }
   handleDrop = (event) => {
+    event.preventDefault()
+    event.stopPropagation()
     openFile(event.dataTransfer.files[0], (data) => {
       this.props.createWorkspace(data)
     })

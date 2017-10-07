@@ -22,6 +22,9 @@ app.on('ready', function () {
     y: mainWindowState.y,
     width: mainWindowState.width,
     height: mainWindowState.height,
+    webPreferences: {
+      zoomFactor: argv.scale ? argv.scale : 1
+    },
     icon: path.join(__dirname, 'icon.png'),
     backgroundColor: '#262626'
   })
