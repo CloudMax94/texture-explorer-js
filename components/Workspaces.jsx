@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { setCurrentWorkspace } from '../actions/workspace'
+import { itemAddressCompare } from '../lib/helpers'
 
 import TreeView from './TreeView.jsx'
 
@@ -31,7 +32,7 @@ class Workspace extends React.Component {
     if (current) {
       currentDirectory = current.get('selectedDirectory')
       if (current.get('selectedDirectory')) {
-        items = current.get('items').toList().filter(item => item.get('parentId') === currentDirectory)
+        items = current.get('items').toList().filter(item => item.get('parentId') === currentDirectory).sort(itemAddressCompare)
       }
     }
     return (

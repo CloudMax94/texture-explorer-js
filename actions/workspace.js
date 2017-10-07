@@ -136,15 +136,6 @@ function prepareProfile (profile, length) {
   return items
 }
 
-function sortItems (items) {
-  return items.sort((a, b) => {
-    let res = 0
-    if (a.get('type') === 'directory') res -= 2
-    if (b.get('type') === 'directory') res += 2
-    return res + (a.get('address') > b.get('address') ? 1 : (b.get('address') > a.get('address') ? -1 : 0))
-  })
-}
-
 function itemHasValidData (item) {
   if (item.get('type') === 'texture') {
     if (Number.isInteger(item.get('address')) &&
@@ -321,15 +312,85 @@ export function createWorkspace (input) {
     })
 
     loadProfile(join(__dirname, '../profiles/' + key + '/default/fileList.json'), (profile) => {
-      const items = prepareProfile(profile)
+      const items = prepareProfile(profile, data.length)
       dispatch({
         type: WORKSPACE.ADD_WORKSPACE,
         workspace: workspace.merge({
-          items: sortItems(items),
+          items: items,
           selectedDirectory: 'root'
         })
       })
     })
+  }
+}
+
+export function createDirectory () {
+  return async (dispatch, getState) => {
+    let state = getState().workspace
+    let workspace = state.get('currentWorkspace')
+    let currentWorkspace = state.getIn(['workspaces', workspace])
+    if (!currentWorkspace) {
+      return
+    }
+
+    let selectedDirectory = currentWorkspace.getIn(['items', currentWorkspace.get('selectedDirectory')])
+    if (!selectedDirectory) {
+      return
+    }
+
+    let id = (idCounter++).toString(36)
+    let item = new DirectoryRecord({
+      id,
+      parentId: selectedDirectory.get('id'),
+      address: selectedDirectory.get('address')
+    })
+
+    dispatch({
+      type: WORKSPACE.ADD_ITEM,
+      workspace,
+      item
+    })
+  }
+}
+
+export function createTexture () {
+  return async (dispatch, getState) => {
+    let state = getState().workspace
+    let workspace = state.get('currentWorkspace')
+    let currentWorkspace = state.getIn(['workspaces', workspace])
+    if (!currentWorkspace) {
+      return
+    }
+
+    let selectedDirectory = currentWorkspace.getIn(['items', currentWorkspace.get('selectedDirectory')])
+    if (!selectedDirectory) {
+      return
+    }
+
+    let id = (idCounter++).toString(36)
+    let item = new TextureRecord({
+      id,
+      parentId: selectedDirectory.get('id'),
+      address: selectedDirectory.get('address'),
+      width: 32,
+      height: 32,
+      palette: 0
+    })
+
+    dispatch({
+      type: WORKSPACE.ADD_ITEM,
+      workspace,
+      item
+    })
+
+    generateItemBlob(item, currentWorkspace, (blob) => {
+      dispatch({
+        type: WORKSPACE.UPDATE_ITEM_BLOB,
+        workspace: workspace,
+        item: item.get('id'),
+        blob: blob
+      })
+    }, true)
   }
 }
 

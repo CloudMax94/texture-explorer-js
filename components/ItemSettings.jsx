@@ -22,6 +22,9 @@ class ItemSettings extends React.Component {
   handleOffsetChange = (event) => {
     this.setData('offset', parseInt(event.target.value))
   }
+  handleLengthChange = (event) => {
+    this.setData('length', parseInt(event.target.value))
+  }
   handleFormatChange = (event) => {
     this.setData('format', event.target.value)
   }
@@ -39,7 +42,22 @@ class ItemSettings extends React.Component {
     let extraLabels = null
     let extraInputs = null
     let disabled = !item || item.get('id') === 'root'
-    if (this.props.type === 'texture') {
+    if (this.props.type === 'directory') {
+      let size = ''
+      if (item) {
+        size = '0x' + padStart(item.get('length').toString(16), 8, 0).toUpperCase()
+      }
+      extraLabels = (
+        <div>
+          <label htmlFor={this.id + '_size'}>Size: </label>
+        </div>
+      )
+      extraInputs = (
+        <div>
+          <input id={this.id + '_size'} type='text' disabled={disabled} pattern='0x[a-fA-F0-9]+' value={size} onChange={this.handleLengthChange} />
+        </div>
+      )
+    } else if (this.props.type === 'texture') {
       let hasPalette = false
       let formatName = ''
       let width = ''
@@ -74,7 +92,7 @@ class ItemSettings extends React.Component {
           {formatInput}
           <input id={this.id + '_width'} type='number' disabled={disabled} value={width} onChange={this.handleWidthChange} />
           <input id={this.id + '_height'} type='number' disabled={disabled} value={height} onChange={this.handleHeightChange} />
-          {hasPalette ? <input id={this.id + '_palette'} type='text' pattern='-?0x[a-fA-F0-9]+' value={palette} onChange={this.handlePaletteChange} /> : null}
+          {hasPalette ? <input id={this.id + '_palette'} type='text' pattern='0x[a-fA-F0-9]+' value={palette} onChange={this.handlePaletteChange} /> : null}
         </div>
       )
     } else {
@@ -99,7 +117,7 @@ class ItemSettings extends React.Component {
         </div>
         <div>
           <input id={this.id + '_name'} type='text' disabled={disabled} value={name} onChange={this.handleNameChange} />
-          <input id={this.id + '_address'} type='text' disabled={disabled} pattern='-?0x[a-fA-F0-9]+' value={address} onChange={this.handleAddressChange} />
+          <input id={this.id + '_address'} type='text' disabled={disabled} pattern='0x[a-fA-F0-9]+' value={address} onChange={this.handleAddressChange} />
           <input id={this.id + '_offset'} type='text' disabled={disabled} pattern='-?0x[a-fA-F0-9]+' value={offset} onChange={this.handleOffsetChange} />
           {extraInputs}
         </div>

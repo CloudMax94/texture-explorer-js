@@ -21,6 +21,8 @@ export default function workspace (state = fromJS({
       return state.setIn(dataPath, Buffer.concat([buffer.slice(0, start), data, buffer.slice(start + data.length)]))
     case WORKSPACE.ADD_WORKSPACE:
       return state.setIn(['workspaces', action.workspace.get('id')], action.workspace)
+    case WORKSPACE.ADD_ITEM:
+      return state.setIn(['workspaces', action.workspace, 'items', action.item.get('id')], action.item)
     case WORKSPACE.UPDATE_ITEM_BLOB:
       return state.updateIn(['workspaces', action.workspace, 'items', action.item], (item) => {
         let oldBlob = item.get('blob')

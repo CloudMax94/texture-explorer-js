@@ -3,6 +3,7 @@ import Immutable from 'immutable'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { setCurrentDirectory, setCurrentTexture } from '../actions/workspace'
+import { itemAddressCompare } from '../lib/helpers'
 
 class Overview extends React.Component {
   constructor (props) {
@@ -78,7 +79,7 @@ function mapStateToProps (state) {
   if (currentWorkspace) {
     items = state.workspace.getIn(['workspaces', currentWorkspace, 'items'])
     if (items) {
-      items = items.filter(x => x.type === 'directory')
+      items = items.filter(x => x.type === 'directory').sort(itemAddressCompare)
     }
   }
   return {
