@@ -1,9 +1,10 @@
 {
   "name": "texture-explorer",
+  "productName": "Texture Explorer.js",
   "version": "0.1.0",
   "main": "main.js",
   "scripts": {
-    "start": "electron main.js debug",
+    "start": "electron . debug",
     "browser": "gulp"
   },
   "dependencies": {

@@ -1,12 +1,14 @@
 import * as WORKSPACE from '../constants/workspace'
 
 import { Record, Map } from 'immutable'
+import { remote } from 'electron'
 import { join } from 'path'
 import { throttle } from 'lodash'
 import { loadProfile, saveFileAs } from '../lib/fileHandler'
 import worker from '../lib/worker'
 import textureManipulator from '../lib/textureManipulator'
 
+const { app } = remote
 const textureWorker = worker('textures')
 let idCounter = 0
 
@@ -290,7 +292,7 @@ export function createWorkspace (input) {
       workspace: workspace
     })
 
-    loadProfile(join(__dirname, '../profiles/' + key + '/default/fileList.json'), (profile) => {
+    loadProfile(join(app.getPath('userData'), '/Profiles/' + key + '/Default.json'), (profile) => {
       const items = prepareProfile(profile, data.length)
       dispatch({
         type: WORKSPACE.ADD_WORKSPACE,

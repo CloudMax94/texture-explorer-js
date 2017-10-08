@@ -22,7 +22,7 @@ const argv = remote.getGlobal('argv')
 class App extends React.Component {
   componentDidMount () {
     each(argv._, (filePath) => {
-      if (filePath !== 'main.js') {
+      if (filePath !== '.') {
         exists(filePath, (exists) => {
           if (exists) {
             openFile(filePath, (data) => {
