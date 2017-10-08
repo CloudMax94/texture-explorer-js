@@ -44,11 +44,12 @@ $menu-popup-separator-margin:   5px 0;
     position: relative;
     white-space: nowrap;
 
-    > span {
-        cursor: pointer;
+    &.disabled {
+        color: darken($menu-color, 15%);
+        cursor: default;
     }
 
-    &:hover {
+    &:not(.disabled):hover {
         background: $menu-background-color-hover;
         box-shadow: 0 0 0 rgba($menu-background-color-hover, .75);
         color: $menu-color-hover;
@@ -83,7 +84,7 @@ $menu-popup-separator-margin:   5px 0;
 
     &[data-accelerator]:after {
         color: darken($menu-color, 15%);
-        cursor: pointer;
+        cursor: inherit;
         content: attr(data-accelerator);
         margin-left: 8px;
         flex: 0 0 auto;

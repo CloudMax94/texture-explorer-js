@@ -3,7 +3,7 @@ import { acceleratorToText } from '../lib/accelerator'
 
 class Menu extends React.Component {
   handleClick (item) {
-    if (item.click) {
+    if (item.enabled && item.click) {
       item.click()
     }
   }
@@ -18,7 +18,9 @@ class Menu extends React.Component {
     const classes = [
       'menu-item'
     ]
-
+    if (!item.enabled) {
+      classes.push('disabled')
+    }
     let subMenu = null
     if (item.submenu) {
       classes.push('parent')

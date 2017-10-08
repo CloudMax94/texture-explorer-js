@@ -54,3 +54,10 @@ export function resetPanels () {
     type: INTERFACE.RESET_PANELS
   }
 }
+
+export function toggleAboutDialog (state = undefined) {
+  return {
+    type: INTERFACE.TOGGLE_ABOUT_DIALOG,
+    state
+  }
+}

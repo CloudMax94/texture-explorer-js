@@ -1,10 +1,24 @@
-.dialog {
+.dialog-wrap {
     position: absolute;
     z-index: 10000;
-    top: 50%;
-    transform: translateY(-50%);
-    left: 0px;
-    right: 0px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    margin: 0 !important;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(0, 0, 0, .33);
+}
+
+.dialog {
+    position: relative;
+    
+    min-width: 360px;
     width: fit-content;
     height: fit-content;
     margin: auto;
@@ -16,12 +30,7 @@
                 0 2px 4px -2px #000;
     box-sizing: border-box;
     color: #3c3c3c;
-    padding: 0;
-
-    .dialog-wrap {
-        margin: 16px 20px;
-        min-width: 360px;
-    }
+    padding: 16px 20px;
 
     .dialog-close {
         color: #666;
@@ -40,6 +49,7 @@
 
     menu {
         margin-top: 1.75em;
+        margin-bottom: 0;
         text-align: right;
 
         button {

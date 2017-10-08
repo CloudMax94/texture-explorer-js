@@ -7,6 +7,7 @@ const defaultLayout = [
   [['settings', 'profileManager', 'finder']],
   [['directorySettings'], ['textureSettings'], ['itemPreview']]
 ]
+const defaultContainerSizes = [160, 300, 300, 210]
 export default function ui (state = fromJS({
   settings: {
     layout: defaultLayout,
@@ -33,15 +34,16 @@ export default function ui (state = fromJS({
         hidden: false
       }
     },
-    containerSizes: [160, 300, 300, 210],
+    containerSizes: defaultContainerSizes,
     treeSizes: [300, 115, 115, 115, 95, 85, 60, 60, 130]
   },
   status: null,
-  menu: null
+  menu: null,
+  showAbout: false
 }), action) {
   switch (action.type) {
     case INTERFACE.SET_APPLICATION_MENU:
-      return state.set('menu', fromJS(action.menu))
+      return state.set('menu', Object.assign({}, action.menu))
     case INTERFACE.SET_STATUS:
       return state.set('status', action.status)
     case INTERFACE.MOVE_PANEL_TO_CONTAINER: {
@@ -81,7 +83,15 @@ export default function ui (state = fromJS({
     case INTERFACE.SET_TREE_SIZE:
       return state.setIn(['settings', 'treeSizes', action.column], action.size)
     case INTERFACE.RESET_PANELS:
-      return state.setIn(['settings', 'layout'], fromJS(defaultLayout))
+      return state
+        .setIn(['settings', 'layout'], fromJS(defaultLayout))
+        .setIn(['settings', 'containerSizes'], fromJS(defaultContainerSizes))
+    case INTERFACE.TOGGLE_ABOUT_DIALOG:
+      let newState = action.state
+      if (typeof newState === 'undefined') {
+        newState = !state.get('showAbout')
+      }
+      return state.set('showAbout', newState)
     default:
       return state
   }
