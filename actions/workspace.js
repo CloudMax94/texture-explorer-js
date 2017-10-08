@@ -40,7 +40,8 @@ const TextureRecord = Record({
   height: 32,
   palette: 0,
   type: 'texture',
-  blob: null
+  blob: null,
+  blob_state: WORKSPACE.BLOB_UNSET
 })
 
 function asyncThrottle (func, cbArg, timeout) {
@@ -199,31 +200,9 @@ function generateItemBlob (item, workspace, callback, forced) {
 }
 
 export function setCurrentDirectory (item) {
-  return async (dispatch, getState) => {
-    dispatch({
-      type: WORKSPACE.SET_CURRENT_DIRECTORY,
-      item
-    })
-
-    let workspaceState = getState().workspace
-    let directoryId = item.get('id')
-    let currentWorkspace = workspaceState.getIn(['workspaces', workspaceState.get('currentWorkspace')])
-    const childTextures = workspaceState.getIn(['workspaces', workspaceState.get('currentWorkspace'), 'items']).filter((i) => {
-      return i.type === 'texture' && i.parentId === directoryId
-    })
-
-    childTextures.forEach((texture) => {
-      generateItemBlob(texture, currentWorkspace, (blob) => {
-        if (blob) {
-          dispatch({
-            type: WORKSPACE.UPDATE_ITEM_BLOB,
-            workspace: currentWorkspace.get('id'),
-            item: texture.get('id'),
-            blob: blob
-          })
-        }
-      })
-    })
+  return {
+    type: WORKSPACE.SET_CURRENT_DIRECTORY,
+    item
   }
 }
 
@@ -324,6 +303,27 @@ export function createWorkspace (input) {
   }
 }
 
+export function updateItemBlob (item) {
+  return async (dispatch, getState) => {
+    let itemId = item.get('id')
+    let state = getState().workspace
+    let workspaceId = state.get('currentWorkspace')
+    let workspace = state.getIn(['workspaces', workspaceId])
+    if (!workspace) {
+      return
+    }
+
+    generateItemBlob(item, workspace, (blob) => {
+      dispatch({
+        type: WORKSPACE.UPDATE_ITEM_BLOB,
+        workspace: workspaceId,
+        item: itemId,
+        blob
+      })
+    }, true)
+  }
+}
+
 export function createDirectory () {
   return async (dispatch, getState) => {
     let state = getState().workspace
@@ -382,15 +382,6 @@ export function createTexture () {
       workspace,
       item
     })
-
-    generateItemBlob(item, currentWorkspace, (blob) => {
-      dispatch({
-        type: WORKSPACE.UPDATE_ITEM_BLOB,
-        workspace: workspace,
-        item: item.get('id'),
-        blob: blob
-      })
-    }, true)
   }
 }
 
@@ -410,35 +401,10 @@ export function deleteItem (item) {
 }
 
 export function insertData (data, start) {
-  return async (dispatch, getState) => {
-    dispatch({
-      type: WORKSPACE.INSERT_DATA,
-      data,
-      start
-    })
-
-    let state = getState().workspace
-    let currentWorkspace = state.getIn(['workspaces', state.get('currentWorkspace')])
-    const textures = currentWorkspace.get('items').filter((texture) => {
-      if (texture.get('type') !== 'texture') {
-        return false
-      }
-      const textureLength = texture.get('width') *
-                            texture.get('height') *
-                            textureManipulator.getFormat(texture.get('format')).sizeModifier()
-
-      return texture.get('address') < start + data.length && start < texture.get('address') + textureLength
-    })
-    textures.forEach((texture) => {
-      generateItemBlob(texture, currentWorkspace, (blob) => {
-        dispatch({
-          type: WORKSPACE.UPDATE_ITEM_BLOB,
-          workspace: currentWorkspace.get('id'),
-          item: texture.get('id'),
-          blob: blob
-        })
-      }, true)
-    })
+  return {
+    type: WORKSPACE.INSERT_DATA,
+    data,
+    start
   }
 }
 

@@ -7,8 +7,19 @@ import { itemAddressCompare } from '../lib/helpers'
 import TreeView from './TreeView.jsx'
 
 class Workspace extends React.Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      'search': ''
+    }
+  }
+
   handleTabClick (workspace) {
     this.props.setCurrentWorkspace(workspace)
+  }
+
+  handleSearch = (event) => {
+    this.setState({search: event.target.value})
   }
 
   render () {
@@ -31,8 +42,24 @@ class Workspace extends React.Component {
     let currentDirectory
     if (current) {
       currentDirectory = current.get('selectedDirectory')
-      if (current.get('selectedDirectory')) {
-        items = current.get('items').toList().filter(item => item.get('parentId') === currentDirectory).sort(itemAddressCompare)
+      if (currentDirectory) {
+        let search = this.state.search.toLowerCase()
+        if (search.length) {
+          items = current.get('items').toList().filter(item => {
+            if (item.get('type') === 'texture' && item.get('name').toLowerCase().indexOf(search) > -1) {
+              let parentId = item.get('parentId')
+              while (parentId) {
+                if (parentId === currentDirectory) {
+                  return true
+                }
+                parentId = current.getIn(['items', parentId, 'parentId'])
+              }
+            }
+            return false
+          }).sort(itemAddressCompare)
+        } else {
+          items = current.get('items').toList().filter(item => item.get('parentId') === currentDirectory).sort(itemAddressCompare)
+        }
       }
     }
     return (
@@ -42,6 +69,9 @@ class Workspace extends React.Component {
         </div>
         <div className='workspace-content'>
           <TreeView sizes={sizes} items={items} directory={currentDirectory} />
+        </div>
+        <div className='search-bar'>
+          <input type='text' placeholder='Search...' onChange={this.handleSearch} />
         </div>
       </div>
     )

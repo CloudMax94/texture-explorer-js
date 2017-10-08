@@ -1,22 +1,8 @@
 // @flow
-import { fromJS, List } from 'immutable'
+import { fromJS } from 'immutable'
 import * as WORKSPACE from '../constants/workspace'
-// import textureManipulator from '../lib/textureManipulator'
-
-function getSuccessors (items, item) {
-  let successors = []
-  function traverse (parentId) {
-    items.forEach((i) => {
-      if (i.get('parentId') === parentId) {
-        let id = i.get('id')
-        successors.push(id)
-        traverse(id)
-      }
-    })
-  }
-  traverse(item)
-  return successors
-}
+import { getSuccessors } from '../lib/helpers'
+import textureManipulator from '../lib/textureManipulator'
 
 export default function workspace (state = fromJS({
   workspaces: {},
@@ -31,9 +17,22 @@ export default function workspace (state = fromJS({
       return state.set('currentWorkspace', action.workspace.id)
     case WORKSPACE.INSERT_DATA:
       let { data, start } = action
-      const dataPath = ['workspaces', state.get('currentWorkspace'), 'data']
-      let buffer = state.getIn(dataPath)
-      return state.setIn(dataPath, Buffer.concat([buffer.slice(0, start), data, buffer.slice(start + data.length)]))
+      return state.updateIn(['workspaces', state.get('currentWorkspace')], (workspace) => {
+        let newItems = workspace.get('items').map((item) => {
+          if (item.get('type') !== 'texture') {
+            return item
+          }
+          const textureLength = item.get('width') *
+                                item.get('height') *
+                                textureManipulator.getFormat(item.get('format')).sizeModifier()
+          if (item.get('address') < start + data.length && start < item.get('address') + textureLength) {
+            item = item.set('blob', null).set('blob_state', WORKSPACE.BLOB_UNSET)
+          }
+          return item
+        })
+        let buffer = workspace.get('data')
+        return workspace.set('items', newItems).set('data', Buffer.concat([buffer.slice(0, start), data, buffer.slice(start + data.length)]))
+      })
     case WORKSPACE.ADD_WORKSPACE:
       return state.setIn(['workspaces', action.workspace.get('id')], action.workspace)
     case WORKSPACE.ADD_ITEM:
@@ -51,12 +50,15 @@ export default function workspace (state = fromJS({
           return items.deleteAll([action.item, ...successors])
         })
       })
+    case WORKSPACE.START_UPDATE_ITEM_BLOB:
+      return state.setIn(['workspaces', action.workspaceId, 'items', action.itemId, 'blob_state'], WORKSPACE.BLOB_SETTING)
     case WORKSPACE.UPDATE_ITEM_BLOB:
       return state.updateIn(['workspaces', action.workspace, 'items', action.item], (item) => {
         let oldBlob = item.get('blob')
         if (oldBlob) {
           URL.revokeObjectURL(oldBlob)
         }
+        item = item.set('blob_state', WORKSPACE.BLOB_SET)
         if (!action.blob) {
           return item.set('blob', null)
         }

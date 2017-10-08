@@ -1,10 +1,32 @@
 import React from 'react'
 import { padStart } from 'lodash'
 import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
 import textureManipulator from '../lib/textureManipulator'
+import { getItemPath } from '../lib/helpers'
 import ImmutablePureComponent from './ImmutablePureComponent.jsx'
 
+import { BLOB_UNSET } from '../constants/workspace'
+import { updateItemBlob } from '../actions/workspace'
+
 class TreeItem extends ImmutablePureComponent {
+  componentWillMount () {
+    this.blobUpdate(this.props)
+  }
+
+  componentWillReceiveProps (nextProps) {
+    this.blobUpdate(nextProps)
+  }
+
+  blobUpdate (props) {
+    const { item, updateItemBlob } = props
+    if (item) {
+      if (item.get('blob_state') === BLOB_UNSET) {
+        updateItemBlob(item)
+      }
+    }
+  }
+
   handleDoubleClick = (event) => {
     event.preventDefault()
     this.props.handleDoubleClick(this.props.item)
@@ -16,9 +38,9 @@ class TreeItem extends ImmutablePureComponent {
   }
 
   render () {
-    const { item, offset, focused } = this.props
+    const { item, offset, focused, path } = this.props
     const columns = [
-      item.get('name')
+      path
     ]
     columns.push(...[
       (offset < 0 ? '-' : '') + '0x' + padStart(Math.abs(offset).toString(16), 8, 0).toUpperCase(),
@@ -71,9 +93,17 @@ function mapStateToProps (state, ownProps) {
   let workspace = state.workspace.getIn(['workspaces', state.workspace.get('currentWorkspace')])
   let parentAddress = workspace.getIn(['items', ownProps.item.get('parentId'), 'address'])
   let offset = ownProps.item.get('address') - parentAddress
+  let path = getItemPath(workspace, ownProps.item.get('id'), true)
   return {
-    offset
+    offset,
+    path
   }
 }
 
-export default connect(mapStateToProps)(TreeItem)
+function mapDispatchToProps (dispatch) {
+  return bindActionCreators({
+    updateItemBlob
+  }, dispatch)
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(TreeItem)
