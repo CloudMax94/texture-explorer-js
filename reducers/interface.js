@@ -1,10 +1,9 @@
-// @flow
 import { fromJS, List } from 'immutable'
 import * as INTERFACE from '../constants/interface'
 const defaultLayout = [
   [],
   [['overview']],
-  [['settings', 'profileManager', 'finder']],
+  [['profileManager', 'settings', 'finder']],
   [['directorySettings'], ['textureSettings'], ['itemPreview']]
 ]
 const defaultContainerSizes = [160, 300, 300, 210]

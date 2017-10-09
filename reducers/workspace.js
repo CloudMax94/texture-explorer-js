@@ -1,7 +1,6 @@
-// @flow
 import { fromJS } from 'immutable'
 import * as WORKSPACE from '../constants/workspace'
-import { getSuccessors } from '../lib/helpers'
+import * as PROFILE from '../constants/profile'
 import textureManipulator from '../lib/textureManipulator'
 
 export default function workspace (state = fromJS({
@@ -26,7 +25,7 @@ export default function workspace (state = fromJS({
                                 item.get('height') *
                                 textureManipulator.getFormat(item.get('format')).sizeModifier()
           if (item.get('address') < start + data.length && start < item.get('address') + textureLength) {
-            item = item.set('blob', null).set('blob_state', WORKSPACE.BLOB_UNSET)
+            item = item.set('blob', null).set('blobState', WORKSPACE.BLOB_UNSET)
           }
           return item
         })
@@ -35,37 +34,60 @@ export default function workspace (state = fromJS({
       })
     case WORKSPACE.ADD_WORKSPACE:
       return state.setIn(['workspaces', action.workspace.get('id')], action.workspace)
-    case WORKSPACE.ADD_ITEM:
-      return state.setIn(['workspaces', action.workspace, 'items', action.item.get('id')], action.item)
-    case WORKSPACE.DELETE_ITEM:
-      return state.updateIn(['workspaces', action.workspace], (workspace) => {
-        if (workspace.get('selectedDirectory') === action.item) {
-          workspace = workspace.set('selectedDirectory', null)
-        }
-        if (workspace.get('selectedTexture') === action.item) {
-          workspace = workspace.set('selectedTexture', null)
-        }
-        return workspace.update('items', (items) => {
-          let successors = getSuccessors(items, action.item)
-          return items.deleteAll([action.item, ...successors])
-        })
-      })
     case WORKSPACE.START_UPDATE_ITEM_BLOB:
-      return state.setIn(['workspaces', action.workspaceId, 'items', action.itemId, 'blob_state'], WORKSPACE.BLOB_SETTING)
+      return state.mergeIn(['workspaces', action.workspaceId, 'blobs', action.itemId], {blobState: WORKSPACE.BLOB_SETTING})
     case WORKSPACE.UPDATE_ITEM_BLOB:
-      return state.updateIn(['workspaces', action.workspace, 'items', action.item], (item) => {
+      state = state.mergeIn(['workspaces', action.workspaceId, 'blobs', action.itemId], {})
+      return state.updateIn(['workspaces', action.workspaceId, 'blobs', action.itemId], (item) => {
         let oldBlob = item.get('blob')
         if (oldBlob) {
           URL.revokeObjectURL(oldBlob)
         }
-        item = item.set('blob_state', WORKSPACE.BLOB_SET)
+        item = item.set('blobState', WORKSPACE.BLOB_SET)
         if (!action.blob) {
           return item.set('blob', null)
         }
         return item.set('blob', URL.createObjectURL(action.blob))
       })
-    case WORKSPACE.SET_ITEM_DATA:
-      return state.setIn(['workspaces', action.workspace, 'items', action.item, action.key], action.value)
+    case WORKSPACE.SET_PROFILE:
+      return state.updateIn(['workspaces', action.workspaceId], (workspace) => {
+        return workspace
+          .set('selectedDirectory', null)
+          .set('selectedTexture', null)
+          .set('profile', action.profileId)
+      })
+    case PROFILE.SET_ITEM_DATA: {
+      const { itemId, key } = action
+      if (
+        key === 'address' ||
+        key === 'format' ||
+        key === 'width' ||
+        key === 'height' ||
+        key === 'palette'
+      ) {
+        const workspaces = state.get('workspaces').map((workspace) => {
+          if (workspace.getIn(['blobs', itemId, 'blobState']) === WORKSPACE.BLOB_SET) {
+            workspace = workspace.setIn(['blobs', action.itemId, 'blobState'], WORKSPACE.BLOB_UNSET)
+          }
+          return workspace
+        })
+        return state.set('workspaces', workspaces)
+      }
+      return state
+    }
+    case PROFILE.DELETE_ITEMS:
+      const { itemIds } = action
+      return state.update('workspaces', (workspaces) => {
+        return workspaces.map((workspace) => {
+          if (itemIds.includes(workspace.get('selectedDirectory'))) {
+            workspace = workspace.set('selectedDirectory', null)
+          }
+          if (itemIds.includes(workspace.get('selectedTexture'))) {
+            workspace = workspace.set('selectedTexture', null)
+          }
+          return workspace.set('blobs', workspace.get('blobs').deleteAll(itemIds))
+        })
+      })
     default:
       return state
   }

@@ -184,15 +184,17 @@
 }
 
 .texture-viewer {
-    .texture-viewer-inner {
-        height: 100%;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+    height: 100%;
+    width: 100%;
     img {
         background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2M8duzYfwY0YGVlxYguxjgUFKI7GsTH5m4M3w1ChQC2sSSgO3MQyAAAAABJRU5ErkJggg==) repeat;
+    }
+}
+
+.profile-manager {
+    width: 100%;
+    select {
+        width: 100%;
     }
 }
 

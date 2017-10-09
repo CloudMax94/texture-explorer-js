@@ -1,17 +1,16 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
 import { padStart, uniqueId } from 'lodash'
 
-import { setItemData } from '../actions/workspace'
 import { getFormats, getFormat } from '../lib/textureManipulator'
 
-class ItemSettings extends React.Component {
+import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+
+class ItemSettings extends ImmutablePureComponent {
   componentWillMount () {
     this.id = uniqueId('item_setting_')
   }
   setData (key, value) {
-    this.props.setItemData(this.props.workspace, this.props.item.get('id'), key, value)
+    this.props.setItemData(this.props.profileId, this.props.item.get('id'), key, value)
   }
   handleNameChange = (event) => {
     this.setData('name', event.target.value)
@@ -38,7 +37,7 @@ class ItemSettings extends React.Component {
     this.setData('palette', parseInt(event.target.value))
   }
   render () {
-    const { item, parentAddress } = this.props
+    const { item } = this.props
     let extraLabels = null
     let extraInputs = null
     let disabled = !item || item.get('id') === 'root'
@@ -103,8 +102,7 @@ class ItemSettings extends React.Component {
     let address = ''
     if (item) {
       name = item.get('name')
-      offset = item.get('address') - parentAddress
-      offset = (offset < 0 ? '-' : '') + '0x' + padStart(Math.abs(offset).toString(16), 8, 0).toUpperCase()
+      offset = (this.props.offset < 0 ? '-' : '') + '0x' + padStart(Math.abs(this.props.offset).toString(16), 8, 0).toUpperCase()
       address = '0x' + padStart(item.get('address').toString(16), 8, 0).toUpperCase()
     }
     return (
@@ -126,36 +124,4 @@ class ItemSettings extends React.Component {
   }
 }
 
-function mapStateToProps (state, ownProps) {
-  let workspace = state.workspace.getIn(['workspaces', state.workspace.get('currentWorkspace')])
-  let item
-  let parentAddress = 0
-  if (workspace) {
-    let id
-    if (ownProps.type === 'texture') {
-      id = workspace.get('selectedTexture')
-    } else {
-      id = workspace.get('selectedDirectory')
-    }
-    if (id) {
-      item = workspace.getIn(['items', id])
-      let parentId = item.get('parentId')
-      if (parentId) {
-        parentAddress = workspace.getIn(['items', item.get('parentId'), 'address'])
-      }
-    }
-  }
-  return {
-    workspace: state.workspace.get('currentWorkspace'),
-    item,
-    parentAddress
-  }
-}
-
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({
-    setItemData
-  }, dispatch)
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ItemSettings)
+export default ItemSettings

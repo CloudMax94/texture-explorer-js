@@ -3,6 +3,7 @@ $menu-font-size:                14px;
 $menu-color-hover:              #fff;
 $menu-item-padding:             0 8px;
 $menu-item-height:              24px;
+$menu-item-min-width:           128px;
 //BAR
 $menu-bar-background-color:     $panel-color;
 //BAR MENU
@@ -115,7 +116,7 @@ $menu-popup-separator-margin:   5px 0;
         .menu {
             background: $menu-background-color;
             border: 1px solid $menu-border-color;
-            min-width: 128px;
+            min-width: $menu-item-min-width;
         }
     }
 
@@ -149,27 +150,33 @@ $menu-popup-separator-margin:   5px 0;
  * Context Menu Style
  */
 
+.context-menu-backdrop {
+    z-index: 10000;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
 .context-menu {
+    z-index: 10000;
     display: block;
     position: absolute;
+    background: $menu-background-color;
+    border: 1px solid $menu-border-color;
+    min-width: $menu-item-min-width;
+    padding: $menu-popup-padding 0;
+    font-size: 13px;
 
     .menu-separator {
         border-top: $menu-popup-separator-style;
         margin: $menu-popup-separator-margin;
     }
 
-    .menu {
-        background: $menu-popup-background-color;
-        min-width: 128px;
-        padding: $menu-popup-padding 0;
-
-        .menu {
-            top: $menu-popup-padding * -1;
-        }
-    }
-
     .menu-item {
-        color: $menu-popup-color;
+        color: $menu-color;
+        padding: 4px 8px;
 
         &.parent:after {
             border-left-color: $menu-popup-color;

@@ -1,12 +1,19 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { setCurrentWorkspace } from '../actions/workspace'
+import {
+  setCurrentWorkspace,
+  setCurrentDirectory,
+  setCurrentTexture
+} from '../actions/workspace'
+import { deleteItem } from '../actions/profile'
+import { setTreeSize } from '../actions/interface'
 import { itemAddressCompare } from '../lib/helpers'
 
+import ImmutablePureComponent from './ImmutablePureComponent.jsx'
 import TreeView from './TreeView.jsx'
 
-class Workspace extends React.Component {
+class Workspace extends ImmutablePureComponent {
   constructor (props) {
     super(props)
     this.state = {
@@ -23,12 +30,23 @@ class Workspace extends React.Component {
   }
 
   render () {
-    const { workspaces, current, sizes } = this.props
+    const {
+      workspaces,
+      sizes,
+      items,
+      currentWorkspace,
+      selectedDirectory,
+      setCurrentDirectory,
+      setCurrentTexture,
+      deleteItem,
+      setTreeSize
+    } = this.props
+
     const tabs = workspaces.toList().map((workspace, i) => {
       const classes = [
         'workspace-tab'
       ]
-      if (workspace === current) {
+      if (workspace.get('id') === currentWorkspace) {
         classes.push('selected')
       }
       return (
@@ -38,28 +56,24 @@ class Workspace extends React.Component {
         </div>
       )
     })
-    let items = null
-    let currentDirectory
-    if (current) {
-      currentDirectory = current.get('selectedDirectory')
-      if (currentDirectory) {
-        let search = this.state.search.toLowerCase()
-        if (search.length) {
-          items = current.get('items').toList().filter(item => {
-            if (item.get('type') === 'texture' && item.get('name').toLowerCase().indexOf(search) > -1) {
-              let parentId = item.get('parentId')
-              while (parentId) {
-                if (parentId === currentDirectory) {
-                  return true
-                }
-                parentId = current.getIn(['items', parentId, 'parentId'])
+    let filteredItems = null
+    if (items) {
+      let search = this.state.search.toLowerCase()
+      if (search.length) {
+        filteredItems = items.toList().filter(item => {
+          if (item.get('type') === 'texture' && item.get('name').toLowerCase().indexOf(search) > -1) {
+            let parentId = item.get('parentId')
+            while (parentId) {
+              if (parentId === selectedDirectory) {
+                return true
               }
+              parentId = items.getIn([parentId, 'parentId'])
             }
-            return false
-          }).sort(itemAddressCompare)
-        } else {
-          items = current.get('items').toList().filter(item => item.get('parentId') === currentDirectory).sort(itemAddressCompare)
-        }
+          }
+          return false
+        }).sort(itemAddressCompare)
+      } else {
+        filteredItems = items.toList().filter(item => item.get('parentId') === selectedDirectory).sort(itemAddressCompare)
       }
     }
     return (
@@ -68,7 +82,15 @@ class Workspace extends React.Component {
           {tabs}
         </div>
         <div className='workspace-content'>
-          <TreeView sizes={sizes} items={items} directory={currentDirectory} />
+          <TreeView
+            sizes={sizes}
+            items={filteredItems}
+            directory={selectedDirectory}
+            setCurrentDirectory={setCurrentDirectory}
+            setCurrentTexture={setCurrentTexture}
+            setTreeSize={setTreeSize}
+            deleteItem={deleteItem}
+          />
         </div>
         <div className='search-bar'>
           <input type='text' placeholder='Search...' onChange={this.handleSearch} />
@@ -79,15 +101,33 @@ class Workspace extends React.Component {
 }
 
 function mapStateToProps (state) {
+  let currentWorkspace = state.workspace.get('currentWorkspace')
+  let workspace = state.workspace.getIn(['workspaces', currentWorkspace])
+  let items
+  let selectedDirectory
+  if (workspace) {
+    selectedDirectory = workspace.selectedDirectory
+    if (selectedDirectory) {
+      items = state.profile.getIn(['profiles', workspace.get('profile'), 'items'])
+    }
+  }
   return {
     sizes: state.ui.getIn(['settings', 'treeSizes']),
     workspaces: state.workspace.get('workspaces'),
-    current: state.workspace.getIn(['workspaces', state.workspace.get('currentWorkspace')])
+    currentWorkspace,
+    selectedDirectory,
+    items
   }
 }
 
 function mapDispatchToProps (dispatch) {
-  return bindActionCreators({setCurrentWorkspace}, dispatch)
+  return bindActionCreators({
+    setCurrentWorkspace,
+    setCurrentDirectory,
+    setCurrentTexture,
+    deleteItem,
+    setTreeSize
+  }, dispatch)
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Workspace)

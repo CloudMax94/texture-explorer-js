@@ -12,6 +12,7 @@ html {
 }
 
 body {
+    overflow: hidden;
     background: $background-color;
     color: $text-color;
     font-size: 16px;

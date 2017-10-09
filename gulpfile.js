@@ -58,7 +58,11 @@ gulp.task('sass-browser', function () {
     .pipe(gulp.dest('./browser/assets/css'))
 })
 
-gulp.task('watch-browser', ['sass-browser'], function () {
+gulp.task('set-prod-node-env', function () {
+  return (process.env.NODE_ENV = 'production')
+})
+
+gulp.task('watch-browser', ['set-prod-node-env', 'sass-browser'], function () {
   mainBundle()
   var pattern
   pattern = ['./assets/**/*.*', './favicon.ico', 'index.html']

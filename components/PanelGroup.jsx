@@ -1,13 +1,12 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
 
 import { remote } from 'electron'
-import {movePanelToContainer, movePanelGroupToContainer} from '../actions/interface'
+
+import ImmutablePureComponent from './ImmutablePureComponent.jsx'
 
 const { MenuItem, Menu } = remote
 
-class PanelGroup extends React.Component {
+class PanelGroup extends ImmutablePureComponent {
   constructor (props) {
     super(props)
     this.state = {
@@ -91,33 +90,37 @@ class PanelGroup extends React.Component {
   }
 
   render () {
-    if (this.state.selected > this.props.panels.length) {
+    const panels = this.props.children
+    if (panels.size < 1) {
+      return null
+    }
+    if (this.state.selected > panels.size) {
       this.setCurrentTab(0)
     }
     return (
       <div className='panel'>
         <div className='panel-header' onContextMenu={this.handleGroupContext}>
           <div className='panel-tabs'>
-            {this.props.panels.map((panel, i) => {
-              if (this.state.selected === null || this.state.selected > this.props.panels.length) {
+            {panels.map((panel, i) => {
+              if (this.state.selected === null || this.state.selected > panels.size) {
                 this.state.selected = i
               }
               let classes = 'panel-tab'
               if (this.state.selected === i) {
                 classes += ' selected'
               }
-              return <div key={i} index={i} className={classes} onClick={this.setCurrentTab.bind(this, i)} onContextMenu={this.handleTabContext.bind(this, i)}>{panel.name}</div>
+              return <div key={i} index={i} className={classes} onClick={this.setCurrentTab.bind(this, i)} onContextMenu={this.handleTabContext.bind(this, i)}>{panel.key}</div>
             })}
           </div>
         </div>
         <div className='panel-content'>
-          {this.props.panels.map((panel, i) => {
+          {panels.map((panel, i) => {
             const style = {}
             if (this.state.selected !== i) {
               style.display = 'none'
             }
             return (
-              <div className={'panel-item'} key={i} style={style}>{panel.item}</div>
+              <div className={'panel-item'} key={i} style={style}>{panel}</div>
             )
           })}
         </div>
@@ -126,15 +129,4 @@ class PanelGroup extends React.Component {
   }
 }
 
-function mapStateToProps (state) {
-  return {}
-}
-
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({
-    movePanelToContainer,
-    movePanelGroupToContainer
-  }, dispatch)
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(PanelGroup)
+export default PanelGroup

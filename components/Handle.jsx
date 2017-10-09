@@ -1,12 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
 import { throttle } from 'lodash'
 
-import { setContainerSize } from '../actions/interface'
+import ImmutablePureComponent from './ImmutablePureComponent.jsx'
 
-class Handle extends React.Component {
+class Handle extends ImmutablePureComponent {
   componentWillMount () {
     this.handleMouseMove = throttle(this.handleMouseMove, 30)
   }
@@ -37,7 +35,7 @@ class Handle extends React.Component {
       diff = this.startPos - offset
     }
     const newSize = this.startSize + diff
-    this.props.setContainerSize(this.props.index, newSize)
+    this.props.onResize(newSize)
   }
 
   handleMouseUp = (event) => {
@@ -52,7 +50,7 @@ class Handle extends React.Component {
     } else {
       this.startPos = event.clientX
     }
-    this.startSize = this.props.containerSizes.get(this.props.index)
+    this.startSize = this.props.size
 
     window.addEventListener('mousemove', this.handleMouseMove, false)
   }
@@ -66,14 +64,4 @@ class Handle extends React.Component {
   }
 }
 
-function mapStateToProps (state) {
-  return {
-    containerSizes: state.ui.getIn(['settings', 'containerSizes'])
-  }
-}
-
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({setContainerSize}, dispatch)
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Handle)
+export default Handle

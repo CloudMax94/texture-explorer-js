@@ -11,8 +11,7 @@
   "plugins": ["add-module-exports"],
   "env": {
     "production": {
-      "presets": ["react-optimize"],
-      "plugins": ["babel-plugin-dev-expression"]
+      "presets": ["react-optimize"]
     },
     "development": {
       "plugins": [

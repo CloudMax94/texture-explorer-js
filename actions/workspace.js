@@ -1,14 +1,12 @@
 import * as WORKSPACE from '../constants/workspace'
 
 import { Record, Map } from 'immutable'
-import { remote } from 'electron'
-import { join } from 'path'
 import { throttle } from 'lodash'
-import { loadProfile, saveFileAs } from '../lib/fileHandler'
+import { saveFileAs } from '../lib/fileHandler'
+import { prepareProfiles, loadProfile } from './profile'
 import worker from '../lib/worker'
 import textureManipulator from '../lib/textureManipulator'
 
-const { app } = remote
 const textureWorker = worker('textures')
 let idCounter = 0
 
@@ -18,35 +16,13 @@ const WorkspaceRecord = Record({
   path: null,
   name: 'New Workspace',
   key: null,
-  items: null,
+  blobs: Map(),
+  profile: '',
   selectedDirectory: null,
   selectedTexture: null
 })
 
-const DirectoryRecord = Record({
-  id: null,
-  parentId: null,
-  name: 'New Directory',
-  address: 0,
-  length: 0,
-  type: 'directory'
-})
-
-const TextureRecord = Record({
-  id: null,
-  parentId: null,
-  name: 'New Texture',
-  address: 0,
-  format: 'rgba32',
-  width: 32,
-  height: 32,
-  palette: 0,
-  type: 'texture',
-  blob: null,
-  blob_state: WORKSPACE.BLOB_UNSET
-})
-
-function asyncThrottle (func, cbArg, timeout) {
+function asyncThrottle (func, cbArg, timeout, keys) {
   let running = false
   let queued = null
   let queueFunc = (...args) => {
@@ -76,67 +52,6 @@ function asyncThrottle (func, cbArg, timeout) {
   } else {
     return queueFunc
   }
-}
-
-function itemFormatPlural (format) {
-  if (format.toLowerCase() === 'texture') {
-    return 'textures'
-  } else if (format.toLowerCase() === 'directory') {
-    return 'directories'
-  }
-  return ''
-}
-
-function prepareProfile (profile, length) {
-  const types = ['directory', 'texture']
-  const _innerLoop = (input, items, parent) => {
-    for (let type of types) {
-      if (input[itemFormatPlural(type)]) {
-        input[itemFormatPlural(type)].forEach((i, index) => {
-          let item
-          const id = (idCounter++).toString(36)
-          if (type === 'directory') {
-            item = new DirectoryRecord({
-              id,
-              parentId: parent,
-              name: i.name,
-              address: parseInt(i.address, 16),
-              length: parseInt(i.size, 16)
-            })
-            items = _innerLoop(i, items, id)
-          } else {
-            item = new TextureRecord({
-              id,
-              parentId: parent,
-              name: i.name,
-              address: parseInt(i.address, 16),
-              format: i.format,
-              width: parseInt(i.width),
-              height: parseInt(i.height),
-              palette: parseInt(i.palette, 16) || 0
-            })
-          }
-
-          items = items.set(id, item)
-        })
-      }
-    }
-    return items
-  }
-  const id = 'root'
-  const rootItem = new DirectoryRecord({
-    id,
-    name: 'Root',
-    address: 0,
-    absolute: 0,
-    length: length
-  })
-  let items = Map()
-  items = items.set(id, rootItem)
-  if (profile) {
-    items = _innerLoop(profile, items, id)
-  }
-  return items
 }
 
 function itemHasValidData (item) {
@@ -222,54 +137,22 @@ export function setCurrentWorkspace (workspace) {
   }
 }
 
-const throttledGenerateItemBlob = asyncThrottle(generateItemBlob, 2, 100)
-export function setItemData (workspace, item, key, value) {
-  return async (dispatch, getState) => {
-    if (key === 'offset') {
-      key = 'address'
-      let items = getState().workspace.getIn(['workspaces', workspace, 'items'])
-      let parentId = items.getIn([item, 'parentId'])
-      value += items.getIn([parentId, 'address'])
-    }
-
-    dispatch({
-      type: WORKSPACE.SET_ITEM_DATA,
-      workspace,
-      item,
-      key,
-      value
-    })
-
-    let currentWorkspace = getState().workspace.getIn(['workspaces', workspace])
-    let texture = currentWorkspace.getIn(['items', item])
-    if (texture.get('type') === 'texture') {
-      if (
-        key === 'address' ||
-        key === 'format' ||
-        key === 'width' ||
-        key === 'height' ||
-        key === 'palette'
-      ) {
-        throttledGenerateItemBlob(texture, currentWorkspace, (blob) => {
-          dispatch({
-            type: WORKSPACE.UPDATE_ITEM_BLOB,
-            workspace: workspace,
-            item: item,
-            blob: blob
-          })
-        }, true)
-      }
-    }
-  }
-}
-
 export function createWorkspace (input) {
   return async (dispatch, getState) => {
     const data = input.data
     const filePath = input.path
     const name = input.name
     const key = data.toString('utf8', 0x3B, 0x3F) + data.readUInt8(0x3F)
-    const id = (idCounter++).toString(36)
+    let id = (idCounter++).toString(36)
+
+    dispatch(prepareProfiles(key))
+    const profileStore = getState().profile
+    const defaultProfile = profileStore.get('profiles').find(
+      (profile) => profile.get('key') === key && profile.get('name') === 'Default'
+    )
+    if (!defaultProfile.get('loaded')) {
+      dispatch(loadProfile(defaultProfile.get('id')))
+    }
 
     let workspace = new WorkspaceRecord({
       id,
@@ -278,6 +161,7 @@ export function createWorkspace (input) {
       name,
       key,
       items: null,
+      profile: defaultProfile.get('id'),
       selectedDirectory: null,
       selectedTexture: null
     })
@@ -291,113 +175,66 @@ export function createWorkspace (input) {
       type: WORKSPACE.SET_CURRENT_WORKSPACE,
       workspace: workspace
     })
-
-    loadProfile(join(app.getPath('userData'), '/Profiles/' + key + '/Default.json'), (profile) => {
-      const items = prepareProfile(profile, data.length)
-      dispatch({
-        type: WORKSPACE.ADD_WORKSPACE,
-        workspace: workspace.merge({
-          items: items,
-          selectedDirectory: 'root'
-        })
-      })
-    })
   }
 }
 
-export function updateItemBlob (item) {
+const blobThrottler = {
+  throttlers: {},
+  call: function (...args) {
+    let key = args[0].get('id') + '-' + args[1].get('id')
+    if (!(key in this.throttlers)) {
+      this.throttlers[key] = asyncThrottle(generateItemBlob, 2, 1000)
+    }
+    this.throttlers[key](...args)
+  }
+}
+
+export function updateItemBlob (itemId, workspaceId) {
   return async (dispatch, getState) => {
-    let itemId = item.get('id')
-    let state = getState().workspace
-    let workspaceId = state.get('currentWorkspace')
-    let workspace = state.getIn(['workspaces', workspaceId])
-    if (!workspace) {
+    let state = getState()
+    if (!workspaceId) {
       return
     }
 
-    generateItemBlob(item, workspace, (blob) => {
+    dispatch({
+      type: WORKSPACE.START_UPDATE_ITEM_BLOB,
+      workspaceId,
+      itemId
+    })
+
+    let workspace = state.workspace.getIn(['workspaces', workspaceId])
+    let item = state.profile.getIn(['profiles', workspace.get('profile'), 'items', itemId])
+
+    blobThrottler.call(item, workspace, (blob) => {
       dispatch({
         type: WORKSPACE.UPDATE_ITEM_BLOB,
-        workspace: workspaceId,
-        item: itemId,
+        workspaceId,
+        itemId,
         blob
       })
     }, true)
   }
 }
 
-export function createDirectory () {
+export function setProfile (profileId, workspaceId) {
   return async (dispatch, getState) => {
-    let state = getState().workspace
-    let workspace = state.get('currentWorkspace')
-    let currentWorkspace = state.getIn(['workspaces', workspace])
-    if (!currentWorkspace) {
+    if (!workspaceId) {
       return
     }
 
-    let selectedDirectory = currentWorkspace.getIn(['items', currentWorkspace.get('selectedDirectory')])
-    if (!selectedDirectory) {
+    const profile = getState().profile.getIn(['profiles', profileId])
+    if (!profile) {
       return
     }
 
-    let id = (idCounter++).toString(36)
-    let item = new DirectoryRecord({
-      id,
-      parentId: selectedDirectory.get('id'),
-      address: selectedDirectory.get('address')
-    })
+    if (!profile.get('loaded')) {
+      dispatch(loadProfile(profileId))
+    }
 
     dispatch({
-      type: WORKSPACE.ADD_ITEM,
-      workspace,
-      item
-    })
-  }
-}
-
-export function createTexture () {
-  return async (dispatch, getState) => {
-    let state = getState().workspace
-    let workspace = state.get('currentWorkspace')
-    let currentWorkspace = state.getIn(['workspaces', workspace])
-    if (!currentWorkspace) {
-      return
-    }
-
-    let selectedDirectory = currentWorkspace.getIn(['items', currentWorkspace.get('selectedDirectory')])
-    if (!selectedDirectory) {
-      return
-    }
-
-    let id = (idCounter++).toString(36)
-    let item = new TextureRecord({
-      id,
-      parentId: selectedDirectory.get('id'),
-      address: selectedDirectory.get('address'),
-      width: 32,
-      height: 32,
-      palette: 0
-    })
-
-    dispatch({
-      type: WORKSPACE.ADD_ITEM,
-      workspace,
-      item
-    })
-  }
-}
-
-export function deleteItem (item) {
-  return async (dispatch, getState) => {
-    let state = getState().workspace
-    let workspace = state.get('currentWorkspace')
-    if (!workspace) {
-      return
-    }
-    dispatch({
-      type: WORKSPACE.DELETE_ITEM,
-      workspace: workspace,
-      item: item
+      type: WORKSPACE.SET_PROFILE,
+      workspaceId,
+      profileId
     })
   }
 }

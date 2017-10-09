@@ -1,22 +1,13 @@
 import React from 'react'
-import Immutable from 'immutable'
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
-import { setCurrentDirectory, setCurrentTexture } from '../actions/workspace'
-import { itemAddressCompare } from '../lib/helpers'
 
-class Overview extends React.Component {
+import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+
+class Overview extends ImmutablePureComponent {
   constructor (props) {
     super(props)
     this.state = {
       focusedItem: null
     }
-  }
-
-  shouldComponentUpdate (nextProps, nextState) {
-    return this.props.selectedDirectory !== nextProps.selectedDirectory ||
-           this.state.focusedItem !== nextState.focusedItem ||
-           !Immutable.is(this.props.items, nextProps.items)
   }
 
   handleDoubleClick (item) {
@@ -43,9 +34,9 @@ class Overview extends React.Component {
       if (!children) {
         return null
       }
-      let a = children.toList().map((directory, i) => {
+      return children.toList().map((directory, i) => {
         let classes = 'tree-item'
-        if (directory.get('id') === this.props.selectedDirectory) {
+        if (directory.get('id') === this.props.selectedDirectoryId) {
           classes += ' selected'
         }
         if (directory.get('id') === this.state.focusedItem) {
@@ -61,7 +52,6 @@ class Overview extends React.Component {
           </div>
         )
       })
-      return a
     }
 
     return (
@@ -74,23 +64,4 @@ class Overview extends React.Component {
   }
 }
 
-function mapStateToProps (state) {
-  let currentWorkspace = state.workspace.get('currentWorkspace')
-  let items
-  if (currentWorkspace) {
-    items = state.workspace.getIn(['workspaces', currentWorkspace, 'items'])
-    if (items) {
-      items = items.filter(x => x.type === 'directory').sort(itemAddressCompare)
-    }
-  }
-  return {
-    selectedDirectory: state.workspace.getIn(['workspaces', currentWorkspace, 'selectedDirectory']),
-    items: items
-  }
-}
-
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({setCurrentDirectory, setCurrentTexture}, dispatch)
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Overview)
+export default Overview

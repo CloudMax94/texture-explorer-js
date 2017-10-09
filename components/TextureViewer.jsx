@@ -1,12 +1,29 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
-import { insertData } from '../actions/workspace'
 import { openFile } from '../lib/fileHandler'
 
-import textureManipulator from '../lib/textureManipulator'
+import { BLOB_UNSET } from '../constants/workspace'
 
-class TextureViewer extends React.Component {
+import textureManipulator from '../lib/textureManipulator'
+import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+
+class TextureViewer extends ImmutablePureComponent {
+  componentWillMount () {
+    this.blobUpdate(this.props)
+  }
+
+  componentWillReceiveProps (nextProps) {
+    this.blobUpdate(nextProps)
+  }
+
+  blobUpdate (props) {
+    const { itemId, workspaceId, updateItemBlob, blobState } = props
+    if (itemId) {
+      if (blobState === BLOB_UNSET) {
+        updateItemBlob(itemId, workspaceId)
+      }
+    }
+  }
+
   handleDragOver = (event) => {
     event.preventDefault()
     event.stopPropagation()
@@ -20,48 +37,24 @@ class TextureViewer extends React.Component {
     event.stopPropagation()
     openFile(event.dataTransfer.files[0], ({data}) => {
       const pngBuffer = Buffer.from(data)
-      textureManipulator.pngToPixelData(pngBuffer, (pixelData, format) => {
-        const { texture } = this.props
-        const buffer = textureManipulator.pixelDataToRaw(pixelData, texture.get('format'))
-        this.props.insertData(buffer, texture.get('address'))
+      textureManipulator.pngToPixelData(pngBuffer, (pixelData, imageFormat) => {
+        const { format, address } = this.props
+        const buffer = textureManipulator.pixelDataToRaw(pixelData, format)
+        this.props.insertData(buffer, address)
       })
     })
   }
   render () {
-    const { texture } = this.props
-    if (!texture) {
-      return null
-    }
-    const blob = texture.get('blob')
+    const { blob } = this.props
     if (!blob) {
       return null
     }
     return (
       <div className='texture-viewer'>
-        <div className='texture-viewer-inner'>
-          <img src={blob} onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop} />
-        </div>
+        <img src={blob} onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop} />
       </div>
     )
   }
 }
 
-function mapStateToProps (state) {
-  let workspace = state.workspace.getIn(['workspaces', state.workspace.get('currentWorkspace')])
-  let texture
-  if (workspace) {
-    let id = workspace.get('selectedTexture')
-    if (id) {
-      texture = workspace.getIn(['items', id])
-    }
-  }
-  return {
-    texture
-  }
-}
-
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({insertData}, dispatch)
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(TextureViewer)
+export default TextureViewer

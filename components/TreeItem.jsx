@@ -19,10 +19,10 @@ class TreeItem extends ImmutablePureComponent {
   }
 
   blobUpdate (props) {
-    const { item, updateItemBlob } = props
+    const { item, workspaceId, updateItemBlob, blobState } = props
     if (item) {
-      if (item.get('blob_state') === BLOB_UNSET) {
-        updateItemBlob(item)
+      if (blobState === BLOB_UNSET) {
+        updateItemBlob(item.get('id'), workspaceId)
       }
     }
   }
@@ -38,7 +38,7 @@ class TreeItem extends ImmutablePureComponent {
   }
 
   render () {
-    const { item, offset, focused, path } = this.props
+    const { item, offset, focused, path, blob } = this.props
     const columns = [
       path
     ]
@@ -73,8 +73,8 @@ class TreeItem extends ImmutablePureComponent {
             if (item.get('type') === 'directory') {
               icon = <i className='tree-icon icon'>file_directory</i>
             } else if (item.get('type') === 'texture') {
-              if (item.get('blob')) {
-                icon = <i className='tree-icon' style={{backgroundImage: 'url(' + item.get('blob') + ')'}}>&nbsp;</i>
+              if (blob) {
+                icon = <i className='tree-icon' style={{backgroundImage: 'url(' + blob + ')'}}>&nbsp;</i>
               } else {
                 icon = <i className='tree-icon icon'>file_media</i>
               }
@@ -90,13 +90,21 @@ class TreeItem extends ImmutablePureComponent {
 }
 
 function mapStateToProps (state, ownProps) {
-  let workspace = state.workspace.getIn(['workspaces', state.workspace.get('currentWorkspace')])
-  let parentAddress = workspace.getIn(['items', ownProps.item.get('parentId'), 'address'])
+  let itemId = ownProps.item.get('id')
+  let workspaceId = state.workspace.get('currentWorkspace')
+  let workspace = state.workspace.getIn(['workspaces', workspaceId])
+  let profile = state.profile.getIn(['profiles', workspace.get('profile')])
+  let parentAddress = profile.getIn(['items', ownProps.item.get('parentId'), 'address']) || 0
   let offset = ownProps.item.get('address') - parentAddress
-  let path = getItemPath(workspace, ownProps.item.get('id'), true)
+  let path = getItemPath(profile, itemId, profile.getIn(['items', workspace.get('selectedDirectory'), 'id']))
+  let blob = workspace.getIn(['blobs', itemId, 'blob'])
+  let blobState = workspace.getIn(['blobs', itemId, 'blobState']) || BLOB_UNSET
   return {
     offset,
-    path
+    path,
+    workspaceId,
+    blob,
+    blobState
   }
 }
 

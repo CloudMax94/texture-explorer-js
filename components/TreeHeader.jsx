@@ -1,11 +1,9 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
-import Immutable from 'immutable'
 import { throttle } from 'lodash'
-import { setTreeSize } from '../actions/interface'
 
-class TreeHandle extends React.Component {
+import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+
+class TreeHandle extends ImmutablePureComponent {
   componentWillMount () {
     this.handleMouseMove = throttle(this.handleMouseMove, 30)
   }
@@ -43,22 +41,7 @@ class TreeHandle extends React.Component {
   }
 }
 
-function mapStateToProps (state) {
-  return {}
-}
-
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({setTreeSize}, dispatch)
-}
-
-const ConnectedTreeHandle = connect(mapStateToProps, mapDispatchToProps)(TreeHandle)
-
-class TreeHeader extends React.Component {
-  shouldComponentUpdate (nextProps) {
-    return this.props.columns !== nextProps.columns ||
-      !Immutable.is(this.props.sizes, nextProps.sizes)
-  }
-
+class TreeHeader extends ImmutablePureComponent {
   render () {
     return (
       <div className='tree-header'>
@@ -67,7 +50,7 @@ class TreeHeader extends React.Component {
           return (
             <div key={i} className='tree-header-col' style={style}>
               {col}
-              <ConnectedTreeHandle index={i} size={this.props.sizes.get(i)} />
+              <TreeHandle index={i} size={this.props.sizes.get(i)} setTreeSize={this.props.setTreeSize} />
             </div>
           )
         })}

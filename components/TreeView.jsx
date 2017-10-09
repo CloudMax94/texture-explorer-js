@@ -1,19 +1,15 @@
 import React from 'react'
 
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
 import { uniqueId } from 'lodash'
 import VirtualList from 'react-virtual-list'
-import {
-  setCurrentDirectory,
-  setCurrentTexture,
-  deleteItem
-} from '../actions/workspace'
 
+import ImmutablePureComponent from './ImmutablePureComponent.jsx'
 import TreeItem from './TreeItem.jsx'
 import TreeHeader from './TreeHeader.jsx'
 
 const ItemHeight = 20
+
+const columnNames = ['File', 'Offset', 'Start', 'End', 'Size', 'Format', 'Width', 'Height', 'Palette Address']
 
 const VirtualTreeView = ({
   virtual,
@@ -38,7 +34,7 @@ const VirtualTreeView = ({
   )
 }
 
-class TreeView extends React.Component {
+class TreeView extends ImmutablePureComponent {
   constructor (props) {
     super(props)
     this.state = {
@@ -52,6 +48,11 @@ class TreeView extends React.Component {
     this.VirtualList = VirtualList({
       container: this.scrollContainer
     })(VirtualTreeView)
+  }
+  componentWillReceiveProps (nextProps) {
+    if (this.props.directory !== nextProps.directory) {
+      this.setState({focusedItem: null})
+    }
   }
   componentWillUpdate (nextProps, nextState) {
     if (this.props.directory !== nextProps.directory) {
@@ -84,7 +85,7 @@ class TreeView extends React.Component {
   handleKeyDown = (event) => {
     const { focusedItem } = this.state
     const { items } = this.props
-    if (focusedItem) {
+    if (items && focusedItem) {
       const currentIndex = items.findIndex((item) => item.get('id') === focusedItem)
       if (currentIndex > -1) {
         switch (event.keyCode) {
@@ -136,7 +137,11 @@ class TreeView extends React.Component {
     return (
       <div className='tree-view' id={this.id}>
         <style>{style}</style>
-        <TreeHeader sizes={this.props.sizes} columns={['File', 'Offset', 'Start', 'End', 'Size', 'Format', 'Width', 'Height', 'Palette Address']} />
+        <TreeHeader
+          sizes={this.props.sizes}
+          columns={columnNames}
+          setTreeSize={this.props.setTreeSize}
+        />
         <div className='tree-content' tabIndex='0' onKeyDown={this.handleKeyDown} ref={(scrollContainer) => { this.scrollContainer = scrollContainer }}>
           {this.props.items ? <this.VirtualList
             items={this.props.items.toArray()}
@@ -151,16 +156,4 @@ class TreeView extends React.Component {
   }
 }
 
-function mapStateToProps (state, ownProps) {
-  return {}
-}
-
-function mapDispatchToProps (dispatch) {
-  return bindActionCreators({
-    setCurrentDirectory,
-    setCurrentTexture,
-    deleteItem
-  }, dispatch)
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(TreeView)
+export default TreeView
