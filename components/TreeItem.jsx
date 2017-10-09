@@ -2,12 +2,15 @@ import React from 'react'
 import { padStart } from 'lodash'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
+import { remote } from 'electron'
 import textureManipulator from '../lib/textureManipulator'
 import { getItemPath } from '../lib/helpers'
 import ImmutablePureComponent from './ImmutablePureComponent.jsx'
 
 import { BLOB_UNSET } from '../constants/workspace'
 import { updateItemBlob } from '../actions/workspace'
+
+const { MenuItem, Menu } = remote
 
 class TreeItem extends ImmutablePureComponent {
   componentWillMount () {
@@ -35,6 +38,35 @@ class TreeItem extends ImmutablePureComponent {
   handleClick = (event) => {
     event.preventDefault()
     this.props.handleFocus(this.props.item)
+  }
+
+  handleContext = (event) => {
+    const { item } = this.props
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    this.props.handleFocus(item)
+
+    const menu = new Menu()
+
+    menu.append(new MenuItem({
+      label: item.get('type') === 'directory' ? 'Open' : 'Edit',
+      click: () => {
+        this.props.handleDoubleClick(item)
+      }
+    }))
+
+    menu.append(new MenuItem({type: 'separator'}))
+
+    menu.append(new MenuItem({
+      label: 'Delete',
+      click: () => {
+        this.props.deleteItem(item.get('id'))
+      }
+    }))
+
+    menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY)
   }
 
   render () {
@@ -66,7 +98,7 @@ class TreeItem extends ImmutablePureComponent {
     }
     const classes = 'tree-item ' + (focused ? 'focused' : '')
     return (
-      <div className={classes} ref={(ele) => { this.ele = ele }}>
+      <div className={classes} ref={(ele) => { this.ele = ele }} onContextMenu={this.handleContext}>
         {columns.map((data, i) => {
           let icon = null
           if (i === 0) {
