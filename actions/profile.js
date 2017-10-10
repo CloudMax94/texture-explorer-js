@@ -1,9 +1,11 @@
 import { join, extname } from 'path'
-import { readdirSync, readFile } from 'fs'
+import { readdirSync, readFile, writeFile } from 'fs'
 import xml2js from 'xml2js'
 import { padStart } from 'lodash'
 import { Record, Map } from 'immutable'
-import { getSuccessors } from '../lib/helpers'
+import { getFormat } from '../lib/textureManipulator'
+import { getSuccessors, itemAddressCompare } from '../lib/helpers'
+import prettyJSON from '../lib/prettyJson'
 import * as PROFILE from '../constants/profile'
 
 let idCounter = 0
@@ -47,7 +49,59 @@ function itemFormatPlural (format) {
   return ''
 }
 
-function parseProfile (profilePath, callback) {
+function formatHex (int) {
+  return '0x' + padStart(int.toString(16), 8, 0).toUpperCase()
+}
+
+function itemsToObject (items) {
+  const groupedItems = items.sort(itemAddressCompare).groupBy(x => x.get('parentId'))
+  const traverseItems = (id) => {
+    let item = items.get(id)
+    const obj = {
+      name: item.get('name'),
+      address: formatHex(item.get('address'))
+    }
+    if (item.get('type') === 'directory') {
+      obj.size = formatHex(item.get('length'))
+    } else if (item.get('type') === 'texture') {
+      obj.format = item.get('format')
+      obj.width = item.get('width')
+      obj.height = item.get('height')
+      let format = getFormat(item.get('format'))
+      if (format.hasPalette()) {
+        obj.palette = formatHex(item.get('palette'))
+      }
+    }
+    let children = groupedItems.get(id)
+    if (children) {
+      const childrenByType = children.groupBy(x => x.get('type'))
+      childrenByType.forEach((list, key) => {
+        let type = itemFormatPlural(key)
+        obj[type] = []
+        list.forEach((item) => {
+          obj[type].push(traverseItems(item.get('id')))
+        })
+      })
+    }
+    return obj
+  }
+  let root = traverseItems('root')
+  root.version = '2'
+  delete root.name
+  delete root.address
+  delete root.size
+  return root
+}
+
+function writeProfile (profile, callback) {
+  let data = prettyJSON(itemsToObject(profile.get('items')))
+  let filePath = join(PROFILE.BASE_PATH, profile.get('key'), profile.get('file'))
+  writeFile(filePath, data, (err) => {
+    callback(err)
+  })
+}
+
+function readProfile (profilePath, callback) {
   var profileExt = extname(profilePath)
   readFile(profilePath, function (err, data) {
     if (err) {
@@ -169,7 +223,7 @@ function itemsFromObject (profile, length) {
 export function loadProfile (profileId) {
   return async (dispatch, getState) => {
     let profile = getState().profile.getIn(['profiles', profileId])
-    parseProfile(join(PROFILE.BASE_PATH, profile.get('key'), profile.get('file')), (profileObject) => {
+    readProfile(join(PROFILE.BASE_PATH, profile.get('key'), profile.get('file')), (profileObject) => {
       let items = itemsFromObject(profileObject)
       dispatch({
         type: PROFILE.LOAD_PROFILE,
@@ -180,10 +234,26 @@ export function loadProfile (profileId) {
   }
 }
 
+export function saveProfile (profileId) {
+  return async (dispatch, getState) => {
+    let profile = getState().profile.getIn(['profiles', profileId])
+    writeProfile(profile, (err) => {
+      if (err) {
+        console.error(err)
+      } else {
+        dispatch({
+          type: PROFILE.SAVE_PROFILE,
+          profileId
+        })
+      }
+    })
+  }
+}
+
 export function prepareProfiles (key) {
   const profileDir = join(PROFILE.BASE_PATH, key)
   let files = readdirSync(profileDir)
-  let profiles = new Map()
+  let profiles = Map()
   for (let file of files.sort()) {
     const id = (idCounter++).toString(36)
     let [name, ext] = file.split('.')
@@ -219,6 +289,8 @@ export function prepareProfiles (key) {
     defaultProfile = new ProfileRecord({
       id: (idCounter++).toString(36),
       items,
+      key,
+      file: 'Default.json',
       loaded: true
     })
 

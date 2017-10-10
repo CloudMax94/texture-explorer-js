@@ -16,7 +16,7 @@ import {
   updateItemBlob,
   setProfile
 } from '../actions/workspace'
-import { setItemData } from '../actions/profile'
+import { saveProfile, setItemData } from '../actions/profile'
 
 import { each } from 'lodash'
 import { exists } from 'fs'
@@ -98,6 +98,7 @@ class App extends React.Component {
       insertData={this.props.insertData}
       updateItemBlob={this.props.updateItemBlob}
       setProfile={this.props.setProfile}
+      saveProfile={this.props.saveProfile}
       setItemData={this.props.setItemData}
       {...this.props.pass}
     />)
@@ -193,6 +194,7 @@ function mapDispatchToProps (dispatch) {
     updateItemBlob,
     setProfile,
     // Profile
+    saveProfile,
     setItemData
   }, dispatch)
 }

@@ -127,6 +127,7 @@ class Container extends React.Component {
           profileId={profile ? profile.get('id') : ''}
           workspaceId={workspace ? workspace.get('id') : ''}
           profileList={profileList}
+          saveProfile={this.props.saveProfile}
           setProfile={this.props.setProfile}
         />
       }

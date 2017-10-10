@@ -106,7 +106,7 @@ class ItemSettings extends ImmutablePureComponent {
       address = '0x' + padStart(item.get('address').toString(16), 8, 0).toUpperCase()
     }
     return (
-      <div className='input-columns'>
+      <div className='inputs input-columns'>
         <div>
           <label htmlFor={this.id + '_name'}>Name: </label>
           <label htmlFor={this.id + '_address'}>Address: </label>

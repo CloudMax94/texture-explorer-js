@@ -17,6 +17,9 @@ export default function profile (state = fromJS({
         return profile.set('items', items).set('loaded', true)
       })
     }
+    case PROFILE.SAVE_PROFILE: {
+      return state
+    }
     case PROFILE.ADD_ITEM: {
       const { profileId, item } = action
       return state.setIn(['profiles', profileId, 'items', item.get('id')], item)
