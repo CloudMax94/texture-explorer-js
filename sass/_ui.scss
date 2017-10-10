@@ -96,6 +96,7 @@
 
 .panel-header {
     background: $panel-tab-background-color;
+    height: 23px;
     flex: 0 0 auto;
     display: flex;
     box-shadow: inset 0 1px 0 lighten($panel-tab-background-color, 7.5);
@@ -158,10 +159,6 @@
 
 .workspace-tabs {
     @extend .panel-header;
-
-    &:empty {
-        display: none;
-    }
 }
 
 .workspace-tab {

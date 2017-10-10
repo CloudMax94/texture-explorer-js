@@ -251,58 +251,60 @@ export function saveProfile (profileId) {
 }
 
 export function prepareProfiles (key) {
-  const profileDir = join(PROFILE.BASE_PATH, key)
-  let files = readdirSync(profileDir)
-  let profiles = Map()
-  for (let file of files.sort()) {
-    const id = (idCounter++).toString(36)
-    let [name, ext] = file.split('.')
-    if (ext !== 'json') {
-      if (ext !== 'xml') {
+  return async (dispatch, getState) => {
+    const existingProfiles = getState().profile.get('profiles')
+    const profileDir = join(PROFILE.BASE_PATH, key)
+    let files = readdirSync(profileDir)
+    let profiles = Map()
+    for (let file of files.sort()) {
+      const id = (idCounter++).toString(36)
+      let [name, ext] = file.split('.')
+      if (ext !== 'json') {
+        if (ext !== 'xml') {
+          continue
+        }
+        name += ` (${ext})`
+      }
+
+      if (existingProfiles.find((profile) => profile.get('key') === key && profile.get('file') === file)) {
         continue
       }
-      name += ` (${ext})`
+
+      let profile = new ProfileRecord({
+        id,
+        file,
+        key,
+        name
+      })
+      profiles = profiles.set(id, profile)
     }
 
-    let profile = new ProfileRecord({
-      id,
-      file,
-      key,
-      name
-    })
-    profiles = profiles.set(id, profile)
-  }
+    let defaultProfile = profiles.merge(existingProfiles).find((profile) => profile.get('key') === key && profile.get('name') === 'Default')
+    if (!defaultProfile) { // If there is no default profile, create one
+      const rootItem = new DirectoryRecord({
+        id: 'root',
+        name: 'Root',
+        address: 0,
+        absolute: 0,
+        length: 0
+      })
 
-  let defaultProfile = profiles.find((profile) => profile.get('name') === 'Default')
-  if (!defaultProfile) { // If there is no default profile, create one
-    const rootItem = new DirectoryRecord({
-      id: 'root',
-      name: 'Root',
-      address: 0,
-      absolute: 0,
-      length: 0
-    })
-
-    let items = Map()
-    items = items.set('root', rootItem)
-
-    defaultProfile = new ProfileRecord({
-      id: (idCounter++).toString(36),
-      items,
-      key,
-      file: 'Default.json',
-      loaded: true
-    })
-
-    return {
-      type: PROFILE.ADD_PROFILE,
-      profile: defaultProfile
+      let items = Map()
+      items = items.set('root', rootItem)
+      let id = (idCounter++).toString(36)
+      defaultProfile = new ProfileRecord({
+        id: id,
+        items,
+        key,
+        file: 'Default.json',
+        loaded: true
+      })
+      profiles = profiles.set(id, defaultProfile)
     }
-  }
-
-  return {
-    type: PROFILE.ADD_PROFILES,
-    profiles
+    dispatch({
+      type: PROFILE.ADD_PROFILES,
+      profiles
+    })
   }
 }
 

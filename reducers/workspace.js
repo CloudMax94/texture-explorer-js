@@ -34,6 +34,11 @@ export default function workspace (state = fromJS({
       })
     case WORKSPACE.ADD_WORKSPACE:
       return state.setIn(['workspaces', action.workspace.get('id')], action.workspace)
+    case WORKSPACE.DELETE_WORKSPACE:
+      if (state.get('currentWorkspace') === action.workspaceId) {
+        state = state.set('currentWorkspace', null)
+      }
+      return state.deleteIn(['workspaces', action.workspaceId], action.workspace)
     case WORKSPACE.START_UPDATE_ITEM_BLOB:
       return state.mergeIn(['workspaces', action.workspaceId, 'blobs', action.itemId], {blobState: WORKSPACE.BLOB_SETTING})
     case WORKSPACE.UPDATE_ITEM_BLOB:

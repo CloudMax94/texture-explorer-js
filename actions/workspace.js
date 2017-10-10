@@ -178,6 +178,13 @@ export function createWorkspace (input) {
   }
 }
 
+export function deleteWorkspace (workspaceId) {
+  return {
+    type: WORKSPACE.DELETE_WORKSPACE,
+    workspaceId: workspaceId
+  }
+}
+
 const blobThrottler = {
   throttlers: {},
   call: function (...args) {

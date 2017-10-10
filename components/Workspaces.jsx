@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import {
+  deleteWorkspace,
   setCurrentWorkspace,
   setCurrentDirectory,
   setCurrentTexture
@@ -23,6 +24,11 @@ class Workspace extends ImmutablePureComponent {
 
   handleTabClick (workspace) {
     this.props.setCurrentWorkspace(workspace)
+  }
+
+  handleCloseClick (workspaceId, event) {
+    event.stopPropagation()
+    this.props.deleteWorkspace(workspaceId)
   }
 
   handleSearch = (event) => {
@@ -52,7 +58,7 @@ class Workspace extends ImmutablePureComponent {
       return (
         <div key={i} className={classes.join(' ')} onClick={this.handleTabClick.bind(this, workspace)}>
           <span className='btnText'>{workspace.get('name')}</span>
-          <span className='closeBtn'>x</span>
+          <span className='closeBtn' onClick={this.handleCloseClick.bind(this, workspace.get('id'))}>x</span>
         </div>
       )
     })
@@ -122,6 +128,7 @@ function mapStateToProps (state) {
 
 function mapDispatchToProps (dispatch) {
   return bindActionCreators({
+    deleteWorkspace,
     setCurrentWorkspace,
     setCurrentDirectory,
     setCurrentTexture,

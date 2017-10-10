@@ -10,7 +10,7 @@ export default function profile (state = fromJS({
       return state.setIn(['profiles', profile.get('id')], profile)
     case PROFILE.ADD_PROFILES:
       const { profiles } = action
-      return state.merge({profiles})
+      return state.mergeIn(['profiles'], profiles)
     case PROFILE.LOAD_PROFILE: {
       const { profileId, items } = action
       return state.updateIn(['profiles', profileId], (profile) => {
