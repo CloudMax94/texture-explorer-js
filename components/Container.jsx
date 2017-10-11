@@ -155,16 +155,13 @@ class Container extends React.Component {
       return null
     }
     let Wrap
-    const style = {}
     if (this.props.direction === 'horizontal') {
-      style.height = size + 'px'
       Wrap = Columns
     } else {
-      style.flexBasis = size + 'px'
       Wrap = Rows
     }
     return (
-      <div className='container' style={style}><Wrap>{content}</Wrap></div>
+      <div className='container' style={{flexBasis: size + 'px'}}><Wrap>{content}</Wrap></div>
     )
   }
 }

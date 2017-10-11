@@ -14,7 +14,7 @@ button {
         background: #404040;
     }
 
-    &:active {
+    &:not(:disabled):active {
         transform: translateY(1px);
         border-bottom-width: 1px;
         height: 24px;

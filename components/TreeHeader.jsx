@@ -44,7 +44,7 @@ class TreeHandle extends ImmutablePureComponent {
 class TreeHeader extends ImmutablePureComponent {
   render () {
     return (
-      <div className='tree-header'>
+      <div className='tree-header' style={this.props.style}>
         {this.props.columns.map((col, i) => {
           const style = {width: this.props.sizes.get(i) + 'px'}
           return (

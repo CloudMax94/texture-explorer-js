@@ -24,7 +24,6 @@ $tree-item-height: 20px;
 
 .tree-header-col {
     position: relative;
-    cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -146,23 +145,3 @@ $tree-item-height: 20px;
         cursor: col-resize;
     }
 }
-/*
-.tree-view {
-    display: table;
-    table-layout: fixed;
-    min-width: -webkit-max-content;
-}
-.tree-header-col,
-.tree-col {
-    display: table-cell;
-}
-.tree-header {
-    display: table-header-group;
-}
-.tree-content {
-    display: table-row-group;
-}
-.tree-item {
-    display: table-row;
-}
-*/

@@ -24,6 +24,7 @@ import { remote } from 'electron'
 
 import { openFile } from '../lib/fileHandler'
 
+import Rows from './Rows.jsx'
 import Columns from './Columns.jsx'
 import Container from './Container.jsx'
 import Handle from './Handle.jsx'
@@ -119,17 +120,19 @@ class App extends React.Component {
     return (
       <div className='app' onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop} onContextMenu={this.handleContextMenu}>
         <ApplicationMenu menu={menu} />
-        {this.setupContainer(0)}
-        <Handle size={containerSizes.get(0)} onResize={this.handleResize[0]} />
-        <Columns>
-          {this.setupContainer(1)}
-          <Handle size={containerSizes.get(1)} onResize={this.handleResize[1]} />
-          <Workspaces />
-          <Handle size={containerSizes.get(2)} reverse onResize={this.handleResize[2]} />
-          {this.setupContainer(2)}
-        </Columns>
-        <Handle size={containerSizes.get(3)} reverse onResize={this.handleResize[3]} />
-        {this.setupContainer(3)}
+        <Rows>
+          {this.setupContainer(0)}
+          <Handle size={containerSizes.get(0)} direction='vertical' onResize={this.handleResize[0]} />
+          <Columns>
+            {this.setupContainer(1)}
+            <Handle size={containerSizes.get(1)} onResize={this.handleResize[1]} />
+            <Workspaces />
+            <Handle size={containerSizes.get(2)} reverse onResize={this.handleResize[2]} />
+            {this.setupContainer(2)}
+          </Columns>
+          <Handle size={containerSizes.get(3)} reverse onResize={this.handleResize[3]} />
+          {this.setupContainer(3)}
+        </Rows>
         {aboutDialog}
       </div>
     )

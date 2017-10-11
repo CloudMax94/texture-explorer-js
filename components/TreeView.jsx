@@ -13,13 +13,14 @@ const columnNames = ['File', 'Offset', 'Start', 'End', 'Size', 'Format', 'Width'
 
 const VirtualTreeView = ({
   virtual,
+  width,
   handleFocus,
   handleDoubleClick,
   focusedItem,
   deleteItem
 }) => {
   return (
-    <div style={virtual.style}>
+    <div style={{...virtual.style, minWidth: width + 'px', minHeight: '100%'}}>
       {virtual.items.map(item => {
         return (
           <TreeItem
@@ -40,6 +41,7 @@ class TreeView extends ImmutablePureComponent {
   constructor (props) {
     super(props)
     this.state = {
+      horizontalScroll: 0,
       focusedItem: null
     }
   }
@@ -50,6 +52,9 @@ class TreeView extends ImmutablePureComponent {
     this.VirtualList = VirtualList({
       container: this.scrollContainer
     })(VirtualTreeView)
+    this.setState({
+      VirtualList: true
+    })
     document.addEventListener('paste', this.handlePaste)
   }
   componentWillUnmount () {
@@ -87,6 +92,9 @@ class TreeView extends ImmutablePureComponent {
     } else if (item.get('type') === 'texture') {
       this.props.setCurrentTexture(item)
     }
+  }
+  handleScroll = (event) => {
+    this.setState({horizontalScroll: event.target.scrollLeft})
   }
   handleKeyDown = (event) => {
     const { focusedItem } = this.state
@@ -163,17 +171,20 @@ class TreeView extends ImmutablePureComponent {
     this.props.sizes.forEach((item, i) => {
       style += `#${this.id} .tree-col:nth-child(${i + 1}) {width: ${item}px}`
     })
+    let width = this.props.sizes.reduce((a, b) => a + b, 0)
     return (
       <div className='tree-view' id={this.id}>
         <style>{style}</style>
         <TreeHeader
+          style={{marginLeft: -this.state.horizontalScroll + 'px'}}
           sizes={this.props.sizes}
           columns={columnNames}
           setTreeSize={this.props.setTreeSize}
         />
-        <div className='tree-content' tabIndex='0' onKeyDown={this.handleKeyDown} ref={(scrollContainer) => { this.scrollContainer = scrollContainer }}>
-          {this.props.items ? <this.VirtualList
-            items={this.props.items.toArray()}
+        <div className='tree-content' tabIndex='0' onScroll={this.handleScroll} onKeyDown={this.handleKeyDown} ref={(scrollContainer) => { this.scrollContainer = scrollContainer }}>
+          {this.state.VirtualList ? <this.VirtualList
+            width={width}
+            items={this.props.items ? this.props.items.toArray() : []}
             itemHeight={ItemHeight}
             handleFocus={this.focusItem}
             handleDoubleClick={this.selectItem}

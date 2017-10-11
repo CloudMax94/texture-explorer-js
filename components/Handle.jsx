@@ -19,11 +19,8 @@ class Handle extends ImmutablePureComponent {
   }
 
   handleMouseMove = (event) => {
-    const ele = ReactDOM.findDOMNode(this.refs.handle)
-    const direction = window.getComputedStyle(ele.parentElement).getPropertyValue('flex-direction')
-
     let offset = 0
-    if (direction === 'column') {
+    if (this.props.layoutDirection === 'vertical') {
       offset = event.clientY
     } else {
       offset = event.clientX
@@ -43,9 +40,7 @@ class Handle extends ImmutablePureComponent {
   }
 
   handleMouseDown = (event) => {
-    const ele = ReactDOM.findDOMNode(this.refs.handle)
-    const direction = window.getComputedStyle(ele.parentElement).getPropertyValue('flex-direction')
-    if (direction === 'column') {
+    if (this.props.layoutDirection === 'vertical') {
       this.startPos = event.clientY
     } else {
       this.startPos = event.clientX
@@ -57,7 +52,7 @@ class Handle extends ImmutablePureComponent {
 
   render () {
     return (
-      <div ref='handle' className='handle'>
+      <div className='handle'>
         <div className='handle-inner' onMouseDown={this.handleMouseDown} />
       </div>
     )

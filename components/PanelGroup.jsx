@@ -100,18 +100,16 @@ class PanelGroup extends ImmutablePureComponent {
     return (
       <div className='panel'>
         <div className='panel-header' onContextMenu={this.handleGroupContext}>
-          <div className='panel-tabs'>
-            {panels.map((panel, i) => {
-              if (this.state.selected === null || this.state.selected > panels.size) {
-                this.state.selected = i
-              }
-              let classes = 'panel-tab'
-              if (this.state.selected === i) {
-                classes += ' selected'
-              }
-              return <div key={i} index={i} className={classes} onClick={this.setCurrentTab.bind(this, i)} onContextMenu={this.handleTabContext.bind(this, i)}>{panel.key}</div>
-            })}
-          </div>
+          {panels.map((panel, i) => {
+            if (this.state.selected === null || this.state.selected > panels.size) {
+              this.state.selected = i
+            }
+            let classes = 'panel-tab'
+            if (this.state.selected === i) {
+              classes += ' selected'
+            }
+            return <div key={i} index={i} className={classes} onClick={this.setCurrentTab.bind(this, i)} onContextMenu={this.handleTabContext.bind(this, i)}>{panel.key}</div>
+          })}
         </div>
         <div className='panel-content'>
           {panels.map((panel, i) => {

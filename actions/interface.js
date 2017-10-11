@@ -34,6 +34,11 @@ export function movePanelGroupToContainer (container, index, newContainer) {
 }
 
 export function setContainerSize (container, size) {
+  let minSize = 200
+  if (container === 0 || container === 3) {
+    minSize = 120
+  }
+  size = Math.max(minSize, size)
   return {
     type: INTERFACE.SET_CONTAINER_SIZE,
     container,
@@ -45,7 +50,7 @@ export function setTreeSize (column, size) {
   return {
     type: INTERFACE.SET_TREE_SIZE,
     column,
-    size
+    size: Math.max(50, size)
   }
 }
 

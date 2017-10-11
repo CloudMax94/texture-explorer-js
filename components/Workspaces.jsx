@@ -109,7 +109,7 @@ class Workspace extends ImmutablePureComponent {
           />
         </div>
         <div className='search-bar'>
-          <input type='text' placeholder='Search...' onChange={this.handleSearch} />
+          <input type='text' disabled={!selectedDirectory} placeholder='Search...' onChange={this.handleSearch} />
         </div>
       </div>
     )
