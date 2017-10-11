@@ -50,14 +50,18 @@ class TreeView extends ImmutablePureComponent {
     this.VirtualList = VirtualList({
       container: this.scrollContainer
     })(VirtualTreeView)
+    document.addEventListener('paste', this.handlePaste)
+  }
+  componentWillUnmount () {
+    document.removeEventListener('paste', this.handlePaste)
   }
   componentWillReceiveProps (nextProps) {
-    if (this.props.directory !== nextProps.directory) {
+    if (this.props.directoryId !== nextProps.directoryId) {
       this.setState({focusedItem: null})
     }
   }
   componentWillUpdate (nextProps, nextState) {
-    if (this.props.directory !== nextProps.directory) {
+    if (this.props.directoryId !== nextProps.directoryId) {
       // We scroll to top when directory changes
       this.scrollContainer.scrollTop = 0
     } else if (this.state.focusedItem !== nextState.focusedItem && nextState.focusedItem) {
@@ -116,6 +120,11 @@ class TreeView extends ImmutablePureComponent {
             }
             this.props.deleteItem(focusedItem)
             break
+          case 67: // C
+            if (event.ctrlKey) {
+              this.props.copyItemToClipboard(this.props.profileId, focusedItem)
+            }
+            break
           default:
             return
         }
@@ -126,9 +135,27 @@ class TreeView extends ImmutablePureComponent {
     switch (event.keyCode) {
       case 38: // Up Arrow
       case 40: // Down Arrow
-        event.preventDefault()
         this.setState({focusedItem: items.getIn([0, 'id'])})
         break
+    }
+  }
+  handlePaste = (event) => {
+    var clipboardData, pastedData
+    // paste is attached to document, so we need to make sure that this element is focused
+    if (document.activeElement === this.scrollContainer) {
+      clipboardData = event.clipboardData || window.clipboardData
+      pastedData = clipboardData.getData('Text')
+      try {
+        var itemObject = JSON.parse(pastedData)
+        if ('type' in itemObject) {
+          let type = itemObject.type
+          if (type === 'texture' || type === 'directory') {
+            this.props.addItemObject(this.props.profileId, itemObject, this.props.directoryId)
+            event.preventDefault()
+          }
+        }
+      } catch (err) {
+      }
     }
   }
   render () {

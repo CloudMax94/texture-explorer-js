@@ -24,6 +24,10 @@ export default function profile (state = fromJS({
       const { profileId, item } = action
       return state.setIn(['profiles', profileId, 'items', item.get('id')], item)
     }
+    case PROFILE.ADD_ITEMS: {
+      const { profileId, items } = action
+      return state.mergeIn(['profiles', profileId, 'items'], items)
+    }
     case PROFILE.DELETE_ITEMS: {
       const { profileId, itemIds } = action
       return state.updateIn(['profiles', profileId, 'items'], (items) => {

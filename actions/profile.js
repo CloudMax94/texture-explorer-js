@@ -6,6 +6,7 @@ import { Record, Map } from 'immutable'
 import { getFormat } from '../lib/textureManipulator'
 import { getSuccessors, itemAddressCompare } from '../lib/helpers'
 import prettyJSON from '../lib/prettyJson'
+import { clipboard } from 'electron'
 import * as PROFILE from '../constants/profile'
 
 let idCounter = 0
@@ -53,23 +54,26 @@ function formatHex (int) {
   return '0x' + padStart(int.toString(16), 8, 0).toUpperCase()
 }
 
-function itemsToObject (items) {
+function itemsToObject (items, originId) {
   const groupedItems = items.sort(itemAddressCompare).groupBy(x => x.get('parentId'))
   const traverseItems = (id) => {
     let item = items.get(id)
-    const obj = {
-      name: item.get('name'),
-      address: formatHex(item.get('address'))
-    }
-    if (item.get('type') === 'directory') {
-      obj.size = formatHex(item.get('length'))
-    } else if (item.get('type') === 'texture') {
-      obj.format = item.get('format')
-      obj.width = item.get('width')
-      obj.height = item.get('height')
-      let format = getFormat(item.get('format'))
-      if (format.hasPalette()) {
-        obj.palette = formatHex(item.get('palette'))
+    const obj = {}
+    if (id === 'root') {
+      obj.version = '2'
+    } else {
+      obj.name = item.get('name')
+      obj.address = formatHex(item.get('address'))
+      if (item.get('type') === 'directory') {
+        obj.size = formatHex(item.get('length'))
+      } else if (item.get('type') === 'texture') {
+        obj.format = item.get('format')
+        obj.width = item.get('width')
+        obj.height = item.get('height')
+        let format = getFormat(item.get('format'))
+        if (format.hasPalette()) {
+          obj.palette = formatHex(item.get('palette'))
+        }
       }
     }
     let children = groupedItems.get(id)
@@ -85,20 +89,22 @@ function itemsToObject (items) {
     }
     return obj
   }
-  let root = traverseItems('root')
-  root.version = '2'
-  delete root.name
-  delete root.address
-  delete root.size
-  return root
+  return traverseItems(originId)
 }
 
 function writeProfile (profile, callback) {
-  let data = prettyJSON(itemsToObject(profile.get('items')))
+  let data = prettyJSON(itemsToObject(profile.get('items'), 'root'))
   let filePath = join(PROFILE.BASE_PATH, profile.get('key'), profile.get('file'))
   writeFile(filePath, data, (err) => {
     callback(err)
   })
+}
+
+function prepareRoot (itemObject) {
+  itemObject.address = '0x0'
+  itemObject.size = '0x0'
+  itemObject.name = 'Root'
+  return itemObject
 }
 
 function readProfile (profilePath, callback) {
@@ -116,7 +122,7 @@ function readProfile (profilePath, callback) {
           console.error(e)
           return
         }
-        callback(json)
+        callback(prepareRoot(json))
       } else if (profileExt === '.xml') {
         var parser = new xml2js.Parser({
           tagNameProcessors: [function (name) {
@@ -161,62 +167,51 @@ function readProfile (profilePath, callback) {
             }
           }
           relativeToAbsolute(result.root)
-          callback(result.root)
+          callback(prepareRoot(result.root))
         })
       }
     }
   })
 }
 
-function itemsFromObject (profile, length) {
+function itemsFromObject (itemObject, type = 'directory', parentId = null) {
   const types = ['directory', 'texture']
-  const _innerLoop = (input, items, parent) => {
+  let items = Map()
+  const _innerLoop = (input, type, parentId) => {
+    const id = parentId ? (idCounter++).toString(36) : 'root' // If item doesn't have a parent, it's the root!
+    if (type === 'directory') {
+      let item = new DirectoryRecord({
+        id,
+        parentId,
+        name: input.name,
+        address: parseInt(input.address, 16),
+        length: parseInt(input.size, 16) || 0
+      })
+      items = items.set(id, item)
+    } else if (type === 'texture') {
+      let item = new TextureRecord({
+        id,
+        parentId,
+        name: input.name,
+        address: parseInt(input.address, 16),
+        format: input.format,
+        width: parseInt(input.width),
+        height: parseInt(input.height),
+        palette: parseInt(input.palette, 16) || 0
+      })
+      items = items.set(id, item)
+    } else {
+      return
+    }
     for (let type of types) {
       if (input[itemFormatPlural(type)]) {
         input[itemFormatPlural(type)].forEach((i, index) => {
-          let item
-          const id = (idCounter++).toString(36)
-          if (type === 'directory') {
-            item = new DirectoryRecord({
-              id,
-              parentId: parent,
-              name: i.name,
-              address: parseInt(i.address, 16),
-              length: parseInt(i.size, 16)
-            })
-            items = _innerLoop(i, items, id)
-          } else {
-            item = new TextureRecord({
-              id,
-              parentId: parent,
-              name: i.name,
-              address: parseInt(i.address, 16),
-              format: i.format,
-              width: parseInt(i.width),
-              height: parseInt(i.height),
-              palette: parseInt(i.palette, 16) || 0
-            })
-          }
-
-          items = items.set(id, item)
+          _innerLoop(i, type, id)
         })
       }
     }
-    return items
   }
-  const id = 'root'
-  const rootItem = new DirectoryRecord({
-    id,
-    name: 'Root',
-    address: 0,
-    absolute: 0,
-    length: length
-  })
-  let items = Map()
-  items = items.set(id, rootItem)
-  if (profile) {
-    items = _innerLoop(profile, items, id)
-  }
+  _innerLoop(itemObject, type, parentId)
   return items
 }
 
@@ -385,6 +380,30 @@ export function deleteItem (itemId) {
       profileId,
       itemIds
     })
+  }
+}
+
+export function addItemObject (profileId, itemObject, parentId) {
+  return async (dispatch, getState) => {
+    let items = itemsFromObject(itemObject, itemObject.type, parentId)
+    dispatch({
+      type: PROFILE.ADD_ITEMS,
+      profileId,
+      items
+    })
+  }
+}
+
+export function copyItemToClipboard (profileId, itemId) {
+  return async (dispatch, getState) => {
+    let state = getState()
+    let items = state.profile.getIn(['profiles', profileId, 'items'])
+    let item = items.get(itemId)
+    if (item) {
+      let object = itemsToObject(items, itemId)
+      object.type = item.get('type')
+      clipboard.writeText(JSON.stringify(object))
+    }
   }
 }
 

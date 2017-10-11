@@ -7,7 +7,11 @@ import {
   setCurrentDirectory,
   setCurrentTexture
 } from '../actions/workspace'
-import { deleteItem } from '../actions/profile'
+import {
+  deleteItem,
+  copyItemToClipboard,
+  addItemObject
+} from '../actions/profile'
 import { setTreeSize } from '../actions/interface'
 import { itemAddressCompare } from '../lib/helpers'
 
@@ -39,12 +43,15 @@ class Workspace extends ImmutablePureComponent {
     const {
       workspaces,
       sizes,
+      profileId,
       items,
       currentWorkspace,
       selectedDirectory,
       setCurrentDirectory,
       setCurrentTexture,
       deleteItem,
+      addItemObject,
+      copyItemToClipboard,
       setTreeSize
     } = this.props
 
@@ -90,12 +97,15 @@ class Workspace extends ImmutablePureComponent {
         <div className='workspace-content'>
           <TreeView
             sizes={sizes}
+            profileId={profileId}
             items={filteredItems}
-            directory={selectedDirectory}
+            directoryId={selectedDirectory}
             setCurrentDirectory={setCurrentDirectory}
             setCurrentTexture={setCurrentTexture}
             setTreeSize={setTreeSize}
             deleteItem={deleteItem}
+            addItemObject={addItemObject}
+            copyItemToClipboard={copyItemToClipboard}
           />
         </div>
         <div className='search-bar'>
@@ -111,8 +121,10 @@ function mapStateToProps (state) {
   let workspace = state.workspace.getIn(['workspaces', currentWorkspace])
   let items
   let selectedDirectory
+  let profileId
   if (workspace) {
-    selectedDirectory = workspace.selectedDirectory
+    profileId = workspace.get('profile')
+    selectedDirectory = workspace.get('selectedDirectory')
     if (selectedDirectory) {
       items = state.profile.getIn(['profiles', workspace.get('profile'), 'items'])
     }
@@ -122,7 +134,8 @@ function mapStateToProps (state) {
     workspaces: state.workspace.get('workspaces'),
     currentWorkspace,
     selectedDirectory,
-    items
+    items,
+    profileId
   }
 }
 
@@ -133,6 +146,8 @@ function mapDispatchToProps (dispatch) {
     setCurrentDirectory,
     setCurrentTexture,
     deleteItem,
+    addItemObject,
+    copyItemToClipboard,
     setTreeSize
   }, dispatch)
 }
