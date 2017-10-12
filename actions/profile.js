@@ -1,6 +1,6 @@
 import { join, extname } from 'path'
 import { readdirSync, readFile, writeFile } from 'fs'
-import xml2js from 'xml2js'
+import { Parser } from 'xml2js'
 import { padStart } from 'lodash'
 import { Record, Map } from 'immutable'
 import { getFormat } from '../lib/textureManipulator'
@@ -124,7 +124,7 @@ function readProfile (profilePath, callback) {
         }
         callback(prepareRoot(json))
       } else if (profileExt === '.xml') {
-        var parser = new xml2js.Parser({
+        var parser = new Parser({
           tagNameProcessors: [function (name) {
             if (name === 'directory') return 'directories'
             else if (name === 'texture') return 'textures'

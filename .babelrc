@@ -10,7 +10,7 @@
     "stage-3",
     "react"
   ],
-  "plugins": ["add-module-exports", "transform-class-properties"],
+  "plugins": ["transform-class-properties"],
   "env": {
     "production": {
       "presets": ["react-optimize"]

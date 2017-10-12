@@ -31,6 +31,35 @@ app.on('ready', function () {
 
   mainWindowState.manage(mainWindow)
 
+  var loaded = false
+  var css
+  var sass = require('node-sass')
+  sass.render({
+    file: require('path').join(__dirname, '/sass/style.scss'),
+    sourcemap: true,
+    sourceMapEmbed: true,
+    sourceMapContents: true,
+    outputStyle: 'compact'
+  }, function (error, result) {
+    if (error) {
+      css = 'body:before {content: "'
+      css += 'SASS Error: ' + error.message.replace(/"/g, '\\"') + ' \\A '
+      css += 'on line ' + error.line + ' column ' + error.column + ' in ' + error.file + ' \\A '
+      css += '"; white-space: pre; display: block; padding: 0.5em; border: 2px solid red;}#container {display:none}'
+    } else {
+      css = result.css.toString()
+    }
+    if (loaded) {
+      mainWindow.webContents.insertCSS(css)
+    }
+  })
+
+  mainWindow.webContents.on('did-finish-load', function () {
+    if (css) {
+      mainWindow.webContents.insertCSS(css)
+    }
+  })
+
   mainWindow.loadURL('file://' + __dirname + '/index.html')
 
   if (global.argv._.indexOf('debug') > -1) {
