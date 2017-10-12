@@ -41,8 +41,8 @@ module.exports = {
   ],
   "settings": {
     "import/resolver": {
-      "node": {
-        "paths": [__dirname] 
+      "webpack": {
+        "config": path.resolve(__dirname, "webpack.config.js")
       }
     }
   }

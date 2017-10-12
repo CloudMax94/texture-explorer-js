@@ -15,8 +15,8 @@ import {
 import { setTreeSize } from '../actions/interface'
 import { itemAddressCompare } from '../lib/helpers'
 
-import ImmutablePureComponent from './ImmutablePureComponent.jsx'
-import TreeView from './TreeView.jsx'
+import ImmutablePureComponent from './ImmutablePureComponent'
+import TreeView from './TreeView'
 
 class Workspace extends ImmutablePureComponent {
   constructor (props) {

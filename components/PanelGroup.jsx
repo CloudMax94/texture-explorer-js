@@ -2,7 +2,7 @@ import React from 'react'
 
 import { remote } from 'electron'
 
-import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+import ImmutablePureComponent from './ImmutablePureComponent'
 
 const { MenuItem, Menu } = remote
 

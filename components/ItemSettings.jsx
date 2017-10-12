@@ -3,7 +3,7 @@ import { padStart, uniqueId } from 'lodash'
 
 import { getFormats, getFormat } from '../lib/textureManipulator'
 
-import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+import ImmutablePureComponent from './ImmutablePureComponent'
 
 class ItemSettings extends ImmutablePureComponent {
   componentWillMount () {

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+import ImmutablePureComponent from './ImmutablePureComponent'
 
 class ProfileManager extends ImmutablePureComponent {
   handleProfileChange = (event) => {

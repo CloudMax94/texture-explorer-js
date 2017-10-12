@@ -24,13 +24,13 @@ import { remote } from 'electron'
 
 import { openFile } from '../lib/fileHandler'
 
-import Rows from './Rows.jsx'
-import Columns from './Columns.jsx'
-import Container from './Container.jsx'
-import Handle from './Handle.jsx'
-import Workspaces from './Workspaces.jsx'
-import ApplicationMenu from './ApplicationMenu.jsx'
-import Dialog from './Dialog.jsx'
+import Rows from './Rows'
+import Columns from './Columns'
+import Container from './Container'
+import Handle from './Handle'
+import Workspaces from './Workspaces'
+import ApplicationMenu from './ApplicationMenu'
+import Dialog from './Dialog'
 
 const argv = remote.getGlobal('argv')
 

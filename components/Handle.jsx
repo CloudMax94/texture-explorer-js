@@ -1,8 +1,7 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
 import { throttle } from 'lodash'
 
-import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+import ImmutablePureComponent from './ImmutablePureComponent'
 
 class Handle extends ImmutablePureComponent {
   componentWillMount () {

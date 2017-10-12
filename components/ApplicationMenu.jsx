@@ -1,7 +1,7 @@
 import React from 'react'
-import Menu from './Menu.jsx'
+import Menu from './Menu'
 
-import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+import ImmutablePureComponent from './ImmutablePureComponent'
 
 class ApplicationMenu extends ImmutablePureComponent {
   render () {

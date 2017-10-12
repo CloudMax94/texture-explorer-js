@@ -3,9 +3,9 @@ import React from 'react'
 import { uniqueId } from 'lodash'
 import VirtualList from 'react-virtual-list'
 
-import ImmutablePureComponent from './ImmutablePureComponent.jsx'
-import TreeItem from './TreeItem.jsx'
-import TreeHeader from './TreeHeader.jsx'
+import ImmutablePureComponent from './ImmutablePureComponent'
+import TreeItem from './TreeItem'
+import TreeHeader from './TreeHeader'
 
 const ItemHeight = 20
 

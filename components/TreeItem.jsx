@@ -5,7 +5,7 @@ import { bindActionCreators } from 'redux'
 import { remote } from 'electron'
 import textureManipulator from '../lib/textureManipulator'
 import { getItemPath } from '../lib/helpers'
-import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+import ImmutablePureComponent from './ImmutablePureComponent'
 
 import { BLOB_UNSET } from '../constants/workspace'
 import { updateItemBlob } from '../actions/workspace'

@@ -1,7 +1,7 @@
 import React from 'react'
 import { throttle } from 'lodash'
 
-import ImmutablePureComponent from './ImmutablePureComponent.jsx'
+import ImmutablePureComponent from './ImmutablePureComponent'
 
 class TreeHandle extends ImmutablePureComponent {
   componentWillMount () {
