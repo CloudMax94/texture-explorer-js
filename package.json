@@ -8,7 +8,6 @@
     "browser": "gulp"
   },
   "dependencies": {
-    "babel-core": "^6.26.0",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-polyfill": "^6.26.0",
