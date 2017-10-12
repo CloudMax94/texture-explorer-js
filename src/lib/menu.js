@@ -225,8 +225,16 @@ function initializeMenu (store) {
     submenu: helpSubMenu
   })
 
+  const versionItem = new MenuItem({
+    label: 'Version ' + remote.app.getVersion(),
+    enabled: false
+  })
+  helpSubMenu.append(versionItem)
+
+  helpSubMenu.append(new MenuItem({type: 'separator'}))
+
   const aboutItem = new MenuItem({
-    label: 'About Texture Explorer.js',
+    label: 'About ' + remote.app.getName(),
     click: () => {
       actions.toggleAboutDialog(true)
     }

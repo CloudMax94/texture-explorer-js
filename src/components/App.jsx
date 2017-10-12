@@ -112,7 +112,8 @@ class App extends React.Component {
     } = this.props
     let aboutDialog
     if (showAbout) {
-      aboutDialog = (<Dialog title='About Texture Explorer.js' onClose={this.closeAboutDialog}>
+      aboutDialog = (<Dialog title={`About ${remote.app.getName()}`} onClose={this.closeAboutDialog}>
+        Version: {remote.app.getVersion()}<br />
         Website: cloudmodding.com<br />
         Created by CloudMax 2015-2017.
       </Dialog>)

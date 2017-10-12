@@ -7,7 +7,7 @@ var rename = require('gulp-rename')
 var watch = require('gulp-watch')
 
 gulp.task('sass-browser', function () {
-  return sass('sass/style.scss', {sourcemap: true, style: 'compact'})
+  return sass('src/sass/style.scss', {sourcemap: true, style: 'compact'})
     .on('error', function (err) {
       console.error('sass Error!', err.message)
     })
@@ -21,16 +21,16 @@ gulp.task('sass-browser', function () {
     })
     .pipe(rename('style.css'))
     .pipe(sourcemaps.write('.', {sourceRoot: 'sass'}))
-    .pipe(gulp.dest('./browser/assets/css'))
+    .pipe(gulp.dest('./dist/browser'))
 })
 
 gulp.task('watch-browser', ['sass-browser'], function () {
   var pattern
-  pattern = ['./assets/**/*.*', './favicon.ico', 'index.html']
-  gulp.src(pattern, {base: './'})
+  pattern = ['./src/static/**/*.*']
+  gulp.src(pattern, {base: './src/static/'})
     .pipe(watch(pattern))
-    .pipe(gulp.dest('./browser'))
-  gulp.watch('./sass/**/*.scss', ['sass-browser'])
+    .pipe(gulp.dest('./dist/browser'))
+  gulp.watch('./src/sass/**/*.scss', ['sass-browser'])
 })
 
 gulp.task('default', ['watch-browser'])

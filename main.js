@@ -23,9 +23,10 @@ app.on('ready', function () {
     width: mainWindowState.width,
     height: mainWindowState.height,
     webPreferences: {
-      zoomFactor: argv.scale ? argv.scale : 1
+      zoomFactor: global.argv.scale ? global.argv.scale : 1,
+      webSecurity: false
     },
-    icon: path.join(__dirname, 'icon.png'),
+    icon: path.join(__dirname, 'assets/icon.png'),
     backgroundColor: '#262626'
   })
 
@@ -35,7 +36,7 @@ app.on('ready', function () {
   var css
   var sass = require('node-sass')
   sass.render({
-    file: require('path').join(__dirname, '/sass/style.scss'),
+    file: require('path').join(__dirname, '/src/sass/style.scss'),
     sourcemap: true,
     sourceMapEmbed: true,
     sourceMapContents: true,
@@ -60,7 +61,7 @@ app.on('ready', function () {
     }
   })
 
-  mainWindow.loadURL('file://' + __dirname + '/index.html')
+  mainWindow.loadURL(path.join('file://', __dirname, '/src/electron.html'))
 
   if (global.argv._.indexOf('debug') > -1) {
     mainWindow.openDevTools({

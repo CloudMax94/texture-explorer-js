@@ -1,12 +1,14 @@
 var path = require('path')
 var webpack = require('webpack')
+var fs = require('fs')
+var pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
 
 module.exports = {
   entry: {
-    boot: './boot.js'
+    te: './src/boot.js'
   },
   output: {
-    path: path.join(__dirname, 'browser'),
+    path: path.join(__dirname, 'dist/browser'),
     filename: '[name].js',
     publicPath: ''
   },
@@ -28,7 +30,9 @@ module.exports = {
       'process.env': {
         NODE_ENV: '"production"'
       },
-      'process.browser': true
+      'process.browser': true,
+      '__APP_VERSION__': JSON.stringify(pkg.version),
+      '__APP_NAME__': JSON.stringify(pkg.productName)
     }),
     new webpack.optimize.UglifyJsPlugin({
       sourceMap: true,
@@ -43,8 +47,8 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx'],
     alias: {
-      electron: path.resolve(__dirname, 'lib/shims/electron'),
-      fs: path.resolve(__dirname, 'lib/shims/fs')
+      electron: path.resolve(__dirname, 'src/lib/shims/electron'),
+      fs: path.resolve(__dirname, 'src/lib/shims/fs')
     }
   }
 }
