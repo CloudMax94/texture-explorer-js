@@ -17,30 +17,6 @@
     }
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex: 0 0 auto;
-}
-
-.group {
-    flex: 1 0 auto;
-    width: 100%;
-    margin: 10px 0 5px 0;
-    display: flex;
-    flex-direction: column;
-    fieldset {
-        flex: 1;
-        border: 2px groove lighten($panel-color, 10);
-        margin: 0;
-        legend {
-            font-size: 13px;
-            font-weight: bold;
-        }
-    }
-}
-
 %tab {
     cursor: pointer;
     display: inline-block;

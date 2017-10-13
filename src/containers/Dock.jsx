@@ -3,15 +3,16 @@ import React from 'react'
 import { is } from 'immutable'
 import { itemAddressCompare } from '../lib/helpers'
 
-import Rows from './Rows'
-import Columns from './Columns'
-import PanelGroup from './PanelGroup'
-import TextureViewer from './TextureViewer'
-import Overview from './Overview'
-import ItemSettings from './ItemSettings'
-import ProfileManager from './ProfileManager'
+import Rows from '../components/Rows'
+import Columns from '../components/Columns'
+import Handle from '../components/Handle'
+import PanelGroup from '../components/PanelGroup'
+import TextureViewer from '../components/TextureViewer'
+import Overview from '../components/Overview'
+import ItemSettings from '../components/ItemSettings'
+import ProfileManager from '../components/ProfileManager'
 
-const NecessaryContainerProps = [
+const NecessaryDockProps = [
   'layout', 'size', 'index', 'direction'
 ]
 
@@ -43,9 +44,9 @@ function getNecessaryPanelProps (props) {
   return necessaryProps
 }
 
-class Container extends React.Component {
+class Dock extends React.Component {
   shouldComponentUpdate (nextProps, nextState) {
-    let necessaryProps = [...NecessaryContainerProps, ...getNecessaryPanelProps(nextProps)]
+    let necessaryProps = [...NecessaryDockProps, ...getNecessaryPanelProps(nextProps)]
     return !necessaryProps.every((p) => is(nextProps[p], this.props[p]))
   }
   getPanel (name) {
@@ -144,9 +145,9 @@ class Container extends React.Component {
       <PanelGroup
         key={i}
         index={i}
-        container={this.props.index}
-        movePanelToContainer={this.props.movePanelToContainer}
-        movePanelGroupToContainer={this.props.movePanelGroupToContainer}
+        dockId={this.props.index}
+        movePanelToDock={this.props.movePanelToDock}
+        movePanelGroupToDock={this.props.movePanelGroupToDock}
       >
         {panelNames.map((panelName) => this.getPanel(panelName)).toList()}
       </PanelGroup>
@@ -160,10 +161,25 @@ class Container extends React.Component {
     } else {
       Wrap = Rows
     }
-    return (
-      <div className='container' style={{flexBasis: size + 'px'}}><Wrap>{content}</Wrap></div>
-    )
+    let output = [
+      <Wrap key='dock' style={{flex: '0 0 ' + size + 'px'}} layoutDirection={this.props.layoutDirection}>{content}</Wrap>
+    ]
+    if (this.props.handle) {
+      let handle = <Handle
+        key='handle'
+        size={size}
+        layoutDirection={this.props.layoutDirection}
+        onResize={this.props.handleResize}
+        reverse={this.props.handle === 'before'}
+      />
+      if (this.props.handle === 'before') {
+        output.unshift(handle)
+      } else if (this.props.handle === 'after') {
+        output.push(handle)
+      }
+    }
+    return output
   }
 }
 
-export default Container
+export default Dock

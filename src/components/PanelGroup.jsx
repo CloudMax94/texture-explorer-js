@@ -23,30 +23,30 @@ class PanelGroup extends ImmutablePureComponent {
     const menu = new Menu()
 
     menu.append(new MenuItem({
-      label: 'Move Group to Top Container',
+      label: 'Move Group to Top Dock',
       click: () => {
-        this.props.movePanelGroupToContainer(this.props.container, this.props.index, 0)
+        this.props.movePanelGroupToDock(this.props.dockId, this.props.index, 0)
       }
     }))
 
     menu.append(new MenuItem({
-      label: 'Move Group to Left Container',
+      label: 'Move Group to Left Dock',
       click: () => {
-        this.props.movePanelGroupToContainer(this.props.container, this.props.index, 1)
+        this.props.movePanelGroupToDock(this.props.dockId, this.props.index, 1)
       }
     }))
 
     menu.append(new MenuItem({
-      label: 'Move Group to Right Container',
+      label: 'Move Group to Right Dock',
       click: () => {
-        this.props.movePanelGroupToContainer(this.props.container, this.props.index, 2)
+        this.props.movePanelGroupToDock(this.props.dockId, this.props.index, 2)
       }
     }))
 
     menu.append(new MenuItem({
-      label: 'Move Group to Bottom Container',
+      label: 'Move Group to Bottom Dock',
       click: () => {
-        this.props.movePanelGroupToContainer(this.props.container, this.props.index, 3)
+        this.props.movePanelGroupToDock(this.props.dockId, this.props.index, 3)
       }
     }))
 
@@ -59,30 +59,30 @@ class PanelGroup extends ImmutablePureComponent {
     const menu = new Menu()
 
     menu.append(new MenuItem({
-      label: 'Move Pane to Top Container',
+      label: 'Move Pane to Top Dock',
       click: () => {
-        this.props.movePanelToContainer(this.props.container, this.props.index, index, 0)
+        this.props.movePanelToDock(this.props.dockId, this.props.index, index, 0)
       }
     }))
 
     menu.append(new MenuItem({
-      label: 'Move Pane to Left Container',
+      label: 'Move Pane to Left Dock',
       click: () => {
-        this.props.movePanelToContainer(this.props.container, this.props.index, index, 1)
+        this.props.movePanelToDock(this.props.dockId, this.props.index, index, 1)
       }
     }))
 
     menu.append(new MenuItem({
-      label: 'Move Pane to Right Container',
+      label: 'Move Pane to Right Dock',
       click: () => {
-        this.props.movePanelToContainer(this.props.container, this.props.index, index, 2)
+        this.props.movePanelToDock(this.props.dockId, this.props.index, index, 2)
       }
     }))
 
     menu.append(new MenuItem({
-      label: 'Move Pane to Bottom Container',
+      label: 'Move Pane to Bottom Dock',
       click: () => {
-        this.props.movePanelToContainer(this.props.container, this.props.index, index, 3)
+        this.props.movePanelToDock(this.props.dockId, this.props.index, index, 3)
       }
     }))
 

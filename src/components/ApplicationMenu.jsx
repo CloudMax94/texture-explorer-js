@@ -5,12 +5,9 @@ import ImmutablePureComponent from './ImmutablePureComponent'
 
 class ApplicationMenu extends ImmutablePureComponent {
   render () {
-    if (!this.props.menu) {
-      return null
-    }
     return (
       <div className='application-menu'>
-        <Menu data={this.props.menu} />
+        {this.props.menu ? <Menu data={this.props.menu} /> : null}
       </div>
     )
   }

@@ -14,34 +14,34 @@ export function setStatus (status) {
   }
 }
 
-export function movePanelToContainer (container, groupIndex, index, newContainer) {
+export function movePanelToDock (dock, groupIndex, index, newDock) {
   return {
-    type: INTERFACE.MOVE_PANEL_TO_CONTAINER,
-    container,
+    type: INTERFACE.MOVE_PANEL_TO_DOCK,
+    dock,
     groupIndex,
     index,
-    newContainer
+    newDock
   }
 }
 
-export function movePanelGroupToContainer (container, index, newContainer) {
+export function movePanelGroupToDock (dock, index, newDock) {
   return {
-    type: INTERFACE.MOVE_PANEL_GROUP_TO_CONTAINER,
-    container,
+    type: INTERFACE.MOVE_PANEL_GROUP_TO_DOCK,
+    dock,
     index,
-    newContainer
+    newDock
   }
 }
 
-export function setContainerSize (container, size) {
+export function setDockSize (dock, size) {
   let minSize = 200
-  if (container === 0 || container === 3) {
+  if (dock === 0 || dock === 3) {
     minSize = 120
   }
   size = Math.max(minSize, size)
   return {
-    type: INTERFACE.SET_CONTAINER_SIZE,
-    container,
+    type: INTERFACE.SET_DOCK_SIZE,
+    dock,
     size
   }
 }

@@ -4,9 +4,9 @@ import { bindActionCreators } from 'redux'
 import { BLOB_UNSET } from '../constants/workspace'
 import {
   toggleAboutDialog,
-  setContainerSize,
-  movePanelToContainer,
-  movePanelGroupToContainer
+  setDockSize,
+  movePanelToDock,
+  movePanelGroupToDock
 } from '../actions/interface'
 import {
   createWorkspace,
@@ -24,13 +24,12 @@ import { remote } from 'electron'
 
 import { openFile } from '../lib/fileHandler'
 
-import Rows from './Rows'
-import Columns from './Columns'
-import Container from './Container'
-import Handle from './Handle'
-import Workspaces from './Workspaces'
-import ApplicationMenu from './ApplicationMenu'
-import Dialog from './Dialog'
+import Dock from './Dock'
+import Rows from '../components/Rows'
+import Columns from '../components/Columns'
+import Workspaces from '../components/Workspaces'
+import ApplicationMenu from '../components/ApplicationMenu'
+import Dialog from '../components/Dialog'
 
 const argv = remote.getGlobal('argv')
 
@@ -40,7 +39,7 @@ class App extends React.Component {
     this.handleResize = []
     for (let i = 0; i < 4; i++) {
       this.handleResize[i] = (size) => {
-        this.props.setContainerSize(i, size)
+        this.props.setDockSize(i, size)
       }
     }
   }
@@ -76,24 +75,26 @@ class App extends React.Component {
   closeAboutDialog = () => {
     this.props.toggleAboutDialog(false)
   }
-  setupContainer = (index) => {
+  setupDock = (index) => {
     const {
-      containerLayouts,
-      containerSizes
+      dockLayouts,
+      dockSizes
     } = this.props
     let direction = 'horizontal'
     if (index === 1 || index === 2) {
       direction = 'vertical'
     }
 
-    return (<Container
+    let out = <Dock
       index={index}
       direction={direction}
-      layout={containerLayouts.get(index)}
-      size={containerSizes.get(index)}
+      handle={index === 0 || index === 1 ? 'after' : 'before'}
+      handleResize={this.handleResize[index]}
+      layout={dockLayouts.get(index)}
+      size={dockSizes.get(index)}
       createWorkspace={this.props.createWorkspace}
-      movePanelToContainer={this.props.movePanelToContainer}
-      movePanelGroupToContainer={this.props.movePanelGroupToContainer}
+      movePanelToDock={this.props.movePanelToDock}
+      movePanelGroupToDock={this.props.movePanelGroupToDock}
       setCurrentDirectory={this.props.setCurrentDirectory}
       setCurrentTexture={this.props.setCurrentTexture}
       insertData={this.props.insertData}
@@ -102,13 +103,13 @@ class App extends React.Component {
       saveProfile={this.props.saveProfile}
       setItemData={this.props.setItemData}
       {...this.props.pass}
-    />)
+    />
+    return out
   }
   render () {
     const {
       menu,
-      showAbout,
-      containerSizes
+      showAbout
     } = this.props
     let aboutDialog
     if (showAbout) {
@@ -122,17 +123,13 @@ class App extends React.Component {
       <div className='app' onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop} onContextMenu={this.handleContextMenu}>
         <ApplicationMenu menu={menu} />
         <Rows>
-          {this.setupContainer(0)}
-          <Handle size={containerSizes.get(0)} direction='vertical' onResize={this.handleResize[0]} />
+          {this.setupDock(0)}
           <Columns>
-            {this.setupContainer(1)}
-            <Handle size={containerSizes.get(1)} onResize={this.handleResize[1]} />
+            {this.setupDock(1)}
             <Workspaces />
-            <Handle size={containerSizes.get(2)} reverse onResize={this.handleResize[2]} />
-            {this.setupContainer(2)}
+            {this.setupDock(2)}
           </Columns>
-          <Handle size={containerSizes.get(3)} reverse onResize={this.handleResize[3]} />
-          {this.setupContainer(3)}
+          {this.setupDock(3)}
         </Rows>
         {aboutDialog}
       </div>
@@ -165,12 +162,11 @@ function mapStateToProps (state) {
         return profile.get('name')
       }).toList()
   }
-
   return {
     menu: state.ui.get('menu'),
     showAbout: state.ui.get('showAbout'),
-    containerSizes: state.ui.getIn(['settings', 'containerSizes']),
-    containerLayouts: state.ui.getIn(['settings', 'layout']),
+    dockSizes: state.ui.getIn(['settings', 'dockSizes']),
+    dockLayouts: state.ui.getIn(['settings', 'layout']),
     pass: {
       workspace,
       profile,
@@ -187,9 +183,9 @@ function mapDispatchToProps (dispatch) {
   return bindActionCreators({
     // Interface
     toggleAboutDialog,
-    setContainerSize,
-    movePanelToContainer,
-    movePanelGroupToContainer,
+    setDockSize,
+    movePanelToDock,
+    movePanelGroupToDock,
     // Workspace
     createWorkspace,
     setCurrentDirectory,
