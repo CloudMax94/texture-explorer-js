@@ -1,16 +1,36 @@
 import React from 'react'
+import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
 
 import { is } from 'immutable'
 import { itemAddressCompare } from '../lib/helpers'
+
+import { BLOB_UNSET } from '../constants/workspace'
+
+import {
+  setDockSize,
+  movePanelToDock,
+  movePanelGroupToDock
+} from '../actions/interface'
+import {
+  createWorkspace,
+  setCurrentDirectory,
+  setCurrentTexture,
+  insertData,
+  updateItemBlob,
+  setProfile
+} from '../actions/workspace'
+import { saveProfile, setItemData } from '../actions/profile'
 
 import Rows from '../components/Rows'
 import Columns from '../components/Columns'
 import Handle from '../components/Handle'
 import PanelGroup from '../components/PanelGroup'
-import TextureViewer from '../components/TextureViewer'
-import Overview from '../components/Overview'
-import ItemSettings from '../components/ItemSettings'
-import ProfileManager from '../components/ProfileManager'
+
+import TextureViewer from '../components/panels/TextureViewer'
+import Overview from '../components/panels/Overview'
+import ItemSettings from '../components/panels/ItemSettings'
+import ProfileManager from '../components/panels/ProfileManager'
 
 const NecessaryDockProps = [
   'layout', 'size', 'index', 'direction'
@@ -47,7 +67,8 @@ function getNecessaryPanelProps (props) {
 class Dock extends React.Component {
   shouldComponentUpdate (nextProps, nextState) {
     let necessaryProps = [...NecessaryDockProps, ...getNecessaryPanelProps(nextProps)]
-    return !necessaryProps.every((p) => is(nextProps[p], this.props[p]))
+    let shouldUpdate = !necessaryProps.every((p) => is(nextProps[p], this.props[p]))
+    return shouldUpdate
   }
   getPanel (name) {
     switch (name) {
@@ -139,6 +160,9 @@ class Dock extends React.Component {
       }
     }
   }
+  handleResize = (size) => {
+    this.props.setDockSize(this.props.index, size)
+  }
   render () {
     const { layout, size } = this.props
     const content = layout.map((panelNames, i) =>
@@ -169,7 +193,7 @@ class Dock extends React.Component {
         key='handle'
         size={size}
         layoutDirection={this.props.layoutDirection}
-        onResize={this.props.handleResize}
+        onResize={this.handleResize}
         reverse={this.props.handle === 'before'}
       />
       if (this.props.handle === 'before') {
@@ -182,4 +206,63 @@ class Dock extends React.Component {
   }
 }
 
-export default Dock
+function mapStateToProps (state, ownProps) {
+  let workspaceId = state.workspace.get('currentWorkspace')
+  let workspace = state.workspace.getIn(['workspaces', workspaceId])
+  let profile
+  let selectedDirectory
+  let selectedTexture
+  let blobState
+  let blob
+  let profileList
+
+  if (workspace) {
+    profile = state.profile.getIn(['profiles', workspace.get('profile')])
+    if (profile) {
+      selectedDirectory = profile.getIn(['items', workspace.get('selectedDirectory')])
+      selectedTexture = profile.getIn(['items', workspace.get('selectedTexture')])
+    }
+    if (selectedTexture) {
+      blobState = workspace.getIn(['blobs', selectedTexture.get('id'), 'blobState']) || BLOB_UNSET
+      blob = workspace.getIn(['blobs', selectedTexture.get('id'), 'blob'])
+    }
+    profileList = state.profile.get('profiles')
+      .filter((profile) => profile.get('key') === workspace.get('key'))
+      .map((profile) => {
+        return profile.get('name')
+      }).toList()
+  }
+
+  return {
+    size: state.ui.getIn(['settings', 'dockSizes', ownProps.index]),
+    layout: state.ui.getIn(['settings', 'layout', ownProps.index]),
+    workspace,
+    profile,
+    selectedDirectory,
+    selectedTexture,
+    blobState,
+    blob,
+    profileList
+  }
+}
+
+function mapDispatchToProps (dispatch) {
+  return bindActionCreators({
+    // Interface
+    setDockSize,
+    movePanelToDock,
+    movePanelGroupToDock,
+    // Workspace
+    createWorkspace,
+    setCurrentDirectory,
+    setCurrentTexture,
+    insertData,
+    updateItemBlob,
+    setProfile,
+    // Profile
+    saveProfile,
+    setItemData
+  }, dispatch)
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Dock)

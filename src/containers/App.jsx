@@ -1,22 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { BLOB_UNSET } from '../constants/workspace'
-import {
-  toggleAboutDialog,
-  setDockSize,
-  movePanelToDock,
-  movePanelGroupToDock
-} from '../actions/interface'
-import {
-  createWorkspace,
-  setCurrentDirectory,
-  setCurrentTexture,
-  insertData,
-  updateItemBlob,
-  setProfile
-} from '../actions/workspace'
-import { saveProfile, setItemData } from '../actions/profile'
+import { toggleAboutDialog } from '../actions/interface'
+import { createWorkspace } from '../actions/workspace'
 
 import { each } from 'lodash'
 import { exists } from 'fs'
@@ -34,15 +20,6 @@ import Dialog from '../components/Dialog'
 const argv = remote.getGlobal('argv')
 
 class App extends React.Component {
-  constructor (props) {
-    super(props)
-    this.handleResize = []
-    for (let i = 0; i < 4; i++) {
-      this.handleResize[i] = (size) => {
-        this.props.setDockSize(i, size)
-      }
-    }
-  }
   componentDidMount () {
     each(argv._, (filePath) => {
       if (filePath !== '.') {
@@ -76,10 +53,6 @@ class App extends React.Component {
     this.props.toggleAboutDialog(false)
   }
   setupDock = (index) => {
-    const {
-      dockLayouts,
-      dockSizes
-    } = this.props
     let direction = 'horizontal'
     if (index === 1 || index === 2) {
       direction = 'vertical'
@@ -89,20 +62,6 @@ class App extends React.Component {
       index={index}
       direction={direction}
       handle={index === 0 || index === 1 ? 'after' : 'before'}
-      handleResize={this.handleResize[index]}
-      layout={dockLayouts.get(index)}
-      size={dockSizes.get(index)}
-      createWorkspace={this.props.createWorkspace}
-      movePanelToDock={this.props.movePanelToDock}
-      movePanelGroupToDock={this.props.movePanelGroupToDock}
-      setCurrentDirectory={this.props.setCurrentDirectory}
-      setCurrentTexture={this.props.setCurrentTexture}
-      insertData={this.props.insertData}
-      updateItemBlob={this.props.updateItemBlob}
-      setProfile={this.props.setProfile}
-      saveProfile={this.props.saveProfile}
-      setItemData={this.props.setItemData}
-      {...this.props.pass}
     />
     return out
   }
@@ -138,44 +97,9 @@ class App extends React.Component {
 }
 
 function mapStateToProps (state) {
-  let workspaceId = state.workspace.get('currentWorkspace')
-  let workspace = state.workspace.getIn(['workspaces', workspaceId])
-  let profile
-  let selectedDirectory
-  let selectedTexture
-  let blobState
-  let blob
-  let profileList
-  if (workspace) {
-    profile = state.profile.getIn(['profiles', workspace.get('profile')])
-    if (profile) {
-      selectedDirectory = profile.getIn(['items', workspace.get('selectedDirectory')])
-      selectedTexture = profile.getIn(['items', workspace.get('selectedTexture')])
-    }
-    if (selectedTexture) {
-      blobState = workspace.getIn(['blobs', selectedTexture.get('id'), 'blobState']) || BLOB_UNSET
-      blob = workspace.getIn(['blobs', selectedTexture.get('id'), 'blob'])
-    }
-    profileList = state.profile.get('profiles')
-      .filter((profile) => profile.get('key') === workspace.get('key'))
-      .map((profile) => {
-        return profile.get('name')
-      }).toList()
-  }
   return {
     menu: state.ui.get('menu'),
-    showAbout: state.ui.get('showAbout'),
-    dockSizes: state.ui.getIn(['settings', 'dockSizes']),
-    dockLayouts: state.ui.getIn(['settings', 'layout']),
-    pass: {
-      workspace,
-      profile,
-      selectedDirectory,
-      selectedTexture,
-      blobState,
-      blob,
-      profileList
-    }
+    showAbout: state.ui.get('showAbout')
   }
 }
 
@@ -183,19 +107,8 @@ function mapDispatchToProps (dispatch) {
   return bindActionCreators({
     // Interface
     toggleAboutDialog,
-    setDockSize,
-    movePanelToDock,
-    movePanelGroupToDock,
     // Workspace
-    createWorkspace,
-    setCurrentDirectory,
-    setCurrentTexture,
-    insertData,
-    updateItemBlob,
-    setProfile,
-    // Profile
-    saveProfile,
-    setItemData
+    createWorkspace
   }, dispatch)
 }
 

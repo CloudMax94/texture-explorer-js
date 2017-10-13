@@ -1,10 +1,10 @@
 import React from 'react'
-import { openFile } from '../lib/fileHandler'
+import { openFile } from '../../lib/fileHandler'
 
-import { BLOB_UNSET } from '../constants/workspace'
+import { BLOB_UNSET } from '../../constants/workspace'
 
-import textureManipulator from '../lib/textureManipulator'
-import ImmutablePureComponent from './ImmutablePureComponent'
+import textureManipulator from '../../lib/textureManipulator'
+import ImmutablePureComponent from '../ImmutablePureComponent'
 
 class TextureViewer extends ImmutablePureComponent {
   componentWillMount () {

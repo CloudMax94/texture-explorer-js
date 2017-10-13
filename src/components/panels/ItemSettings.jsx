@@ -1,9 +1,9 @@
 import React from 'react'
 import { padStart, uniqueId } from 'lodash'
 
-import { getFormats, getFormat } from '../lib/textureManipulator'
+import { getFormats, getFormat } from '../../lib/textureManipulator'
 
-import ImmutablePureComponent from './ImmutablePureComponent'
+import ImmutablePureComponent from '../ImmutablePureComponent'
 
 class ItemSettings extends ImmutablePureComponent {
   componentWillMount () {
