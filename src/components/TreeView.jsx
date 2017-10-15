@@ -74,11 +74,11 @@ class TreeView extends ImmutablePureComponent {
       let index = nextProps.items.findIndex((item) => item.get('id') === nextState.focusedItem)
       if (index > -1) {
         let position = ItemHeight * index
-        let { scrollTop, offsetHeight } = this.scrollContainer
+        let { scrollTop, clientHeight } = this.scrollContainer
         if (position < scrollTop) {
           this.scrollContainer.scrollTop = position
-        } else if (position > scrollTop + offsetHeight - ItemHeight) {
-          this.scrollContainer.scrollTop = position - offsetHeight + ItemHeight
+        } else if (position > scrollTop + clientHeight - ItemHeight) {
+          this.scrollContainer.scrollTop = position - clientHeight + ItemHeight
         }
       }
     }
