@@ -1,4 +1,4 @@
-var fileOpener = document.createElement('input')
+const fileOpener = document.createElement('input')
 fileOpener.type = 'file'
 fileOpener.id = 'fileOpener'
 fileOpener.style.display = 'none'
@@ -6,7 +6,17 @@ fileOpener.style.display = 'none'
 document.body.insertBefore(fileOpener, document.body.firstChild)
 
 export function showOpenDialog (w, options, callback) {
-  var fileOpener = document.getElementById('fileOpener')
+  if ('filters' in options) {
+    let formats = []
+    for (let filter of options.filters) {
+      for (let extension of filter.extensions) {
+        formats.push('.' + extension)
+      }
+    }
+    fileOpener.accept = formats.join(',')
+  } else {
+    fileOpener.removeAttribute('accept')
+  }
   fileOpener.onchange = function (event) {
     callback(this.files)
   }

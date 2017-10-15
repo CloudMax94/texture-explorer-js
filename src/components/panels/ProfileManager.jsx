@@ -15,6 +15,9 @@ class ProfileManager extends ImmutablePureComponent {
   handleImport = (event) => {
     dialog.showOpenDialog(remote.getCurrentWindow(), {
       title: 'Open File',
+      filters: [
+        {name: remote.app.getName() + ' Profiles', extensions: ['xml', 'json']}
+      ],
       properties: ['openFile']
     }, (files) => {
       if (files && files.length) {
