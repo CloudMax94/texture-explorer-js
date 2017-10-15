@@ -52,19 +52,6 @@ class App extends React.Component {
   closeAboutDialog = () => {
     this.props.toggleAboutDialog(false)
   }
-  setupDock = (index) => {
-    let direction = 'horizontal'
-    if (index === 1 || index === 2) {
-      direction = 'vertical'
-    }
-
-    let out = <Dock
-      index={index}
-      direction={direction}
-      handle={index === 0 || index === 1 ? 'after' : 'before'}
-    />
-    return out
-  }
   render () {
     const {
       menu,
@@ -82,13 +69,13 @@ class App extends React.Component {
       <div className='app' onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop} onContextMenu={this.handleContextMenu}>
         <ApplicationMenu menu={menu} />
         <Rows>
-          {this.setupDock(0)}
+          <Dock index={0} />
           <Columns>
-            {this.setupDock(1)}
+            <Dock index={1} />
             <Workspaces />
-            {this.setupDock(2)}
+            <Dock index={2} />
           </Columns>
-          {this.setupDock(3)}
+          <Dock index={3} />
         </Rows>
         {aboutDialog}
       </div>

@@ -44,7 +44,7 @@ const panelNames = {
 }
 
 const NecessaryDockProps = [
-  'panelGroups', 'size', 'index', 'direction'
+  'panelGroups', 'size', 'index', 'layoutDirection'
 ]
 
 const NecessaryPanelProps = {
@@ -167,13 +167,13 @@ class Dock extends React.Component {
     this.props.setDockSize(this.props.index, size)
   }
   render () {
-    const { panelGroups, size } = this.props
+    const { panelGroups, size, index } = this.props
     const content = panelGroups.map((panelGroup, panelGroupId) => {
       let panelId = panelGroup.get('currentPanel')
       return <PanelGroup
         key={panelGroupId}
         panelGroupId={panelGroupId}
-        dockId={this.props.index}
+        dockId={index}
         panels={panelGroup.get('panels').map((panel, panelId) => panelNames[panelId])}
         currentPanel={panelId}
         setCurrentPanel={this.props.setCurrentPanel}
@@ -187,27 +187,26 @@ class Dock extends React.Component {
       return null
     }
     let Wrap
-    if (this.props.direction === 'horizontal') {
+    if (this.props.layoutDirection === 'vertical') {
       Wrap = Columns
     } else {
       Wrap = Rows
     }
     let output = [
-      <Wrap key='dock' style={{flex: '0 0 ' + size + 'px'}} layoutDirection={this.props.layoutDirection}>{content}</Wrap>
+      <Wrap key='dock' style={{flex: '0 0 ' + size + 'px'}}>{content}</Wrap>
     ]
-    if (this.props.handle) {
-      let handle = <Handle
-        key='handle'
-        size={size}
-        layoutDirection={this.props.layoutDirection}
-        onResize={this.handleResize}
-        reverse={this.props.handle === 'before'}
-      />
-      if (this.props.handle === 'before') {
-        output.unshift(handle)
-      } else if (this.props.handle === 'after') {
-        output.push(handle)
-      }
+    let after = index === 0 || index === 1
+    let handle = <Handle
+      key='handle'
+      size={size}
+      layoutDirection={this.props.layoutDirection}
+      onResize={this.handleResize}
+      reverse={!after}
+    />
+    if (after) {
+      output.push(handle)
+    } else {
+      output.unshift(handle)
     }
     return output
   }
