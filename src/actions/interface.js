@@ -14,22 +14,27 @@ export function setStatus (status) {
   }
 }
 
-export function movePanelToDock (dock, groupIndex, index, newDock) {
+export function setCurrentPanel (panelGroupId, panelId) {
   return {
-    type: INTERFACE.MOVE_PANEL_TO_DOCK,
-    dock,
-    groupIndex,
-    index,
-    newDock
+    type: INTERFACE.SET_CURRENT_PANEL,
+    panelGroupId,
+    panelId
   }
 }
 
-export function movePanelGroupToDock (dock, index, newDock) {
+export function movePanelToDock (panelId, dockId) {
+  return {
+    type: INTERFACE.MOVE_PANEL_TO_DOCK,
+    panelId,
+    dockId
+  }
+}
+
+export function movePanelGroupToDock (panelGroupId, dockId) {
   return {
     type: INTERFACE.MOVE_PANEL_GROUP_TO_DOCK,
-    dock,
-    index,
-    newDock
+    panelGroupId,
+    dockId
   }
 }
 

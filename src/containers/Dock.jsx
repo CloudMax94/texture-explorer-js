@@ -9,6 +9,7 @@ import { BLOB_UNSET } from '../constants/workspace'
 
 import {
   setDockSize,
+  setCurrentPanel,
   movePanelToDock,
   movePanelGroupToDock
 } from '../actions/interface'
@@ -32,8 +33,18 @@ import Overview from '../components/panels/Overview'
 import ItemSettings from '../components/panels/ItemSettings'
 import ProfileManager from '../components/panels/ProfileManager'
 
+const panelNames = {
+  'textureSettings': 'Texture Settings',
+  'directorySettings': 'Directory Settings',
+  'itemPreview': 'Image Preview',
+  'settings': 'Settings',
+  'overview': 'Directory Tree',
+  'profileManager': 'Profile Manager',
+  'finder': 'Texture Finder'
+}
+
 const NecessaryDockProps = [
-  'layout', 'size', 'index', 'direction'
+  'panelGroups', 'size', 'index', 'direction'
 ]
 
 const NecessaryPanelProps = {
@@ -47,14 +58,15 @@ const NecessaryPanelProps = {
 }
 
 function getNecessaryPanelProps (props) {
-  let layout = props.layout
-  if (!layout) {
+  let panelGroups = props.panelGroups
+  if (!panelGroups) {
     return []
   }
   let necessaryProps = []
-  for (let panel of props.layout.flatten().toArray()) {
-    if (panel in NecessaryPanelProps) {
-      for (let prop of NecessaryPanelProps[panel]) {
+  for (let [, panelGroup] of props.panelGroups) {
+    let currentPanel = panelGroup.get('currentPanel')
+    if (currentPanel in NecessaryPanelProps) {
+      for (let prop of NecessaryPanelProps[currentPanel]) {
         if (necessaryProps.indexOf(prop) === -1) {
           necessaryProps.push(prop)
         }
@@ -70,8 +82,8 @@ class Dock extends React.Component {
     let shouldUpdate = !necessaryProps.every((p) => is(nextProps[p], this.props[p]))
     return shouldUpdate
   }
-  getPanel (name) {
-    switch (name) {
+  getPanel (panelId) {
+    switch (panelId) {
       case 'textureSettings': {
         const { profile, selectedTexture } = this.props
         let offset = 0
@@ -82,7 +94,6 @@ class Dock extends React.Component {
           }
         }
         return <ItemSettings
-          key='Texture Settings'
           type={'texture'}
           item={selectedTexture}
           offset={offset}
@@ -100,7 +111,6 @@ class Dock extends React.Component {
           }
         }
         return <ItemSettings
-          key='Directory Settings'
           type={'directory'}
           item={selectedDirectory}
           offset={offset}
@@ -111,7 +121,6 @@ class Dock extends React.Component {
       case 'itemPreview': {
         const { workspace, selectedTexture, blob, blobState } = this.props
         return <TextureViewer
-          key='Image Preview'
           itemId={selectedTexture ? selectedTexture.get('id') : null}
           workspaceId={workspace ? workspace.get('id') : null}
           blob={blob}
@@ -121,9 +130,7 @@ class Dock extends React.Component {
         />
       }
       case 'settings': {
-        return <span
-          key='Settings'
-        />
+        return <span />
       }
       case 'overview': {
         const { profile, selectedDirectory } = this.props
@@ -135,7 +142,6 @@ class Dock extends React.Component {
           }
         }
         return <Overview
-          key='Directory Tree'
           items={items}
           selectedDirectoryId={selectedDirectory ? selectedDirectory.get('id') : null}
           setCurrentTexture={this.props.setCurrentTexture}
@@ -145,7 +151,6 @@ class Dock extends React.Component {
       case 'profileManager': {
         const { profile, workspace, profileList } = this.props
         return <ProfileManager
-          key='Profile Manager'
           profileId={profile ? profile.get('id') : ''}
           workspaceId={workspace ? workspace.get('id') : ''}
           profileList={profileList}
@@ -154,9 +159,7 @@ class Dock extends React.Component {
         />
       }
       case 'finder': {
-        return <span
-          key='Texture Finder'
-        />
+        return <span />
       }
     }
   }
@@ -164,18 +167,22 @@ class Dock extends React.Component {
     this.props.setDockSize(this.props.index, size)
   }
   render () {
-    const { layout, size } = this.props
-    const content = layout.map((panelNames, i) =>
-      <PanelGroup
-        key={i}
-        index={i}
+    const { panelGroups, size } = this.props
+    const content = panelGroups.map((panelGroup, panelGroupId) => {
+      let panelId = panelGroup.get('currentPanel')
+      return <PanelGroup
+        key={panelGroupId}
+        panelGroupId={panelGroupId}
         dockId={this.props.index}
+        panels={panelGroup.get('panels').map((panel, panelId) => panelNames[panelId])}
+        currentPanel={panelId}
+        setCurrentPanel={this.props.setCurrentPanel}
         movePanelToDock={this.props.movePanelToDock}
         movePanelGroupToDock={this.props.movePanelGroupToDock}
       >
-        {panelNames.map((panelName) => this.getPanel(panelName)).toList()}
+        {this.getPanel(panelId)}
       </PanelGroup>
-    )
+    }).toList()
     if (!content.size) {
       return null
     }
@@ -233,9 +240,17 @@ function mapStateToProps (state, ownProps) {
       }).toList()
   }
 
+  let panelGroups = state.ui.get('panelGroups').filter((panelGroup) =>
+    panelGroup.get('dock') === ownProps.index
+  ).map((panelGroup, panelGroupId) =>
+    panelGroup.set('panels', state.ui.get('panels').filter((panel) =>
+      panel.get('panelGroup') === panelGroupId
+    ))
+  )
+
   return {
-    size: state.ui.getIn(['settings', 'dockSizes', ownProps.index]),
-    layout: state.ui.getIn(['settings', 'layout', ownProps.index]),
+    size: state.ui.getIn(['docks', ownProps.index, 'size']),
+    panelGroups,
     workspace,
     profile,
     selectedDirectory,
@@ -250,6 +265,7 @@ function mapDispatchToProps (dispatch) {
   return bindActionCreators({
     // Interface
     setDockSize,
+    setCurrentPanel,
     movePanelToDock,
     movePanelGroupToDock,
     // Workspace

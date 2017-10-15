@@ -130,7 +130,7 @@ function mapStateToProps (state) {
     }
   }
   return {
-    sizes: state.ui.getIn(['settings', 'treeSizes']),
+    sizes: state.ui.get('treeSizes'),
     workspaces: state.workspace.get('workspaces'),
     currentWorkspace,
     selectedDirectory,
