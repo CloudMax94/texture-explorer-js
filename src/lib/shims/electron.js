@@ -35,12 +35,14 @@ export const remote = {
 
 var clipboardElement = document.createElement('textarea')
 clipboardElement.id = 'clipboarder'
+clipboardElement.hidden = true
 document.body.insertBefore(clipboardElement, document.body.firstChild)
 
 export const clipboard = {
   writeText (text) {
     clipboardElement.value = text
     let currentTarget = document.activeElement
+    clipboardElement.hidden = false
     clipboardElement.select()
     try {
       var success = document.execCommand('copy')
@@ -49,6 +51,7 @@ export const clipboard = {
       }
     } catch (err) {
     }
+    clipboardElement.hidden = true
     if (currentTarget) {
       currentTarget.focus()
     }
