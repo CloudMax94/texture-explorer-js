@@ -18,7 +18,6 @@ const defaultDocks = fromJS({
   panels: {
     overview: {panelGroup: '0'},
     profileManager: {panelGroup: '1'},
-    settings: {panelGroup: '1'},
     finder: {panelGroup: '1'},
     directorySettings: {panelGroup: '2'},
     textureSettings: {panelGroup: '3'},

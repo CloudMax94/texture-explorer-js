@@ -42,7 +42,6 @@ const panelNames = {
   'textureSettings': 'Texture Settings',
   'directorySettings': 'Directory Settings',
   'itemPreview': 'Image Preview',
-  'settings': 'Settings',
   'overview': 'Directory Tree',
   'profileManager': 'Profile Manager',
   'finder': 'Texture Finder'
@@ -56,7 +55,6 @@ const NecessaryPanelProps = {
   textureSettings: ['profile', 'selectedTexture'],
   directorySettings: ['profile', 'selectedDirectory'],
   itemPreview: ['workspace', 'selectedTexture', 'blob', 'blobState'],
-  settings: [],
   overview: ['profile', 'selectedDirectory'],
   profileManager: ['workspace', 'profile', 'profileList'],
   finder: []
@@ -134,9 +132,6 @@ class Dock extends React.Component {
           updateItemBlob={this.props.updateItemBlob}
         />
       }
-      case 'settings': {
-        return <span />
-      }
       case 'overview': {
         const { profile, selectedDirectory } = this.props
         let items
@@ -167,7 +162,7 @@ class Dock extends React.Component {
         />
       }
       case 'finder': {
-        return <span />
+        return <span className='disabled-text'>Coming Soon</span>
       }
     }
   }
