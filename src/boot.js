@@ -1,11 +1,29 @@
-(function () {
-  require('babel-register')
-  require('babel-polyfill')
-  var React = require('react')
-  var ReactDOM = require('react-dom')
-  var Root = require('./containers/Root').default
-  var configureStore = require('./stores/configureStore').configureStore
-  ReactDOM.render(React.createElement(Root, {
-    store: configureStore()
+import React from 'react'
+import { render } from 'react-dom'
+import { createTransform, persistStore } from 'redux-persist'
+import { fromJS } from 'immutable'
+import { remote } from 'electron'
+import { configureStore } from './stores/configureStore'
+import Root from './containers/Root'
+
+const store = configureStore()
+const interfaceTransform = createTransform(
+  (inboundState, key) => {
+    return inboundState.delete('menu').delete('showAbout').toJS()
+  },
+  (outboundState, key) => {
+    return fromJS(outboundState)
+  },
+  {whitelist: ['ui']}
+)
+const storeConfig = {
+  keyPrefix: '/' + remote.app.getName() + '/reducer/',
+  whitelist: ['ui'],
+  transforms: [interfaceTransform]
+}
+
+persistStore(store, storeConfig, () => {
+  render(React.createElement(Root, {
+    store: store
   }), document.getElementById('container'))
-})()
+})

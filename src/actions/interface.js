@@ -7,13 +7,6 @@ export function setApplicationMenu (menu) {
   }
 }
 
-export function setStatus (status) {
-  return {
-    type: INTERFACE.SET_STATUS,
-    status
-  }
-}
-
 export function setCurrentPanel (panelGroupId, panelId) {
   return {
     type: INTERFACE.SET_CURRENT_PANEL,

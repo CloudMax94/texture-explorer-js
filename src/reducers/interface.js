@@ -84,8 +84,6 @@ export default function ui (state = fromJS({
     // -- Actions unrelated to the docks ---------------------------------------
     case INTERFACE.SET_APPLICATION_MENU:
       return state.set('menu', Object.assign({}, action.menu))
-    case INTERFACE.SET_STATUS:
-      return state.set('status', action.status)
     case INTERFACE.SET_TREE_SIZE:
       return state.setIn(['treeSizes', action.column], action.size)
     case INTERFACE.TOGGLE_ABOUT_DIALOG:

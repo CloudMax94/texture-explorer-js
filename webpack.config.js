@@ -6,7 +6,7 @@ const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
 
 module.exports = {
   entry: {
-    te: './src/boot.js'
+    te: ['babel-polyfill', './src/boot.js']
   },
   output: {
     path: path.join(__dirname, 'dist/browser'),
