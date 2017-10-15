@@ -21,7 +21,12 @@ import {
   updateItemBlob,
   setProfile
 } from '../actions/workspace'
-import { saveProfile, setItemData } from '../actions/profile'
+import {
+  importProfile,
+  saveProfile,
+  deleteProfile,
+  setItemData
+} from '../actions/profile'
 
 import Rows from '../components/Rows'
 import Columns from '../components/Columns'
@@ -151,10 +156,13 @@ class Dock extends React.Component {
       case 'profileManager': {
         const { profile, workspace, profileList } = this.props
         return <ProfileManager
-          profileId={profile ? profile.get('id') : ''}
-          workspaceId={workspace ? workspace.get('id') : ''}
+          profileId={profile ? profile.get('id') : null}
+          workspaceId={workspace ? workspace.get('id') : null}
+          workspaceKey={workspace ? workspace.get('key') : null}
           profileList={profileList}
+          importProfile={this.props.importProfile}
           saveProfile={this.props.saveProfile}
+          deleteProfile={this.props.deleteProfile}
           setProfile={this.props.setProfile}
         />
       }
@@ -236,7 +244,7 @@ function mapStateToProps (state, ownProps) {
       .filter((profile) => profile.get('key') === workspace.get('key'))
       .map((profile) => {
         return profile.get('name')
-      }).toList()
+      })
   }
 
   let panelGroups = state.ui.get('panelGroups').filter((panelGroup) =>
@@ -275,7 +283,9 @@ function mapDispatchToProps (dispatch) {
     updateItemBlob,
     setProfile,
     // Profile
+    importProfile,
     saveProfile,
+    deleteProfile,
     setItemData
   }, dispatch)
 }

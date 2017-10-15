@@ -20,6 +20,9 @@ export default function profile (state = fromJS({
     case PROFILE.SAVE_PROFILE: {
       return state
     }
+    case PROFILE.DELETE_PROFILE: {
+      return state.deleteIn(['profiles', action.profileId])
+    }
     case PROFILE.ADD_ITEM: {
       const { profileId, item } = action
       return state.setIn(['profiles', profileId, 'items', item.get('id')], item)

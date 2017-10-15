@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron . debug",
     "webpack": "node_modules/.bin/webpack --config webpack.config.js",
-    "browser": "concurrently \"yarn run webpack\" \"gulp watch-browser\""
+    "webpack-dev": "node_modules/.bin/webpack-dev-server --config webpack.config.js --open",
+    "browser-dev": "concurrently \"yarn run webpack-dev\" \"gulp watch-browser\""
   },
   "dependencies": {
     "babel-plugin-lodash": "^3.2.11",
@@ -58,7 +59,9 @@
     "gulp-sourcemaps": "^2.6.1",
     "gulp-watch": "^4.3.11",
     "react-addons-perf": "^15.4.2",
+    "uglifyjs-webpack-plugin": "^1.0.0-beta.2",
     "webpack": "^3.7.1",
+    "webpack-dev-server": "^2.9.2",
     "webworkify-webpack": "^2.0.6"
   }
 }

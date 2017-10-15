@@ -24,6 +24,10 @@ export function writeFile (path, data, callback) {
   }
 }
 
+export function unlink (path, callback) {
+  callback(null, window.localStorage.removeItem(path))
+}
+
 export function exists (path, callback) {
   callback(window.localStorage.getItem(path) !== null)
 }

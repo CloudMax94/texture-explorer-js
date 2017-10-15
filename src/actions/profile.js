@@ -1,5 +1,5 @@
-import { join, extname } from 'path'
-import { readdirSync, readFile, writeFile } from 'fs'
+import { join } from 'path'
+import { readdirSync, readFile, writeFile, unlink } from 'fs'
 import { Parser } from 'xml2js'
 import { padStart } from 'lodash'
 import { Record, Map } from 'immutable'
@@ -15,7 +15,7 @@ const ProfileRecord = Record({
   id: null,
   file: null,
   key: null,
-  name: 'Default',
+  name: 'New Profile',
   loaded: false,
   items: Map()
 })
@@ -107,71 +107,64 @@ function prepareRoot (itemObject) {
   return itemObject
 }
 
-function readProfile (profilePath, callback) {
-  var profileExt = extname(profilePath)
-  readFile(profilePath, function (err, data) {
-    if (err) {
-      console.error(err)
-      callback(null)
-    } else {
-      if (profileExt === '.json') {
-        try {
-          var json = JSON.parse(data)
-        } catch (e) {
-          console.error('There was an error parsing ' + profilePath)
-          console.error(e)
-          return
-        }
-        callback(prepareRoot(json))
-      } else if (profileExt === '.xml') {
-        var parser = new Parser({
-          tagNameProcessors: [function (name) {
-            if (name === 'directory') return 'directories'
-            else if (name === 'texture') return 'textures'
-            return name
-          }],
-          attrNameProcessors: [],
-          mergeAttrs: true,
-          explicitArray: false
-        })
-        parser.parseString(data, function (err, result) {
-          if (err) {
-            console.error(err)
-            return
-          }
-
-          const relativeToAbsolute = function (item, parentAddress = '0x0') {
-            let address = '0x00000000'
-            if ('address' in item) { // Root does not have an address
-              item.address = '0x' + padStart((parseInt(item.address, 16) + parseInt(parentAddress, 16)).toString(16), 8, 0).toUpperCase()
-              address = item.address
-            }
-            if ('palette' in item) {
-              item.palette = '0x' + padStart((parseInt(item.palette, 16) + parseInt(parentAddress, 16)).toString(16), 8, 0).toUpperCase()
-            }
-            if (item.textures) {
-              if (!Array.isArray(item.textures)) {
-                item.textures = [item.textures]
-              }
-              item.textures.forEach((texture) => {
-                relativeToAbsolute(texture, address)
-              })
-            }
-            if (item.directories) {
-              if (!Array.isArray(item.directories)) {
-                item.directories = [item.directories]
-              }
-              item.directories.forEach((directory) => {
-                relativeToAbsolute(directory, address)
-              })
-            }
-          }
-          relativeToAbsolute(result.root)
-          callback(prepareRoot(result.root))
-        })
-      }
+function parseProfile (data, ext, callback) {
+  if (ext === 'json') {
+    try {
+      var json = JSON.parse(data)
+    } catch (e) {
+      callback(e)
+      return
     }
-  })
+    callback(null, prepareRoot(json))
+  } else if (ext === 'xml') {
+    var parser = new Parser({
+      tagNameProcessors: [function (name) {
+        if (name === 'directory') return 'directories'
+        else if (name === 'texture') return 'textures'
+        return name
+      }],
+      attrNameProcessors: [],
+      mergeAttrs: true,
+      explicitArray: false
+    })
+    parser.parseString(data, function (err, result) {
+      if (err) {
+        console.error(err)
+        return
+      }
+
+      const relativeToAbsolute = function (item, parentAddress = '0x0') {
+        let address = '0x00000000'
+        if ('address' in item) { // Root does not have an address
+          item.address = '0x' + padStart((parseInt(item.address, 16) + parseInt(parentAddress, 16)).toString(16), 8, 0).toUpperCase()
+          address = item.address
+        }
+        if ('palette' in item) {
+          item.palette = '0x' + padStart((parseInt(item.palette, 16) + parseInt(parentAddress, 16)).toString(16), 8, 0).toUpperCase()
+        }
+        if (item.textures) {
+          if (!Array.isArray(item.textures)) {
+            item.textures = [item.textures]
+          }
+          item.textures.forEach((texture) => {
+            relativeToAbsolute(texture, address)
+          })
+        }
+        if (item.directories) {
+          if (!Array.isArray(item.directories)) {
+            item.directories = [item.directories]
+          }
+          item.directories.forEach((directory) => {
+            relativeToAbsolute(directory, address)
+          })
+        }
+      }
+      relativeToAbsolute(result.root)
+      callback(null, prepareRoot(result.root))
+    })
+  } else {
+    callback(new Error(`Could not parse profile, unknown format "${ext}"`))
+  }
 }
 
 function itemsFromObject (itemObject, type = 'directory', parentId = null) {
@@ -215,15 +208,73 @@ function itemsFromObject (itemObject, type = 'directory', parentId = null) {
   return items
 }
 
+export function importProfile (file, key) {
+  return async (dispatch, getState) => {
+    let [name, ext] = file.name.split('.')
+
+    parseProfile(file.data, ext, (err, profileObject) => {
+      if (err) {
+        console.error('There was an error parsing ' + file.path)
+        console.error(err)
+        return
+      }
+      let origName = name
+      let i = 1
+      while (i++) {
+        let profileExists = profileExists = getState().profile.get('profiles').find(profile => profile.get('name') === name)
+        if (!profileExists) {
+          break
+        }
+        name = `${origName} (${i})`
+      }
+
+      console.log(profileObject)
+      let items = itemsFromObject(profileObject)
+      let profileId = (idCounter++).toString(36)
+      let profile = new ProfileRecord({
+        id: profileId,
+        items,
+        key,
+        file: name + '.json',
+        name,
+        loaded: true
+      })
+      dispatch({
+        type: PROFILE.ADD_PROFILE,
+        profile
+      })
+      writeProfile(profile, (err) => {
+        if (err) {
+          console.error(err)
+        } else {
+        }
+      })
+    })
+  }
+}
+
 export function loadProfile (profileId) {
   return async (dispatch, getState) => {
     let profile = getState().profile.getIn(['profiles', profileId])
-    readProfile(join(PROFILE.BASE_PATH, profile.get('key'), profile.get('file')), (profileObject) => {
-      let items = itemsFromObject(profileObject)
-      dispatch({
-        type: PROFILE.LOAD_PROFILE,
-        profileId,
-        items
+    let profilePath = join(PROFILE.BASE_PATH, profile.get('key'), profile.get('file'))
+    readFile(profilePath, function (err, data) {
+      if (err) {
+        console.error(err)
+        return
+      }
+      let [, ext] = profile.get('file').split('.')
+      parseProfile(data, ext, (err, profileObject) => {
+        if (err) {
+          console.error('There was an error parsing ' + profilePath)
+          console.error(err)
+          return
+        }
+        let items = itemsFromObject(profileObject)
+        dispatch({
+          type: PROFILE.LOAD_PROFILE,
+          profileId,
+          items
+        })
       })
     })
   }
@@ -245,6 +296,23 @@ export function saveProfile (profileId) {
   }
 }
 
+export function deleteProfile (profileId) {
+  return async (dispatch, getState) => {
+    let profile = getState().profile.getIn(['profiles', profileId])
+    let filePath = join(PROFILE.BASE_PATH, profile.get('key'), profile.get('file'))
+    unlink(filePath, (err) => {
+      if (err) {
+        console.error(err)
+      } else {
+        dispatch({
+          type: PROFILE.DELETE_PROFILE,
+          profileId
+        })
+      }
+    })
+  }
+}
+
 export function prepareProfiles (key) {
   return async (dispatch, getState) => {
     const existingProfiles = getState().profile.get('profiles')
@@ -252,19 +320,15 @@ export function prepareProfiles (key) {
     let files = readdirSync(profileDir)
     let profiles = Map()
     for (let file of files.sort()) {
-      const id = (idCounter++).toString(36)
       let [name, ext] = file.split('.')
       if (ext !== 'json') {
-        if (ext !== 'xml') {
-          continue
-        }
-        name += ` (${ext})`
+        continue
       }
 
       if (existingProfiles.find((profile) => profile.get('key') === key && profile.get('file') === file)) {
         continue
       }
-
+      const id = (idCounter++).toString(36)
       let profile = new ProfileRecord({
         id,
         file,
@@ -288,10 +352,11 @@ export function prepareProfiles (key) {
       items = items.set('root', rootItem)
       let id = (idCounter++).toString(36)
       defaultProfile = new ProfileRecord({
-        id: id,
+        id,
         items,
         key,
         file: 'Default.json',
+        name: 'Default',
         loaded: true
       })
       profiles = profiles.set(id, defaultProfile)

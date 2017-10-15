@@ -93,6 +93,16 @@ export default function workspace (state = fromJS({
           return workspace.set('blobs', workspace.get('blobs').deleteAll(itemIds))
         })
       })
+    case PROFILE.DELETE_PROFILE: {
+      return state.update('workspaces', (workspaces) => {
+        return workspaces.map((workspace) => {
+          if (workspace.get('profile') === action.profileId) {
+            workspace.set('profile', null)
+          }
+          return workspace
+        })
+      })
+    }
     default:
       return state
   }

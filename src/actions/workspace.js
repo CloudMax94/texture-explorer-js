@@ -17,7 +17,7 @@ const WorkspaceRecord = Record({
   name: 'New Workspace',
   key: null,
   blobs: Map(),
-  profile: '',
+  profile: null,
   selectedDirectory: null,
   selectedTexture: null
 })

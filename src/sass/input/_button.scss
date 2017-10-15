@@ -4,8 +4,8 @@ button {
     background: #373737;
     border: 1px solid #2c2c2c;
     border-bottom-width: 2px;
-    height: 25px;
-    padding: 0 14px;
+    min-height: 25px;
+    padding: 4px 14px;
     color: #fff;
     font-size: 12px;
 
@@ -28,4 +28,13 @@ button {
         border-bottom-width: 1px;
         cursor: default !important;
     }
+
+    .button-row & {
+        margin: 0 2px;
+    }
+}
+
+.button-row {
+    display: flex;
+    margin: 0 -2px;
 }

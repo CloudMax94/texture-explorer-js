@@ -1,7 +1,8 @@
-var path = require('path')
-var webpack = require('webpack')
-var fs = require('fs')
-var pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+const path = require('path')
+const webpack = require('webpack')
+const fs = require('fs')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
 
 module.exports = {
   entry: {
@@ -13,7 +14,6 @@ module.exports = {
     publicPath: ''
   },
   cache: true,
-  watch: true,
   module: {
     rules: [
       {
@@ -24,6 +24,9 @@ module.exports = {
     ]
   },
   devtool: '#source-map',
+  devServer: {
+    contentBase: './dist/browser'
+  },
   plugins: [
     new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.DefinePlugin({
@@ -34,11 +37,8 @@ module.exports = {
       '__APP_VERSION__': JSON.stringify(pkg.version),
       '__APP_NAME__': JSON.stringify(pkg.productName)
     }),
-    new webpack.optimize.UglifyJsPlugin({
-      sourceMap: true,
-      compress: {
-        warnings: false
-      }
+    new UglifyJsPlugin({
+      sourceMap: true
     }),
     new webpack.LoaderOptionsPlugin({
       minimize: true
