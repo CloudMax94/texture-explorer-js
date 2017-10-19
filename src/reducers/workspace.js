@@ -1,7 +1,6 @@
 import { fromJS } from 'immutable'
 import * as WORKSPACE from '../constants/workspace'
 import * as PROFILE from '../constants/profile'
-import textureManipulator from '../lib/textureManipulator'
 
 export default function workspace (state = fromJS({
   workspaces: {},
@@ -17,20 +16,8 @@ export default function workspace (state = fromJS({
     case WORKSPACE.INSERT_DATA:
       let { data, start } = action
       return state.updateIn(['workspaces', state.get('currentWorkspace')], (workspace) => {
-        let newItems = workspace.get('items').map((item) => {
-          if (item.get('type') !== 'texture') {
-            return item
-          }
-          const textureLength = item.get('width') *
-                                item.get('height') *
-                                textureManipulator.getFormat(item.get('format')).sizeModifier()
-          if (item.get('address') < start + data.length && start < item.get('address') + textureLength) {
-            item = item.set('blob', null).set('blobState', WORKSPACE.BLOB_UNSET)
-          }
-          return item
-        })
         let buffer = workspace.get('data')
-        return workspace.set('items', newItems).set('data', Buffer.concat([buffer.slice(0, start), data, buffer.slice(start + data.length)]))
+        return workspace.set('data', Buffer.concat([buffer.slice(0, start), data, buffer.slice(start + data.length)]))
       })
     case WORKSPACE.ADD_WORKSPACE:
       return state.setIn(['workspaces', action.workspace.get('id')], action.workspace)
@@ -54,6 +41,21 @@ export default function workspace (state = fromJS({
         }
         return item.set('blob', URL.createObjectURL(action.blob))
       })
+    case WORKSPACE.CLEAR_ITEM_BLOBS: {
+      const { itemIds, workspaceId } = action
+      return state.updateIn(['workspaces', workspaceId, 'blobs'], (blobs) => {
+        return blobs.map((blob, itemId) => {
+          if (itemIds.indexOf(itemId) >= 0) {
+            let oldBlob = blob.get('blob')
+            if (oldBlob) {
+              URL.revokeObjectURL(oldBlob)
+            }
+            return blob.set('blobState', WORKSPACE.BLOB_UNSET).set('blob', null)
+          }
+          return blob
+        })
+      })
+    }
     case WORKSPACE.SET_PROFILE:
       return state.updateIn(['workspaces', action.workspaceId], (workspace) => {
         return workspace

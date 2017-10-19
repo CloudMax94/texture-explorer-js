@@ -1,4 +1,6 @@
 import React from 'react'
+import { DropTarget } from 'react-dnd'
+import { NativeTypes } from 'react-dnd-html5-backend'
 import { openFile } from '../../lib/fileHandler'
 
 import { BLOB_UNSET } from '../../constants/workspace'
@@ -7,6 +9,13 @@ import textureManipulator from '../../lib/textureManipulator'
 import ImmutablePureComponent from '../ImmutablePureComponent'
 
 class TextureViewer extends ImmutablePureComponent {
+  constructor (props) {
+    super(props)
+    this.state = {
+      mode: 0
+    }
+  }
+
   componentWillMount () {
     this.blobUpdate(this.props)
   }
@@ -24,37 +33,48 @@ class TextureViewer extends ImmutablePureComponent {
     }
   }
 
-  handleDragOver = (event) => {
-    event.preventDefault()
-    event.stopPropagation()
+  handleClick = (event) => {
+    this.setState({mode: (this.state.mode + 1) % 3})
   }
-  handleDragEnd = (event) => {
-    event.preventDefault()
-    event.stopPropagation()
+
+  handleScroll = (event) => {
+    console.log(event)
   }
-  handleDrop = (event) => {
-    event.preventDefault()
-    event.stopPropagation()
-    openFile(event.dataTransfer.files[0], ({data}) => {
-      const pngBuffer = Buffer.from(data)
-      textureManipulator.pngToPixelData(pngBuffer, (pixelData, imageFormat) => {
-        const { format, address } = this.props
-        const buffer = textureManipulator.pixelDataToRaw(pixelData, format)
-        this.props.insertData(buffer, address)
-      })
-    })
-  }
+
   render () {
-    const { blob } = this.props
+    const { blob, connectDropTarget } = this.props
     if (!blob) {
       return null
     }
-    return (
-      <div className='texture-viewer'>
-        <img src={blob} onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop} />
+    return connectDropTarget(
+      <div className={'texture-viewer texture-viewer-mode-' + this.state.mode}>
+        <img src={blob}
+          onClick={this.handleClick}
+          onScroll={this.handleScroll}
+        />
       </div>
     )
   }
 }
 
-export default TextureViewer
+const fileTarget = {
+  drop ({ format, address, insertData }, monitor) {
+    if (monitor.didDrop()) {
+      return
+    }
+
+    if (event.dataTransfer.files.length) {
+      openFile(event.dataTransfer.files[0], ({data}) => {
+        const pngBuffer = Buffer.from(data)
+        textureManipulator.pngToPixelData(pngBuffer, (pixelData, imageFormat) => {
+          const buffer = textureManipulator.pixelDataToRaw(pixelData, format)
+          insertData(buffer, address)
+        })
+      })
+    }
+  }
+}
+
+export default DropTarget(NativeTypes.FILE, fileTarget, (connect, monitor) => ({
+  connectDropTarget: connect.dropTarget()
+}))(TextureViewer)

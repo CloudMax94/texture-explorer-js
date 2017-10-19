@@ -128,6 +128,8 @@ class Dock extends React.Component {
         return <TextureViewer
           itemId={selectedTexture ? selectedTexture.get('id') : null}
           workspaceId={workspace ? workspace.get('id') : null}
+          format={selectedTexture ? selectedTexture.get('format') : null}
+          address={selectedTexture ? selectedTexture.get('address') : null}
           blob={blob}
           blobState={blobState}
           insertData={this.props.insertData}

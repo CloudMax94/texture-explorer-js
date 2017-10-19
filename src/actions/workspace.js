@@ -247,10 +247,36 @@ export function setProfile (profileId, workspaceId) {
 }
 
 export function insertData (data, start) {
-  return {
-    type: WORKSPACE.INSERT_DATA,
-    data,
-    start
+  return async (dispatch, getState) => {
+    dispatch({
+      type: WORKSPACE.INSERT_DATA,
+      data,
+      start
+    })
+
+    let state = getState()
+    let workspaceId = state.workspace.get('currentWorkspace')
+
+    let profileId = state.workspace.getIn(['workspaces', workspaceId, 'profile'])
+    let profile = state.profile.getIn(['profiles', profileId])
+
+    let itemIds = []
+    profile.get('items').forEach((item) => {
+      if (item.get('type') !== 'texture') {
+        return
+      }
+      const textureLength = item.get('width') *
+                            item.get('height') *
+                            textureManipulator.getFormat(item.get('format')).sizeModifier()
+      if (item.get('address') < start + data.length && start < item.get('address') + textureLength) {
+        itemIds.push(item.get('id'))
+      }
+    })
+    dispatch({
+      type: WORKSPACE.CLEAR_ITEM_BLOBS,
+      workspaceId,
+      itemIds
+    })
   }
 }
 

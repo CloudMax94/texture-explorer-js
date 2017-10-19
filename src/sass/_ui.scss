@@ -186,7 +186,19 @@
     width: 100%;
     img {
         background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJUlEQVQYV2M8duzYfwY0YGVlxYguxjgUFKI7GsTH5m4M3w1ChQC2sSSgO3MQyAAAAABJRU5ErkJggg==) repeat;
+        image-rendering: pixelated;
     }
+    &.texture-viewer-mode-1 {
+        img {
+            background: #ff00ff;
+        }
+    }
+    &.texture-viewer-mode-2 {
+        img {
+            background: #00ff00;
+        }
+    }
+
 }
 
 .profile-manager {

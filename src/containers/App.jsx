@@ -1,11 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { DragDropContext } from 'react-dnd'
-import HTML5Backend from 'react-dnd-html5-backend'
+import { DropTarget } from 'react-dnd'
+import { NativeTypes } from 'react-dnd-html5-backend'
 import { toggleAboutDialog } from '../actions/interface'
 import { createWorkspace } from '../actions/workspace'
-
 
 import { each } from 'lodash'
 import { exists } from 'fs'
@@ -36,21 +35,6 @@ class App extends React.Component {
       }
     })
   }
-  handleDragOver = (event) => {
-    event.preventDefault()
-  }
-  handleDragEnd = (event) => {
-    event.preventDefault()
-  }
-  handleDrop = (event) => {
-    if (event.dataTransfer.files.length) {
-      event.preventDefault()
-      event.stopPropagation()
-      openFile(event.dataTransfer.files[0], (data) => {
-        this.props.createWorkspace(data)
-      })
-    }
-  }
   handleContextMenu = (event) => {
     event.preventDefault()
   }
@@ -60,7 +44,8 @@ class App extends React.Component {
   render () {
     const {
       menu,
-      showAbout
+      showAbout,
+      connectDropTarget
     } = this.props
     let aboutDialog
     if (showAbout) {
@@ -70,8 +55,8 @@ class App extends React.Component {
         Created by CloudMax 2015-2017.
       </Dialog>)
     }
-    return (
-      <div className='app' onDragOver={this.handleDragOver} onDragEnd={this.handleDragEnd} onDrop={this.handleDrop} onContextMenu={this.handleContextMenu}>
+    return connectDropTarget(
+      <div className='app' onContextMenu={this.handleContextMenu}>
         <ApplicationMenu menu={menu} />
         <Rows>
           <Dock index={0} />
@@ -104,6 +89,23 @@ function mapDispatchToProps (dispatch) {
   }, dispatch)
 }
 
-export default DragDropContext(HTML5Backend)(
-  connect(mapStateToProps, mapDispatchToProps)(App)
+const fileTarget = {
+  drop (props, monitor) {
+    if (monitor.didDrop()) {
+      return
+    }
+    if (event.dataTransfer.files.length) {
+      event.preventDefault()
+      event.stopPropagation()
+      openFile(event.dataTransfer.files[0], (data) => {
+        props.createWorkspace(data)
+      })
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(
+  DropTarget(NativeTypes.FILE, fileTarget, (connect, monitor) => ({
+    connectDropTarget: connect.dropTarget()
+  }))(App)
 )
