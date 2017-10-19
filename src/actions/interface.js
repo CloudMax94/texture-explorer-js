@@ -23,6 +23,23 @@ export function movePanelToDock (panelId, dockId) {
   }
 }
 
+export function movePanelNextToPanelGroup (panelId, panelGroupId = null, after = true) {
+  return {
+    type: INTERFACE.MOVE_PANEL_NEXT_TO_PANEL_GROUP,
+    panelId,
+    panelGroupId, // Optional panel group to place before/after
+    after
+  }
+}
+
+export function movePanelToPanelGroup (panelId, panelGroupId) {
+  return {
+    type: INTERFACE.MOVE_PANEL_TO_PANEL_GROUP,
+    panelId,
+    panelGroupId
+  }
+}
+
 export function movePanelGroupToDock (panelGroupId, dockId) {
   return {
     type: INTERFACE.MOVE_PANEL_GROUP_TO_DOCK,

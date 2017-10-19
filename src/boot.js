@@ -6,6 +6,8 @@ import { remote } from 'electron'
 import { configureStore } from './stores/configureStore'
 import Root from './containers/Root'
 
+const argv = remote.getGlobal('argv')
+
 const store = configureStore()
 const interfaceTransform = createTransform(
   (inboundState, key) => {
@@ -22,8 +24,12 @@ const storeConfig = {
   transforms: [interfaceTransform]
 }
 
-persistStore(store, storeConfig, () => {
+const persistedStore = persistStore(store, storeConfig, () => {
   render(React.createElement(Root, {
     store: store
   }), document.getElementById('container'))
 })
+
+if (argv._.indexOf('reset') > -1) {
+  persistedStore.purge()
+}

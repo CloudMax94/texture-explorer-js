@@ -8,22 +8,52 @@ const defaultDocks = fromJS({
     {size: 300, toggled: false},
     {size: 210, toggled: false}
   ],
-  panelGroups: {
-    '0': {dock: 1, currentPanel: 'overview'},
-    '1': {dock: 2, currentPanel: 'profileManager'},
-    '2': {dock: 3, currentPanel: 'directorySettings'},
-    '3': {dock: 3, currentPanel: 'textureSettings'},
-    '4': {dock: 3, currentPanel: 'itemPreview'}
-  },
+  panelGroups: [
+    {id: 0, dock: 1, currentPanel: 'overview'},
+    {id: 1, dock: 2, currentPanel: 'profileManager'},
+    {id: 2, dock: 3, currentPanel: 'directorySettings'},
+    {id: 3, dock: 3, currentPanel: 'textureSettings'},
+    {id: 4, dock: 3, currentPanel: 'itemPreview'}
+  ],
   panels: {
-    overview: {panelGroup: '0'},
-    profileManager: {panelGroup: '1'},
-    finder: {panelGroup: '1'},
-    directorySettings: {panelGroup: '2'},
-    textureSettings: {panelGroup: '3'},
-    itemPreview: {panelGroup: '4'}
+    overview: {panelGroup: 0},
+    profileManager: {panelGroup: 1},
+    finder: {panelGroup: 1},
+    directorySettings: {panelGroup: 2},
+    textureSettings: {panelGroup: 3},
+    itemPreview: {panelGroup: 4}
   }
 })
+
+function updatePreviousPanelGroup (panelId, panelGroups, panels) {
+  let previousPanelGroupId = panels.getIn([panelId, 'panelGroup'])
+  let previousPanelGroupIndex = panelGroups.findIndex((panelGroup) => panelGroup.get('id') === previousPanelGroupId)
+  if (previousPanelGroupIndex >= 0) {
+    let count = panels.count((panel) => panel.get('panelGroup') === previousPanelGroupId)
+    if (count === 1) { // If the panel we're moving is the last one in the group, remove the group
+      panelGroups = panelGroups.delete(previousPanelGroupIndex)
+    } else if (count > 1) { // If there remains at least one panel in the group
+      let currentPanel = panelGroups.getIn([previousPanelGroupIndex, 'currentPanel'])
+      if (currentPanel === panelId) { // The current panel in that group is the one we moved away
+        // Select the first available panel in that group
+        panelGroups = panelGroups.setIn([previousPanelGroupIndex, 'currentPanel'],
+          panels.findKey((panel, id) =>
+            panelId !== id && panel.get('panelGroup') === previousPanelGroupId
+          )
+        )
+      }
+    }
+  }
+  return panelGroups
+}
+
+function getInsertId (panelGroups) {
+  let getInsertId = 0
+  while (panelGroups.findIndex((panelGroup) => panelGroup.get('id') === getInsertId) >= 0) {
+    getInsertId++
+  }
+  return getInsertId
+}
 
 export default function ui (state = fromJS({
   treeSizes: [300, 115, 115, 115, 95, 85, 60, 60, 130],
@@ -33,40 +63,58 @@ export default function ui (state = fromJS({
   switch (action.type) {
     case INTERFACE.SET_CURRENT_PANEL:
       let { panelId, panelGroupId } = action
-      return state.setIn(['panelGroups', panelGroupId, 'currentPanel'], panelId)
+      let panelGroupIndex = state.get('panelGroups').findIndex((panelGroup) =>
+        panelGroup.get('id') === panelGroupId
+      )
+      return state.setIn(['panelGroups', panelGroupIndex, 'currentPanel'], panelId)
     case INTERFACE.MOVE_PANEL_TO_DOCK: {
       let { panelId, dockId } = action
-      let panelGroups = state.get('panelGroups')
-      let previousPanelGroupId = state.getIn(['panels', panelId, 'panelGroup'])
-      if (previousPanelGroupId !== null) {
-        let count = state.get('panels').count((panel) => panel.get('panelGroup') === previousPanelGroupId)
-        if (count === 1) { // If the panel we're moving is the last one in the group, remove the group
-          panelGroups = panelGroups.delete(previousPanelGroupId)
-        } else if (count > 1) { // If there remains at least one panel in the group
-          let currentPanel = panelGroups.getIn([previousPanelGroupId, 'currentPanel'])
-          if (currentPanel === panelId) { // The current panel in that group is the one we moved away
-            // Select the first available panel in that group
-            panelGroups = panelGroups.setIn(
-              [previousPanelGroupId, 'currentPanel'],
-              state.get('panels').findKey((panel, id) =>
-                panelId !== id && panel.get('panelGroup') === previousPanelGroupId
-              )
-            )
-          }
-        }
-      }
-      let panelGroup = Map({dock: dockId, currentPanel: panelId})
-      let insertIndex = 0
-      while (panelGroups.get(insertIndex.toString())) {
-        insertIndex++
-      }
-      insertIndex = insertIndex.toString()
-      panelGroups = panelGroups.set(insertIndex, panelGroup)
-      return state.setIn(['panels', panelId, 'panelGroup'], insertIndex).set('panelGroups', panelGroups)
+
+      let panelGroups = updatePreviousPanelGroup(panelId, state.get('panelGroups'), state.get('panels'))
+
+      let groupId = getInsertId(panelGroups)
+
+      panelGroups = panelGroups.push(
+        Map({id: groupId, dock: dockId, currentPanel: panelId})
+      )
+      return state.setIn(['panels', panelId, 'panelGroup'], groupId).set('panelGroups', panelGroups)
+    }
+    case INTERFACE.MOVE_PANEL_TO_PANEL_GROUP: {
+      let { panelId, panelGroupId } = action
+      let panelGroups = updatePreviousPanelGroup(panelId, state.get('panelGroups'), state.get('panels'))
+      return state.setIn(['panels', panelId, 'panelGroup'], panelGroupId).set('panelGroups', panelGroups)
+    }
+    case INTERFACE.MOVE_PANEL_NEXT_TO_PANEL_GROUP: {
+      let { panelId, panelGroupId, after } = action
+
+      let panelGroups = updatePreviousPanelGroup(panelId, state.get('panelGroups'), state.get('panels'))
+
+      let adjacentPanelGroupIndex = panelGroups.findIndex((panelGroup) =>
+        panelGroup.get('id') === panelGroupId
+      )
+
+      let dockId = panelGroups.getIn([adjacentPanelGroupIndex, 'dock'])
+      let groupId = getInsertId(panelGroups)
+
+      panelGroups = panelGroups.splice(
+        adjacentPanelGroupIndex + (after ? 1 : 0),
+        0,
+        Map({id: groupId, dock: dockId, currentPanel: panelId})
+      )
+
+      return state.setIn(['panels', panelId, 'panelGroup'], groupId).set('panelGroups', panelGroups)
     }
     case INTERFACE.MOVE_PANEL_GROUP_TO_DOCK: {
       let { panelGroupId, dockId } = action
-      return state.setIn(['panelGroups', panelGroupId, 'dock'], dockId)
+
+      let panelGroups = state.get('panelGroups')
+      let panelGroupIndex = panelGroups.findIndex((panelGroup) =>
+        panelGroup.get('id') === panelGroupId
+      )
+      let panelGroup = panelGroups.get(panelGroupIndex).set('dock', dockId)
+      panelGroups = panelGroups.delete(panelGroupIndex).push(panelGroup)
+
+      return state.set('panelGroups', panelGroups)
     }
     case INTERFACE.SET_DOCK_SIZE:
       // NOTE: When top/bottom dock is resized, we need to trigger a resize

@@ -11,6 +11,8 @@ import {
   setDockSize,
   setCurrentPanel,
   movePanelToDock,
+  movePanelToPanelGroup,
+  movePanelNextToPanelGroup,
   movePanelGroupToDock
 } from '../actions/interface'
 import {
@@ -66,7 +68,7 @@ function getNecessaryPanelProps (props) {
     return []
   }
   let necessaryProps = []
-  for (let [, panelGroup] of props.panelGroups) {
+  for (let panelGroup of props.panelGroups) {
     let currentPanel = panelGroup.get('currentPanel')
     if (currentPanel in NecessaryPanelProps) {
       for (let prop of NecessaryPanelProps[currentPanel]) {
@@ -171,16 +173,18 @@ class Dock extends React.Component {
   }
   render () {
     const { panelGroups, size, index } = this.props
-    const content = panelGroups.map((panelGroup, panelGroupId) => {
+    const content = panelGroups.map((panelGroup) => {
       let panelId = panelGroup.get('currentPanel')
       return <PanelGroup
-        key={panelGroupId}
-        panelGroupId={panelGroupId}
+        key={panelGroup.get('id')}
+        panelGroupId={panelGroup.get('id')}
         dockId={index}
         panels={panelGroup.get('panels').map((panel, panelId) => panelNames[panelId])}
         currentPanel={panelId}
         setCurrentPanel={this.props.setCurrentPanel}
         movePanelToDock={this.props.movePanelToDock}
+        movePanelToPanelGroup={this.props.movePanelToPanelGroup}
+        movePanelNextToPanelGroup={this.props.movePanelNextToPanelGroup}
         movePanelGroupToDock={this.props.movePanelGroupToDock}
       >
         {this.getPanel(panelId)}
@@ -244,12 +248,11 @@ function mapStateToProps (state, ownProps) {
 
   let panelGroups = state.ui.get('panelGroups').filter((panelGroup) =>
     panelGroup.get('dock') === ownProps.index
-  ).map((panelGroup, panelGroupId) =>
+  ).map((panelGroup) =>
     panelGroup.set('panels', state.ui.get('panels').filter((panel) =>
-      panel.get('panelGroup') === panelGroupId
+      panel.get('panelGroup') === panelGroup.get('id')
     ))
   )
-
   return {
     size: state.ui.getIn(['docks', ownProps.index, 'size']),
     panelGroups,
@@ -269,6 +272,8 @@ function mapDispatchToProps (dispatch) {
     setDockSize,
     setCurrentPanel,
     movePanelToDock,
+    movePanelToPanelGroup,
+    movePanelNextToPanelGroup,
     movePanelGroupToDock,
     // Workspace
     createWorkspace,

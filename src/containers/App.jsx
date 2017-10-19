@@ -1,8 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
+import { DragDropContext } from 'react-dnd'
+import HTML5Backend from 'react-dnd-html5-backend'
 import { toggleAboutDialog } from '../actions/interface'
 import { createWorkspace } from '../actions/workspace'
+
 
 import { each } from 'lodash'
 import { exists } from 'fs'
@@ -40,11 +43,13 @@ class App extends React.Component {
     event.preventDefault()
   }
   handleDrop = (event) => {
-    event.preventDefault()
-    event.stopPropagation()
-    openFile(event.dataTransfer.files[0], (data) => {
-      this.props.createWorkspace(data)
-    })
+    if (event.dataTransfer.files.length) {
+      event.preventDefault()
+      event.stopPropagation()
+      openFile(event.dataTransfer.files[0], (data) => {
+        this.props.createWorkspace(data)
+      })
+    }
   }
   handleContextMenu = (event) => {
     event.preventDefault()
@@ -99,4 +104,6 @@ function mapDispatchToProps (dispatch) {
   }, dispatch)
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App)
+export default DragDropContext(HTML5Backend)(
+  connect(mapStateToProps, mapDispatchToProps)(App)
+)

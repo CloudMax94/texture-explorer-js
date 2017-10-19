@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "main": "main.js",
   "scripts": {
-    "start": "electron . debug",
+    "start": "electron .",
+    "dev": "electron . debug",
     "webpack": "node_modules/.bin/webpack --config webpack.config.js",
     "webpack-dev": "node_modules/.bin/webpack-dev-server --config webpack.config.js --open",
     "browser-dev": "concurrently \"yarn run webpack-dev\" \"gulp watch-browser\""
@@ -25,6 +26,8 @@
     "node-sass": "^4.5.3",
     "png-stream": "^1.0.5",
     "react": "^16.0.0",
+    "react-dnd": "^2.5.4",
+    "react-dnd-html5-backend": "^2.5.4",
     "react-dom": "^16.0.0",
     "react-redux": "^5.0.6",
     "react-virtual-list": "^2.2.1",
