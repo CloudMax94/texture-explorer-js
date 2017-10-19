@@ -1,4 +1,5 @@
 import React from 'react'
+import { findDOMNode } from 'react-dom'
 import { DropTarget } from 'react-dnd'
 import { NativeTypes } from 'react-dnd-html5-backend'
 import { openFile } from '../../lib/fileHandler'
@@ -12,7 +13,8 @@ class TextureViewer extends ImmutablePureComponent {
   constructor (props) {
     super(props)
     this.state = {
-      mode: 0
+      mode: 0,
+      zoom: 1
     }
   }
 
@@ -37,8 +39,12 @@ class TextureViewer extends ImmutablePureComponent {
     this.setState({mode: (this.state.mode + 1) % 3})
   }
 
-  handleScroll = (event) => {
-    console.log(event)
+  handleWheel = (event) => {
+    if (event.deltaY > 0) {
+      this.setState({zoom: Math.max(this.state.zoom - 0.2, 1)})
+    } else if (event.deltaY < 0) {
+      this.setState({zoom: Math.min(this.state.zoom + 0.2, 10.0)})
+    }
   }
 
   render () {
@@ -47,11 +53,8 @@ class TextureViewer extends ImmutablePureComponent {
       return null
     }
     return connectDropTarget(
-      <div className={'texture-viewer texture-viewer-mode-' + this.state.mode}>
-        <img src={blob}
-          onClick={this.handleClick}
-          onScroll={this.handleScroll}
-        />
+      <div className={'texture-viewer texture-viewer-mode-' + this.state.mode} >
+        <img src={blob} style={{zoom: this.state.zoom}} onWheel={this.handleWheel} onClick={this.handleClick} />
       </div>
     )
   }
