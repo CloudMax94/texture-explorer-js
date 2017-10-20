@@ -3,6 +3,17 @@ import React from 'react'
 import ImmutablePureComponent from '../ImmutablePureComponent'
 
 class Overview extends ImmutablePureComponent {
+  static dependencies = {
+    actions: [
+      'setCurrentDirectory',
+      'setCurrentTexture'
+    ],
+    state: [
+      ['sortedDirectories', 'directories'],
+      'selectedDirectoryId'
+    ]
+  }
+
   constructor (props) {
     super(props)
     this.state = {
@@ -23,11 +34,13 @@ class Overview extends ImmutablePureComponent {
   }
 
   render () {
-    if (!this.props.items) {
+    const { directories } = this.props
+
+    if (!directories) {
       return null
     }
 
-    const groupedDirectories = this.props.items.groupBy(x => x.parentId)
+    const groupedDirectories = directories.groupBy(x => x.parentId)
 
     const traverseDirectories = (id, depth = 0) => {
       const children = groupedDirectories.get(id)

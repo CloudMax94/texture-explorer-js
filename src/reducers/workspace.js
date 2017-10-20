@@ -99,7 +99,7 @@ export default function workspace (state = fromJS({
       return state.update('workspaces', (workspaces) => {
         return workspaces.map((workspace) => {
           if (workspace.get('profile') === action.profileId) {
-            workspace.set('profile', null)
+            return workspace.set('profile', null)
           }
           return workspace
         })

@@ -1,5 +1,4 @@
 import React from 'react'
-import { findDOMNode } from 'react-dom'
 import { DropTarget } from 'react-dnd'
 import { NativeTypes } from 'react-dnd-html5-backend'
 import { openFile } from '../../lib/fileHandler'
@@ -10,6 +9,19 @@ import textureManipulator from '../../lib/textureManipulator'
 import ImmutablePureComponent from '../ImmutablePureComponent'
 
 class TextureViewer extends ImmutablePureComponent {
+  static dependencies = {
+    actions: ['updateItemBlob', 'insertData'],
+    state: [
+      ['selectedTexture', 'texture'],
+      ['selectedTextureBlob', 'blob'],
+      ['currentWorkspaceId', 'workspaceId']
+    ]
+  }
+
+  shouldComponentUpdate (nextProps, nextState) {
+    return true
+  }
+
   constructor (props) {
     super(props)
     this.state = {
@@ -27,10 +39,10 @@ class TextureViewer extends ImmutablePureComponent {
   }
 
   blobUpdate (props) {
-    const { itemId, workspaceId, updateItemBlob, blobState } = props
-    if (itemId) {
-      if (blobState === BLOB_UNSET) {
-        updateItemBlob(itemId, workspaceId)
+    const { texture, workspaceId, updateItemBlob, blob } = props
+    if (texture) {
+      if (!blob || blob.get('blobState') === BLOB_UNSET) {
+        updateItemBlob(texture.get('id'), workspaceId)
       }
     }
   }
@@ -40,28 +52,34 @@ class TextureViewer extends ImmutablePureComponent {
   }
 
   handleWheel = (event) => {
-    if (event.deltaY > 0) {
-      this.setState({zoom: Math.max(this.state.zoom - 0.2, 1)})
-    } else if (event.deltaY < 0) {
-      this.setState({zoom: Math.min(this.state.zoom + 0.2, 10.0)})
+    if (event.ctrlKey) {
+      if (event.deltaY > 0) {
+        this.setState({zoom: Math.max(this.state.zoom - 0.2, 1)})
+      } else if (event.deltaY < 0) {
+        this.setState({zoom: Math.min(this.state.zoom + 0.2, 10.0)})
+      } else {
+        return
+      }
+      event.preventDefault()
     }
   }
 
   render () {
     const { blob, connectDropTarget } = this.props
-    if (!blob) {
+
+    if (!blob || !blob.get('blob')) {
       return null
     }
     return connectDropTarget(
       <div className={'texture-viewer texture-viewer-mode-' + this.state.mode} >
-        <img src={blob} style={{zoom: this.state.zoom}} onWheel={this.handleWheel} onClick={this.handleClick} />
+        <img src={blob.get('blob')} style={{zoom: this.state.zoom}} onWheel={this.handleWheel} onClick={this.handleClick} />
       </div>
     )
   }
 }
 
 const fileTarget = {
-  drop ({ format, address, insertData }, monitor) {
+  drop ({ texture, insertData }, monitor) {
     if (monitor.didDrop()) {
       return
     }
@@ -70,8 +88,8 @@ const fileTarget = {
       openFile(event.dataTransfer.files[0], ({data}) => {
         const pngBuffer = Buffer.from(data)
         textureManipulator.pngToPixelData(pngBuffer, (pixelData, imageFormat) => {
-          const buffer = textureManipulator.pixelDataToRaw(pixelData, format)
-          insertData(buffer, address)
+          const buffer = textureManipulator.pixelDataToRaw(pixelData, texture.get('format'))
+          insertData(buffer, texture.get('address'))
         })
       })
     }

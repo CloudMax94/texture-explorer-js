@@ -185,6 +185,7 @@
     height: 100%;
     width: 100%;
     img {
+        max-width: none;
         background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAJklEQVQoU2M8duzYfwYk0Nvbi8xlYKSDguDgYBQ3FBcXo7qB9goA4ishLVP9OQAAAAAASUVORK5CYII=) repeat;
         image-rendering: pixelated;
     }

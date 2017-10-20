@@ -8,6 +8,15 @@ import ImmutablePureComponent from '../ImmutablePureComponent'
 const { dialog } = remote
 
 class ProfileManager extends ImmutablePureComponent {
+  static dependencies = {
+    actions: ['setProfile', 'importProfile', 'deleteProfile', 'saveProfile'],
+    state: [
+      'profileList',
+      ['currentProfileId', 'profileId'],
+      ['currentWorkspaceId', 'workspaceId'],
+      ['currentWorkspaceKey', 'workspaceKey']
+    ]
+  }
   handleProfileChange = (event) => {
     let profile = event.target.value
     this.props.setProfile(profile, this.props.workspaceId)
