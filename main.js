@@ -3,7 +3,6 @@ const windowStateKeeper = require('electron-window-state')
 global.argv = require('minimist')(process.argv.slice(1))
 const path = require('path')
 const sass = require('node-sass')
-const chokidar = require('chokidar')
 const debugMode = global.argv._.indexOf('debug') > -1
 
 var mainWindow = null
@@ -71,7 +70,7 @@ app.on('ready', function () {
   renderScss()
 
   if (debugMode) {
-    chokidar.watch('./src/sass/**/*.scss').on('change', (event, path) => {
+    require('chokidar').watch('./src/sass/**/*.scss').on('change', (event, path) => {
       renderScss()
     })
   }

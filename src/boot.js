@@ -25,9 +25,26 @@ const storeConfig = {
 }
 
 const persistedStore = persistStore(store, storeConfig, () => {
-  render(React.createElement(Root, {
-    store: store
-  }), document.getElementById('container'))
+  if (module.hot) {
+    const AppContainer = require('react-hot-loader').AppContainer
+    const hotRender = (Container) => {
+      render(
+        <AppContainer>
+          <Container store={store} />
+        </AppContainer>,
+        document.getElementById('container')
+      )
+    }
+    hotRender(Root)
+    module.hot.accept('./containers/Root', () => {
+      hotRender(require('./containers/Root').default)
+    })
+  } else {
+    render(
+      <Root store={store} />,
+      document.getElementById('container')
+    )
+  }
 })
 
 if (argv._.indexOf('reset') > -1) {

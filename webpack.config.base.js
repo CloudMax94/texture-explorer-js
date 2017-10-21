@@ -1,13 +1,9 @@
 const path = require('path')
 const webpack = require('webpack')
 const fs = require('fs')
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
 
 module.exports = {
-  entry: {
-    te: ['babel-polyfill', './src/boot.js']
-  },
   output: {
     path: path.join(__dirname, 'dist/browser'),
     filename: '[name].js',
@@ -18,30 +14,21 @@ module.exports = {
     rules: [
       {
         test: /\.jsx?$/,
-        loader: 'babel-loader',
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            cacheDirectory: true
+          }
+        }
       }
     ]
   },
-  devtool: '#source-map',
-  devServer: {
-    contentBase: './dist/browser'
-  },
   plugins: [
-    new webpack.optimize.ModuleConcatenationPlugin(),
     new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: '"production"'
-      },
       'process.browser': true,
       '__APP_VERSION__': JSON.stringify(pkg.version),
       '__APP_NAME__': JSON.stringify(pkg.productName)
-    }),
-    new UglifyJsPlugin({
-      sourceMap: true
-    }),
-    new webpack.LoaderOptionsPlugin({
-      minimize: true
     })
   ],
   resolve: {
