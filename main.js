@@ -7,6 +7,11 @@ const debugMode = global.argv._.indexOf('debug') > -1
 
 var mainWindow = null
 
+if (global.argv['scale-factor']) {
+  app.commandLine.appendSwitch('high-dpi-support', 'true')
+  app.commandLine.appendSwitch('force-device-scale-factor', global.argv['scale-factor'])
+}
+
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
     app.quit()
@@ -25,7 +30,7 @@ app.on('ready', function () {
     width: mainWindowState.width,
     height: mainWindowState.height,
     webPreferences: {
-      zoomFactor: global.argv.scale ? global.argv.scale : 1,
+      zoomFactor: global.argv['zoom-factor'] ? global.argv['zoom-factor'] : 1,
       webSecurity: false
     },
     icon: path.join(__dirname, 'assets/icon.png'),
