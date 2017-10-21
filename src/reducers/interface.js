@@ -3,10 +3,10 @@ import * as INTERFACE from '../constants/interface'
 
 const defaultDocks = fromJS({
   docks: [
-    {size: 210, toggled: false},
+    {size: 235, toggled: false},
     {size: 300, toggled: false},
     {size: 300, toggled: false},
-    {size: 210, toggled: false}
+    {size: 235, toggled: false}
   ],
   panelGroups: [
     {id: 0, dock: 1, currentPanel: 'overview'},

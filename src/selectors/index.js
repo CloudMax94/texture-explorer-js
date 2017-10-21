@@ -1,4 +1,5 @@
 import { createSelector } from 'reselect'
+import { getItemPath } from '../lib/helpers'
 
 const getProfiles = (state) => {
   return state.profile.get('profiles')
@@ -132,6 +133,17 @@ export const getSelectedTextureOffset = createSelector(
   }
 )
 
+export const getSelectedTexturePath = createSelector(
+  getItems,
+  getSelectedTexture,
+  (items, selectedTexture) => {
+    if (items !== null && selectedTexture !== null) {
+      return getItemPath(items, selectedTexture.get('parentId'))
+    }
+    return ''
+  }
+)
+
 export const getSelectedDirectoryId = createSelector(
   getCurrentWorkspace,
   (currentWorkspace) => {
@@ -161,6 +173,17 @@ export const getSelectedDirectoryOffset = createSelector(
       return items.getIn([selectedDirectory.get('parentId'), 'address']) || 0
     }
     return 0
+  }
+)
+
+export const getSelectedDirectoryPath = createSelector(
+  getItems,
+  getSelectedDirectory,
+  (items, selectedDirectory) => {
+    if (items !== null && selectedDirectory !== null) {
+      return getItemPath(items, selectedDirectory.get('parentId'))
+    }
+    return ''
   }
 )
 

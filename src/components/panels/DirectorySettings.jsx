@@ -9,6 +9,7 @@ class DirectorySettings extends ItemSettings {
     state: [
       'currentProfileId',
       ['selectedDirectory', 'item'],
+      ['selectedDirectoryPath', 'path'],
       ['selectedDirectoryOffset', 'offset']
     ]
   }
@@ -17,13 +18,15 @@ class DirectorySettings extends ItemSettings {
   }
   getExtraFields () {
     const { item } = this.props
-    let disabled = !item || item.get('id') === 'root'
-    let extraFields = []
+    let disabled = !item
+    let readOnly = item && item.get('id') === 'root'
 
+    let extraFields = []
     let size = ''
-    if (item) {
+    if (item && item.get('id') !== 'root') {
       size = '0x' + padStart(item.get('length').toString(16), 8, 0).toUpperCase()
     }
+
     extraFields[0] = (
       <div>
         <label htmlFor={this.id + '_size'}>Size: </label>
@@ -31,7 +34,7 @@ class DirectorySettings extends ItemSettings {
     )
     extraFields[1] = (
       <div>
-        <input id={this.id + '_size'} type='text' disabled={disabled} pattern='0x[a-fA-F0-9]+' value={size} onChange={this.handleLengthChange} />
+        <input id={this.id + '_size'} type='text' disabled={disabled} readOnly={readOnly} pattern='0x[a-fA-F0-9]+' value={size} onChange={this.handleLengthChange} />
       </div>
     )
 

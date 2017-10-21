@@ -125,10 +125,11 @@ function mapStateToProps (state, ownProps) {
   let itemId = ownProps.item.get('id')
   let workspaceId = state.workspace.get('currentWorkspace')
   let workspace = state.workspace.getIn(['workspaces', workspaceId])
-  let profile = state.profile.getIn(['profiles', workspace.get('profile')])
-  let parentAddress = profile.getIn(['items', ownProps.item.get('parentId'), 'address']) || 0
+  let items = state.profile.getIn(['profiles', workspace.get('profile'), 'items'])
+  let parentAddress = items.getIn([ownProps.item.get('parentId'), 'address']) || 0
   let offset = ownProps.item.get('address') - parentAddress
-  let path = getItemPath(profile, itemId, profile.getIn(['items', workspace.get('selectedDirectory'), 'id']))
+  let path = getItemPath(items, itemId, items.getIn([workspace.get('selectedDirectory'), 'id']))
+
   let blob = workspace.getIn(['blobs', itemId, 'blob'])
   let blobState = workspace.getIn(['blobs', itemId, 'blobState']) || BLOB_UNSET
   return {

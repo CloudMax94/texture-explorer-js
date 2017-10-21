@@ -99,52 +99,55 @@ class TreeView extends ImmutablePureComponent {
   handleKeyDown = (event) => {
     const { focusedItem } = this.state
     const { items } = this.props
-    if (items && focusedItem) {
-      const currentIndex = items.findIndex((item) => item.get('id') === focusedItem)
-      if (currentIndex > -1) {
-        switch (event.keyCode) {
-          case 13: // Enter
-            this.selectItem(items.find((item) => item.get('id') === focusedItem))
-            break
-          case 38: // Up Arrow
-            if (currentIndex > 0) {
-              this.setState({focusedItem: items.getIn([currentIndex - 1, 'id'])})
-            }
-            break
-          case 40: // Down Arrow
-            if (currentIndex < items.size - 1) {
-              this.setState({focusedItem: items.getIn([currentIndex + 1, 'id'])})
-            }
-            break
-          case 46: // Delete
-            if (items.size > 1) {
+    if (items) {
+      if (focusedItem) {
+        const currentIndex = items.findIndex((item) => item.get('id') === focusedItem)
+        if (currentIndex > -1) {
+          switch (event.keyCode) {
+            case 13: // Enter
+              this.selectItem(items.find((item) => item.get('id') === focusedItem))
+              break
+            case 38: // Up Arrow
+              if (currentIndex > 0) {
+                this.setState({focusedItem: items.getIn([currentIndex - 1, 'id'])})
+              }
+              break
+            case 40: // Down Arrow
               if (currentIndex < items.size - 1) {
                 this.setState({focusedItem: items.getIn([currentIndex + 1, 'id'])})
-              } else {
-                this.setState({focusedItem: items.getIn([items.size, 'id'])})
               }
-            } else {
-              this.setState({focusedItem: null})
-            }
-            this.props.deleteItem(focusedItem)
-            break
-          case 67: // C
-            if (event.ctrlKey) {
-              this.props.copyItemToClipboard(this.props.profileId, focusedItem)
-            }
-            break
-          default:
-            return
+              break
+            case 46: // Delete
+              if (items.size > 1) {
+                if (currentIndex < items.size - 1) {
+                  this.setState({focusedItem: items.getIn([currentIndex + 1, 'id'])})
+                } else {
+                  this.setState({focusedItem: items.getIn([items.size, 'id'])})
+                }
+              } else {
+                this.setState({focusedItem: null})
+              }
+              this.props.deleteItem(focusedItem)
+              break
+            case 67: // C
+              if (event.ctrlKey) {
+                this.props.copyItemToClipboard(this.props.profileId, focusedItem)
+              }
+              break
+            default:
+              return
+          }
+          event.preventDefault()
         }
-        event.preventDefault()
-        return
+      } else {
+        switch (event.keyCode) {
+          case 38: // Up Arrow
+          case 40: // Down Arrow
+            event.preventDefault()
+            this.setState({focusedItem: items.getIn([0, 'id'])})
+            break
+        }
       }
-    }
-    switch (event.keyCode) {
-      case 38: // Up Arrow
-      case 40: // Down Arrow
-        this.setState({focusedItem: items.getIn([0, 'id'])})
-        break
     }
   }
   handlePaste = (event) => {

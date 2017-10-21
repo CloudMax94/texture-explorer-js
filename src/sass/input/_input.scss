@@ -15,6 +15,13 @@ select {
         background: #404040;
     }
 
+    &[readonly] {
+        user-select: initial;
+        &:focus {
+            background: #505050;
+        }
+    }
+
     &:disabled,
     &[readonly] {
         background: #494949;
@@ -52,6 +59,10 @@ select {
 
     > div:first-child {
         margin-right: 8px;
+    }
+
+    > div:last-child {
+        flex: 1 1 auto;
     }
 }
 

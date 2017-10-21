@@ -1,4 +1,5 @@
 import React from 'react'
+import { uniqueId } from 'lodash'
 
 import { remote } from 'electron'
 import { openFile } from '../../lib/fileHandler'
@@ -16,6 +17,9 @@ class ProfileManager extends ImmutablePureComponent {
       ['currentWorkspaceId', 'workspaceId'],
       ['currentWorkspaceKey', 'workspaceKey']
     ]
+  }
+  componentWillMount () {
+    this.id = uniqueId('profile_setting_')
   }
   handleProfileChange = (event) => {
     let profile = event.target.value
@@ -43,10 +47,18 @@ class ProfileManager extends ImmutablePureComponent {
     this.props.saveProfile(this.props.profileId)
   }
   render () {
-    const { profileList, profileId } = this.props
+    const { profileList, profileId, workspaceKey } = this.props
     return (
       <div className='profile-manager'>
         <div className='inputs'>
+          <div className='input-columns'>
+            <div>
+              <label htmlFor={this.id + 'key'}>File Key:</label>
+            </div>
+            <div>
+              <input id={this.id + 'key'} type='text' value={workspaceKey || ''} readOnly />
+            </div>
+          </div>
           <select disabled={!profileList || profileList.count() === 0} value={profileId !== null ? profileId : ''} onChange={this.handleProfileChange}>
             {profileId === null ? <option key='_none' /> : null}
             {profileList ? profileList.map((name, id) => {

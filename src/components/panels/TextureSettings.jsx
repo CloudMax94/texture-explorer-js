@@ -11,6 +11,7 @@ class TextureSettings extends ItemSettings {
     state: [
       'currentProfileId',
       ['selectedTexture', 'item'],
+      ['selectedTexturePath', 'path'],
       ['selectedTextureOffset', 'offset']
     ]
   }

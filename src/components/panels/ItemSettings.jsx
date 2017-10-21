@@ -23,8 +23,9 @@ class ItemSettings extends ImmutablePureComponent {
     return [null, null]
   }
   render () {
-    const { item, offset } = this.props
-    let disabled = !item || item.get('id') === 'root'
+    const { item, path, offset } = this.props
+    let disabled = !item
+    let readOnly = item && item.get('id') === 'root'
     let name = ''
     let address = ''
     let offsetParsed = ''
@@ -37,15 +38,17 @@ class ItemSettings extends ImmutablePureComponent {
     return (
       <div className='inputs input-columns'>
         <div>
+          <label htmlFor={this.id + '_path'}>Path: </label>
           <label htmlFor={this.id + '_name'}>Name: </label>
           <label htmlFor={this.id + '_address'}>Address: </label>
           <label htmlFor={this.id + '_offset'}>Offset: </label>
           {extraFields[0]}
         </div>
         <div>
-          <input id={this.id + '_name'} type='text' disabled={disabled} value={name} onChange={this.handleNameChange} />
-          <input id={this.id + '_address'} type='text' disabled={disabled} pattern='0x[a-fA-F0-9]+' value={address} onChange={this.handleAddressChange} />
-          <input id={this.id + '_offset'} type='text' disabled={disabled} pattern='-?0x[a-fA-F0-9]+' value={offsetParsed} onChange={this.handleOffsetChange} />
+          <input id={this.id + '_path'} type='text' disabled={disabled} readOnly value={path} />
+          <input id={this.id + '_name'} type='text' disabled={disabled} readOnly={readOnly} value={name} onChange={this.handleNameChange} />
+          <input id={this.id + '_address'} type='text' disabled={disabled} readOnly={readOnly} pattern='0x[a-fA-F0-9]+' value={address} onChange={this.handleAddressChange} />
+          <input id={this.id + '_offset'} type='text' disabled={disabled} readOnly={readOnly} pattern='-?0x[a-fA-F0-9]+' value={offsetParsed} onChange={this.handleOffsetChange} />
           {extraFields[1]}
         </div>
       </div>

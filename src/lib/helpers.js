@@ -20,17 +20,10 @@ export function getSuccessors (items, item) {
   return successors
 }
 
-export function getItemPath (profile, itemId, relativeId) {
-  if (itemId === 'root') {
-    return profile.getIn(['items', itemId, 'name'])
-  }
-  let stop = 'root'
-  if (relativeId) {
-    stop = relativeId
-  }
+export function getItemPath (items, itemId, relativeId = null) {
   let path = ''
-  while (itemId && itemId !== stop) {
-    let parent = profile.getIn(['items', itemId])
+  while (itemId && itemId !== relativeId) {
+    let parent = items.get(itemId)
     path = '/' + parent.get('name') + path
     itemId = parent.get('parentId')
   }
