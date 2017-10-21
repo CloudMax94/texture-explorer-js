@@ -1,3 +1,4 @@
+let prompt
 const fileOpener = document.createElement('input')
 fileOpener.type = 'file'
 fileOpener.id = 'fileOpener'
@@ -23,12 +24,29 @@ export function showOpenDialog (w, options, callback) {
   fileOpener.click()
 }
 
+export function attachPromptAction (promptAction) {
+  prompt = promptAction
+}
+
 export function showSaveDialog (w, options, callback) {
-  var fileName = prompt('File Name', options.defaultPath)
-  callback(fileName)
+  prompt({
+    title: 'File Name',
+    type: 'text',
+    value: options.defaultPath,
+    buttons: [
+      {
+        text: 'Save',
+        callback: callback
+      },
+      {
+        text: 'Cancel'
+      }
+    ]
+  }, callback)
 }
 
 export default {
   showOpenDialog,
-  showSaveDialog
+  showSaveDialog,
+  attachPromptAction
 }

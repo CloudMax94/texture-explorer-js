@@ -58,7 +58,8 @@ function getInsertId (panelGroups) {
 export default function ui (state = fromJS({
   treeSizes: [300, 115, 115, 115, 95, 85, 60, 60, 130],
   menu: null,
-  showAbout: false
+  showAbout: false,
+  prompt: null
 }).merge(defaultDocks), action) {
   switch (action.type) {
     case INTERFACE.SET_CURRENT_PANEL:
@@ -134,6 +135,14 @@ export default function ui (state = fromJS({
       return state.set('menu', Object.assign({}, action.menu))
     case INTERFACE.SET_TREE_SIZE:
       return state.setIn(['treeSizes', action.column], action.size)
+    case INTERFACE.SET_PROMPT:
+      const { settings, callback } = action
+      return state.set('prompt', fromJS({
+        settings,
+        callback
+      }))
+    case INTERFACE.CLOSE_PROMPT:
+      return state.set('prompt', null)
     case INTERFACE.TOGGLE_ABOUT_DIALOG:
       let newState = action.state
       if (typeof newState === 'undefined') {

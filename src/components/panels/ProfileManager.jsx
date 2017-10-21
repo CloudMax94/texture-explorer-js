@@ -14,12 +14,16 @@ class ProfileManager extends ImmutablePureComponent {
       'setProfile',
       'importProfile',
       'deleteProfile',
+      'renameProfile',
       'saveProfile',
-      'createProfile'
+      'exportProfile',
+      'createProfile',
+      'prompt'
     ],
     state: [
       'profileList',
       ['currentProfileId', 'profileId'],
+      ['currentProfileName', 'profileName'],
       ['currentWorkspaceId', 'workspaceId'],
       ['currentWorkspaceKey', 'workspaceKey']
     ]
@@ -50,10 +54,48 @@ class ProfileManager extends ImmutablePureComponent {
     this.props.deleteProfile(this.props.profileId)
   }
   handleCreate = (event) => {
-    this.props.createProfile(this.props.workspaceKey)
+    this.props.prompt({
+      title: 'New Profile',
+      type: 'text',
+      value: 'New Profile',
+      buttons: [
+        {
+          text: 'OK',
+          callback: (value) => {
+            if (value) {
+              this.props.createProfile(this.props.workspaceKey, value)
+            }
+          }
+        },
+        {
+          text: 'Cancel'
+        }
+      ]
+    })
   }
   handleSave = (event) => {
     this.props.saveProfile(this.props.profileId)
+  }
+  handleExport = (event) => {
+    this.props.exportProfile(this.props.profileId)
+  }
+  handleRename = (event) => {
+    this.props.prompt({
+      title: 'Rename Profile',
+      type: 'text',
+      value: this.props.profileName,
+      buttons: [
+        {
+          text: 'OK',
+          callback: (value) => {
+            this.props.renameProfile(this.props.profileId, value)
+          }
+        },
+        {
+          text: 'Cancel'
+        }
+      ]
+    })
   }
   render () {
     const { profileList, profileId, workspaceKey } = this.props
@@ -75,12 +117,16 @@ class ProfileManager extends ImmutablePureComponent {
             }).toList() : null}
           </select>
           <div className='button-row'>
-            <button disabled={!profileList} onClick={this.handleCreate}>New Profile</button>
-            <button disabled={!profileList} onClick={this.handleImport}>Import Profile</button>
+            <button disabled={!profileList} onClick={this.handleCreate}>New</button>
+            <button disabled={!profileList} onClick={this.handleImport}>Import</button>
           </div>
           <div className='button-row'>
-            <button disabled={profileId === null} onClick={this.handleSave}>Save Profile</button>
-            <button disabled={profileId === null} onClick={this.handleDelete}>Delete Profile</button>
+            <button disabled={profileId === null} onClick={this.handleSave}>Save</button>
+            <button disabled={profileId === null} onClick={this.handleRename}>Rename</button>
+            <button disabled={profileId === null} onClick={this.handleExport}>Export</button>
+          </div>
+          <div className='button-row'>
+            <button disabled={profileId === null} onClick={this.handleDelete}>Delete</button>
           </div>
         </div>
       </div>

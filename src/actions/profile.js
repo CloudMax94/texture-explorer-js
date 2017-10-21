@@ -5,6 +5,7 @@ import { padStart } from 'lodash'
 import { Record, Map } from 'immutable'
 import { getFormat } from '../lib/textureManipulator'
 import { getSuccessors, itemAddressCompare } from '../lib/helpers'
+import { saveFileAs } from '../lib/fileHandler'
 import prettyJSON from '../lib/prettyJson'
 import { clipboard } from 'electron'
 import * as PROFILE from '../constants/profile'
@@ -299,6 +300,58 @@ export function saveProfile (profileId) {
   }
 }
 
+export function exportProfile (profileId) {
+  return async (dispatch, getState) => {
+    let state = getState().profile
+    let profile = state.getIn(['profiles', profileId])
+    if (!profile) {
+      return
+    }
+    const data = prettyJSON(itemsToObject(profile.get('items'), 'root'))
+    saveFileAs(profile.get('name') + '.json', data, (err) => {
+      if (err) {
+        console.error(err)
+      }
+      dispatch({
+        type: PROFILE.PROFILE_EXPORTED,
+        success: !err
+      })
+    })
+  }
+}
+
+export function renameProfile (profileId, name) {
+  return async (dispatch, getState) => {
+    // TODO: Check if another profile already exists with the same name
+
+    let profile = getState().profile.getIn(['profiles', profileId])
+    let oldPath = join(PROFILE.BASE_PATH, profile.get('key'), profile.get('file'))
+
+    profile = profile.set('name', name).set('file', name + '.json')
+    writeProfile(profile, (err) => {
+      if (err) {
+        console.error(err)
+      } else {
+        dispatch({
+          type: PROFILE.SAVE_PROFILE,
+          profileId
+        })
+        dispatch({
+          type: PROFILE.RENAME_PROFILE,
+          profileId,
+          name
+        })
+        unlink(oldPath, (err) => {
+          if (err) {
+            console.error(err)
+          } else {
+          }
+        })
+      }
+    })
+  }
+}
+
 export function deleteProfile (profileId) {
   return async (dispatch, getState) => {
     let profile = getState().profile.getIn(['profiles', profileId])
@@ -370,9 +423,8 @@ export function prepareProfiles (key) {
   }
 }
 
-export function createProfile (key) {
+export function createProfile (key, name = 'New Profile') {
   return async (dispatch, getState) => {
-    let name = 'New Profile'
     let origName = name
     let i = 1
     while (i++) {

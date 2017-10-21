@@ -20,6 +20,12 @@ export default function profile (state = fromJS({
     case PROFILE.SAVE_PROFILE: {
       return state
     }
+    case PROFILE.RENAME_PROFILE: {
+      const { profileId, name } = action
+      return state.updateIn(['profiles', profileId], (profile) => {
+        return profile.set('name', name).set('file', name + '.json')
+      })
+    }
     case PROFILE.DELETE_PROFILE: {
       return state.deleteIn(['profiles', action.profileId])
     }

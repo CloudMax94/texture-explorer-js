@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { DropTarget } from 'react-dnd'
 import { NativeTypes } from 'react-dnd-html5-backend'
-import { toggleAboutDialog } from '../actions/interface'
+import { toggleAboutDialog, closePrompt } from '../actions/interface'
 import { createWorkspace } from '../actions/workspace'
 
 import { each } from 'lodash'
@@ -44,17 +44,51 @@ class App extends React.Component {
   render () {
     const {
       menu,
+      prompt,
+      closePrompt,
       showAbout,
       connectDropTarget
     } = this.props
-    let aboutDialog
-    if (showAbout) {
-      aboutDialog = (<Dialog title={`About ${remote.app.getName()}`} onClose={this.closeAboutDialog}>
+
+    let dialog
+
+    if (prompt) {
+      let settings = prompt.get('settings')
+      let onClose = () => {
+        closePrompt()
+        let callback = prompt.get('callback')
+        if (callback) {
+          callback()
+        }
+      }
+      let buttons = settings.get('buttons')
+      if (buttons) {
+        buttons = buttons.map((button) => {
+          let callback = button.get('callback')
+          if (callback) {
+            button = button.set('callback', () => {
+              closePrompt()
+              callback(this.promptInput.value)
+            })
+          } else {
+            button = button.set('callback', onClose)
+          }
+          return button
+        })
+      }
+      dialog = <Dialog title={settings.get('title')} buttons={buttons} onClose={onClose}>
+        <div className='inputs'>
+          <input ref={(input) => { this.promptInput = input }} type={settings.get('type')} defaultValue={settings.get('value')} />
+        </div>
+      </Dialog>
+    } else if (showAbout) {
+      dialog = (<Dialog title={`About ${remote.app.getName()}`} onClose={this.closeAboutDialog}>
         Version: {remote.app.getVersion()}<br />
         Website: cloudmodding.com<br />
         Created by CloudMax 2015-2017.
       </Dialog>)
     }
+
     return connectDropTarget(
       <div className='app' onContextMenu={this.handleContextMenu}>
         <ApplicationMenu menu={menu} />
@@ -67,7 +101,7 @@ class App extends React.Component {
           </Columns>
           <Dock index={3} />
         </Rows>
-        {aboutDialog}
+        {dialog}
       </div>
     )
   }
@@ -76,7 +110,8 @@ class App extends React.Component {
 function mapStateToProps (state) {
   return {
     menu: state.ui.get('menu'),
-    showAbout: state.ui.get('showAbout')
+    showAbout: state.ui.get('showAbout'),
+    prompt: state.ui.get('prompt')
   }
 }
 
@@ -84,6 +119,7 @@ function mapDispatchToProps (dispatch) {
   return bindActionCreators({
     // Interface
     toggleAboutDialog,
+    closePrompt,
     // Workspace
     createWorkspace
   }, dispatch)

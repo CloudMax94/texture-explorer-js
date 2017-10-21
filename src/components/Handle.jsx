@@ -13,8 +13,8 @@ class Handle extends ImmutablePureComponent {
   }
 
   componentWillUnmount () {
-    window.removeEventListener('mouseup', this.handleMouseMove)
-    window.removeEventListener('mousemove', this.handleMouseMove)
+    window.removeEventListener('mouseup', this.handleMouseUp)
+    window.removeEventListener('mousemove', this.handleMouseMove, false)
   }
 
   handleMouseMove = (event) => {

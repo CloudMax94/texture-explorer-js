@@ -81,3 +81,17 @@ export function toggleAboutDialog (state = undefined) {
     state
   }
 }
+
+export function prompt (settings, callback) {
+  return {
+    type: INTERFACE.SET_PROMPT,
+    settings,
+    callback
+  }
+}
+
+export function closePrompt () {
+  return {
+    type: INTERFACE.CLOSE_PROMPT
+  }
+}

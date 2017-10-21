@@ -70,6 +70,16 @@ export const getCurrentProfile = createSelector(
   }
 )
 
+export const getCurrentProfileName = createSelector(
+  getCurrentProfile,
+  (currentProfile) => {
+    if (currentProfile !== null) {
+      return currentProfile.get('name')
+    }
+    return null
+  }
+)
+
 export const getItems = createSelector(
   getCurrentProfile,
   (currentProfile) => {

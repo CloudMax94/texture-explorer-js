@@ -11,7 +11,9 @@ const argv = remote.getGlobal('argv')
 const store = configureStore()
 const interfaceTransform = createTransform(
   (inboundState, key) => {
-    return inboundState.delete('menu').delete('showAbout').toJS()
+    return inboundState.delete('menu')
+                       .delete('showAbout')
+                       .delete('prompt').toJS()
   },
   (outboundState, key) => {
     return fromJS(outboundState)
