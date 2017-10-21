@@ -2,6 +2,9 @@ const { app, BrowserWindow } = require('electron')
 const windowStateKeeper = require('electron-window-state')
 global.argv = require('minimist')(process.argv.slice(1))
 const path = require('path')
+const sass = require('node-sass')
+const chokidar = require('chokidar')
+const debugMode = global.argv._.indexOf('debug') > -1
 
 var mainWindow = null
 
@@ -34,36 +37,55 @@ app.on('ready', function () {
 
   var loaded = false
   var css
-  var sass = require('node-sass')
-  sass.render({
-    file: require('path').join(__dirname, '/src/sass/style.scss'),
-    sourcemap: true,
-    sourceMapEmbed: true,
-    sourceMapContents: true,
-    outputStyle: 'compact'
-  }, function (error, result) {
-    if (error) {
-      css = 'body:before {content: "'
-      css += 'SASS Error: ' + error.message.replace(/"/g, '\\"') + ' \\A '
-      css += 'on line ' + error.line + ' column ' + error.column + ' in ' + error.file + ' \\A '
-      css += '"; white-space: pre; display: block; padding: 0.5em; border: 2px solid red;}#container {display:none}'
+
+  function insertCss () {
+    if (debugMode) {
+      mainWindow.webContents.send('css', css)
     } else {
-      css = result.css.toString()
-    }
-    if (loaded) {
       mainWindow.webContents.insertCSS(css)
     }
-  })
+  }
+
+  function renderScss () {
+    sass.render({
+      file: require('path').join(__dirname, '/src/sass/style.scss'),
+      sourcemap: true,
+      sourceMapEmbed: true,
+      sourceMapContents: true,
+      outputStyle: 'compact'
+    }, function (error, result) {
+      if (error) {
+        css = 'body:before {content: "'
+        css += 'SASS Error: ' + error.message.replace(/"/g, '\\"') + ' \\A '
+        css += 'on line ' + error.line + ' column ' + error.column + ' in ' + error.file + ' \\A '
+        css += '"; white-space: pre; display: block; padding: 0.5em; border: 2px solid red;}#container {display:none}'
+      } else {
+        css = result.css.toString()
+      }
+      if (loaded) {
+        insertCss()
+      }
+    })
+  }
+
+  renderScss()
+
+  if (debugMode) {
+    chokidar.watch('./src/sass/**/*.scss').on('change', (event, path) => {
+      renderScss()
+    })
+  }
 
   mainWindow.webContents.on('did-finish-load', function () {
+    loaded = true
     if (css) {
-      mainWindow.webContents.insertCSS(css)
+      insertCss()
     }
   })
 
   mainWindow.loadURL(path.join('file://', __dirname, '/src/electron.html'))
 
-  if (global.argv._.indexOf('debug') > -1) {
+  if (debugMode) {
     mainWindow.openDevTools({
       mode: 'bottom'
     })

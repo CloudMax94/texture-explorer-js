@@ -49,8 +49,17 @@ input {
 }
 
 select {
-    cursor: pointer;
     height: 20px;
+    cursor: pointer;
+
+    option {
+        cursor: pointer;
+    }
+
+    &[size] {
+        cursor: default;
+        height: auto;
+    }
 }
 
 .input-columns {

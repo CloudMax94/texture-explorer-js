@@ -10,7 +10,13 @@ const { dialog } = remote
 
 class ProfileManager extends ImmutablePureComponent {
   static dependencies = {
-    actions: ['setProfile', 'importProfile', 'deleteProfile', 'saveProfile'],
+    actions: [
+      'setProfile',
+      'importProfile',
+      'deleteProfile',
+      'saveProfile',
+      'createProfile'
+    ],
     state: [
       'profileList',
       ['currentProfileId', 'profileId'],
@@ -43,6 +49,9 @@ class ProfileManager extends ImmutablePureComponent {
   handleDelete = (event) => {
     this.props.deleteProfile(this.props.profileId)
   }
+  handleCreate = (event) => {
+    this.props.createProfile(this.props.workspaceKey)
+  }
   handleSave = (event) => {
     this.props.saveProfile(this.props.profileId)
   }
@@ -65,7 +74,10 @@ class ProfileManager extends ImmutablePureComponent {
               return <option key={id} value={id}>{name}</option>
             }).toList() : null}
           </select>
-          <button disabled={!profileList} onClick={this.handleImport}>Import Profile</button>
+          <div className='button-row'>
+            <button disabled={!profileList} onClick={this.handleCreate}>New Profile</button>
+            <button disabled={!profileList} onClick={this.handleImport}>Import Profile</button>
+          </div>
           <div className='button-row'>
             <button disabled={profileId === null} onClick={this.handleSave}>Save Profile</button>
             <button disabled={profileId === null} onClick={this.handleDelete}>Delete Profile</button>

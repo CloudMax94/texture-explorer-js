@@ -10,6 +10,9 @@ import { clipboard } from 'electron'
 import * as PROFILE from '../constants/profile'
 
 let idCounter = 0
+function getUniqueId () {
+  return (idCounter++).toString(36)
+}
 
 const ProfileRecord = Record({
   id: null,
@@ -171,7 +174,7 @@ function itemsFromObject (itemObject, type = 'directory', parentId = null) {
   const types = ['directory', 'texture']
   let items = Map()
   const _innerLoop = (input, type, parentId) => {
-    const id = parentId ? (idCounter++).toString(36) : 'root' // If item doesn't have a parent, it's the root!
+    const id = parentId ? getUniqueId() : 'root' // If item doesn't have a parent, it's the root!
     if (type === 'directory') {
       let item = new DirectoryRecord({
         id,
@@ -221,7 +224,7 @@ export function importProfile (file, key) {
       let origName = name
       let i = 1
       while (i++) {
-        let profileExists = profileExists = getState().profile.get('profiles').find(profile => profile.get('name') === name)
+        let profileExists = getState().profile.get('profiles').find(profile => profile.get('name') === name)
         if (!profileExists) {
           break
         }
@@ -230,7 +233,7 @@ export function importProfile (file, key) {
 
       console.log(profileObject)
       let items = itemsFromObject(profileObject)
-      let profileId = (idCounter++).toString(36)
+      let profileId = getUniqueId()
       let profile = new ProfileRecord({
         id: profileId,
         items,
@@ -328,7 +331,7 @@ export function prepareProfiles (key) {
       if (existingProfiles.find((profile) => profile.get('key') === key && profile.get('file') === file)) {
         continue
       }
-      const id = (idCounter++).toString(36)
+      const id = getUniqueId()
       let profile = new ProfileRecord({
         id,
         file,
@@ -344,13 +347,12 @@ export function prepareProfiles (key) {
         id: 'root',
         name: 'Root',
         address: 0,
-        absolute: 0,
-        length: 0
+        absolute: 0
       })
 
       let items = Map()
       items = items.set('root', rootItem)
-      let id = (idCounter++).toString(36)
+      let id = getUniqueId()
       defaultProfile = new ProfileRecord({
         id,
         items,
@@ -364,6 +366,50 @@ export function prepareProfiles (key) {
     dispatch({
       type: PROFILE.ADD_PROFILES,
       profiles
+    })
+  }
+}
+
+export function createProfile (key) {
+  return async (dispatch, getState) => {
+    let name = 'New Profile'
+    let origName = name
+    let i = 1
+    while (i++) {
+      let profileExists = getState().profile.get('profiles').find(profile => profile.get('name') === name)
+      if (!profileExists) {
+        break
+      }
+      name = `${origName} (${i})`
+    }
+
+    let items = Map()
+    items = items.set('root', new DirectoryRecord({
+      id: 'root',
+      name: 'Root',
+      address: 0,
+      absolute: 0
+    }))
+    let id = getUniqueId()
+    let profile = new ProfileRecord({
+      id,
+      items,
+      key,
+      name,
+      file: name + '.json',
+      loaded: true
+    })
+
+    dispatch({
+      type: PROFILE.ADD_PROFILE,
+      profile
+    })
+
+    writeProfile(profile, (err) => {
+      if (err) {
+        console.error(err)
+      } else {
+      }
     })
   }
 }
@@ -382,7 +428,7 @@ export function createDirectory () {
       return
     }
 
-    let id = (idCounter++).toString(36)
+    let id = getUniqueId()
     let item = new DirectoryRecord({
       id,
       parentId: selectedDirectory.get('id'),
@@ -411,7 +457,7 @@ export function createTexture () {
       return
     }
 
-    let id = (idCounter++).toString(36)
+    let id = getUniqueId()
     let item = new TextureRecord({
       id,
       parentId: selectedDirectory.get('id'),

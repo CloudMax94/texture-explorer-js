@@ -3,6 +3,13 @@
   <head>
     <meta charset="UTF-8">
     <title>Texture Explorer.js</title>
+    <style id="css-container"></style>
+    <script>
+      var styleContainer = document.getElementById('css-container')
+      require('electron').ipcRenderer.on('css', function(event, css) {
+        styleContainer.innerHTML = css
+      })
+    </script>
   </head>
   <body>
     <div id="container" style="display:none"></div>

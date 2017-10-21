@@ -16,12 +16,16 @@ class Dialog extends React.Component {
     return (
       <div className='dialog-wrap'>
         <div className='dialog'>
-          <div className='dialog-close' onClick={onClose}>×</div>
-          <header>{title}</header>
-          <section>{children}</section>
-          <menu>
-            <button onClick={onClose} ref={(closeButton) => { this.closeButton = closeButton }}>Close</button>
-          </menu>
+          <header>
+            {title}
+            <div className='dialog-close' tabIndex='0' onClick={onClose}>×</div>
+          </header>
+          <main>
+            <section>{children}</section>
+            <menu>
+              <button onClick={onClose} ref={(closeButton) => { this.closeButton = closeButton }}>Close</button>
+            </menu>
+          </main>
         </div>
       </div>
     )
