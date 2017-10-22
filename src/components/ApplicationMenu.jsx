@@ -7,7 +7,7 @@ class ApplicationMenu extends ImmutablePureComponent {
   render () {
     return (
       <div className='application-menu'>
-        {this.props.menu ? <Menu data={this.props.menu} /> : null}
+        {this.props.menu ? <Menu menu={this.props.menu} primary /> : null}
       </div>
     )
   }

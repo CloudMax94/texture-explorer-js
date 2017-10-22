@@ -38,11 +38,11 @@ function initializeMenu (store) {
 
   const fileSubMenu = new Menu()
   const fileMenuItem = new MenuItem({
-    label: 'File',
+    label: '&File',
     submenu: fileSubMenu
   })
   const openItem = new MenuItem({
-    label: 'Open File...',
+    label: '&Open File...',
     accelerator: 'CmdOrCtrl+O',
     click: () => {
       dialog.showOpenDialog(remote.getCurrentWindow(), {
@@ -60,7 +60,7 @@ function initializeMenu (store) {
   fileSubMenu.append(openItem)
 
   const saveAsItem = new MenuItem({
-    label: 'Save As...',
+    label: '&Save As...',
     accelerator: process.browser ? 'CmdOrCtrl+S' : 'Shift+CmdOrCtrl+S',
     enabled: false,
     id: 'saveAs',
@@ -99,12 +99,12 @@ function initializeMenu (store) {
 
   const editSubMenu = new Menu()
   const editMenuItem = new MenuItem({
-    label: 'Edit',
+    label: '&Edit',
     submenu: editSubMenu
   })
 
   const newDirectoryItem = new MenuItem({
-    label: 'New Directory',
+    label: 'New &Directory',
     accelerator: 'Shift+N',
     enabled: false,
     click: () => {
@@ -114,7 +114,7 @@ function initializeMenu (store) {
   editSubMenu.append(newDirectoryItem)
 
   const newTextureItem = new MenuItem({
-    label: 'New Texture',
+    label: 'New &Texture',
     accelerator: 'Shift+T',
     enabled: false,
     click: () => {
@@ -149,11 +149,11 @@ function initializeMenu (store) {
 
   const viewSubMenu = new Menu()
   const viewMenuItem = new MenuItem({
-    label: 'View',
+    label: '&View',
     submenu: viewSubMenu
   })
   const fullscreenItem = new MenuItem({
-    label: 'Full screen',
+    label: 'Toggle &Full screen',
     accelerator: 'F11',
     click: () => {
       const focused = remote.getCurrentWindow()
@@ -163,7 +163,7 @@ function initializeMenu (store) {
   viewSubMenu.append(fullscreenItem)
 
   const resetPanelsItem = new MenuItem({
-    label: 'Reset Panels',
+    label: '&Reset Panels',
     click: () => {
       actions.resetPanels()
     }
@@ -179,12 +179,12 @@ function initializeMenu (store) {
   if (argv._.indexOf('debug') > -1) {
     const debugSubMenu = new Menu()
     const debugMenuItem = new MenuItem({
-      label: 'Debug',
+      label: '&Debug',
       submenu: debugSubMenu
     })
 
     const reloadItem = new MenuItem({
-      label: 'Reload',
+      label: '&Reload',
       accelerator: 'CmdOrCtrl+R',
       click: () => {
         remote.getCurrentWindow().reload()
@@ -194,7 +194,7 @@ function initializeMenu (store) {
 
     if (!process.browser) {
       const restartItem = new MenuItem({
-        label: 'Restart',
+        label: 'R&estart',
         accelerator: 'Shift+CmdOrCtrl+R',
         click: () => {
           remote.app.relaunch()
@@ -204,7 +204,7 @@ function initializeMenu (store) {
       debugSubMenu.append(restartItem)
 
       const toggleDevToolsItem = new MenuItem({
-        label: 'Toggle DevTools',
+        label: 'Toggle &DevTools',
         accelerator: 'Shift+CmdOrCtrl+I',
         click: () => {
           remote.getCurrentWindow().toggleDevTools()
@@ -221,7 +221,7 @@ function initializeMenu (store) {
 
   const helpSubMenu = new Menu()
   const helpMenuItem = new MenuItem({
-    label: 'Help',
+    label: '&Help',
     submenu: helpSubMenu
   })
 
@@ -234,7 +234,7 @@ function initializeMenu (store) {
   helpSubMenu.append(new MenuItem({type: 'separator'}))
 
   const aboutItem = new MenuItem({
-    label: 'About ' + remote.app.getName(),
+    label: '&About ' + remote.app.getName(),
     click: () => {
       actions.toggleAboutDialog(true)
     }

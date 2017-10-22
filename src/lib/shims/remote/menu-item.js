@@ -4,9 +4,7 @@ class GlobalKeys {
     this.keyBindings = []
     this.assignedKeys = []
     document.addEventListener('keydown', (event) => {
-      if (!document.querySelector('dialog[open]')) {
-        this.triggerBinding(event)
-      }
+      this.triggerBinding(event)
     })
   }
   add (accelerator, callback) {

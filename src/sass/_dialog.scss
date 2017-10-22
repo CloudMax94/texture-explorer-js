@@ -47,6 +47,16 @@
         text-align: center;
 
         cursor: pointer;
+        outline: none;
+
+        &:hover,
+        &:focus {
+            background: lighten($panel-tab-background-color, 3);
+        }
+
+        &:active {
+            padding-top: 1px;
+        }
     }
 
     main {

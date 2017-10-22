@@ -26,6 +26,21 @@ class Workspace extends ImmutablePureComponent {
     }
   }
 
+  componentDidMount () {
+    document.addEventListener('keydown', this.handleSearchHotkey)
+  }
+
+  componentWillUnmount () {
+    document.removeEventListener('keydown', this.handleSearchHotkey)
+  }
+
+  handleSearchHotkey = (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.which === 70) {
+      event.preventDefault()
+      this.searchbar.focus()
+    }
+  }
+
   handleTabClick (workspace) {
     this.props.setCurrentWorkspace(workspace)
   }
@@ -109,7 +124,7 @@ class Workspace extends ImmutablePureComponent {
           />
         </div>
         <div className='search-bar'>
-          <input type='text' disabled={!selectedDirectory} placeholder='Search...' onChange={this.handleSearch} />
+          <input ref={(searchbar) => { this.searchbar = searchbar }} type='text' disabled={!selectedDirectory} placeholder='Search...' onChange={this.handleSearch} />
         </div>
       </div>
     )
