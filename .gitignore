@@ -5,6 +5,7 @@ node_modules
 ncp-debug.log
 npm-debug.log
 package-lock.json
+release
 dist
 profiles
 .sass-cache/

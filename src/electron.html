@@ -3,20 +3,33 @@
   <head>
     <meta charset="UTF-8">
     <title>Texture Explorer.js</title>
-    <style id="css-container"></style>
     <script>
-      var styleContainer = document.getElementById('css-container')
-      require('electron').ipcRenderer.on('css', function(event, css) {
-        styleContainer.innerHTML = css
-      })
+      (function() {
+        if (!process.env.HOT) {
+          const link = document.createElement('link')
+          link.rel = 'stylesheet'
+          link.href = '../dist/desktop/style.css'
+          // HACK: Writing the script path should be done with webpack
+          document.getElementsByTagName('head')[0].appendChild(link)
+        }
+      }())
     </script>
   </head>
   <body>
     <div id="container" style="display:none"></div>
     <script>
-      require('babel-register')
-      require('babel-polyfill')
-      require('./boot')
+      const scripts = []
+      const port = process.env.PORT || 1213
+      scripts.push(
+        (process.env.HOT)
+          ? 'http://localhost:' + port + '/dist/desktop/te.js'
+          : '../dist/desktop/te.js'
+      )
+      document.write(
+        scripts
+          .map(script => '<script defer src="' + script + '"><\/script>')
+          .join('')
+      )
     </script>
   </body>
 </html>

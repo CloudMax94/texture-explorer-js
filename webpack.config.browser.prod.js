@@ -1,10 +1,8 @@
-const path = require('path')
-const webpack = require('webpack')
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-const merge = require('webpack-merge')
-const baseConfig = require('./webpack.config.base')
+import path from 'path'
+import merge from 'webpack-merge'
+import baseConfig from './webpack.config.base.prod'
 
-module.exports = merge.smart(baseConfig, {
+export default merge.smart(baseConfig, {
   entry: {
     te: [
       'babel-polyfill',
@@ -12,23 +10,6 @@ module.exports = merge.smart(baseConfig, {
     ]
   },
   output: {
-    path: path.join(__dirname, 'dist/browser'),
-    filename: '[name].js',
-    publicPath: ''
-  },
-  devtool: '#source-map',
-  plugins: [
-    new webpack.optimize.ModuleConcatenationPlugin(),
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: '"production"'
-      }
-    }),
-    new UglifyJsPlugin({
-      sourceMap: true
-    }),
-    new webpack.LoaderOptionsPlugin({
-      minimize: true
-    })
-  ]
+    path: path.join(__dirname, 'release/browser')
+  }
 })

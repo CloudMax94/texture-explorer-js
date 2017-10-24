@@ -1,14 +1,14 @@
-const path = require('path')
-const webpack = require('webpack')
-const fs = require('fs')
+import path from 'path'
+import webpack from 'webpack'
+import fs from 'fs'
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
 
-module.exports = {
+export default {
   output: {
-    path: path.join(__dirname, 'dist/browser'),
     filename: '[name].js',
     publicPath: ''
   },
+  devtool: '#source-map',
   cache: true,
   module: {
     rules: [

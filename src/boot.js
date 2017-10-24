@@ -5,6 +5,7 @@ import { fromJS } from 'immutable'
 import { remote } from 'electron'
 import { configureStore } from './stores/configureStore'
 import Root from './containers/Root'
+import './sass/style.global.scss'
 
 const argv = remote.getGlobal('argv')
 

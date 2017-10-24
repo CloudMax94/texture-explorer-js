@@ -42,7 +42,7 @@ module.exports = {
   "settings": {
     "import/resolver": {
       "webpack": {
-        "config": path.resolve(__dirname, "webpack.config.js")
+        "config": "webpack.config.eslint"
       }
     }
   }
