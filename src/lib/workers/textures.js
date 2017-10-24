@@ -34,17 +34,15 @@ function work (msg, callback) {
 }
 
 if (process.browser) {
-  module.exports = function (self) {
-    self.addEventListener('message', function (ev) {
-      work(ev.data, (err, msg) => {
-        if (err) {
-          self.postMessage(err)
-        } else {
-          self.postMessage(msg)
-        }
-      })
+  self.addEventListener('message', function (ev) {
+    work(ev.data, (err, msg) => {
+      if (err) {
+        self.postMessage(err)
+      } else {
+        self.postMessage(msg)
+      }
     })
-  }
+  })
 } else {
   process.title = 'TE.js Worker'
   process.on('message', function (msg) {

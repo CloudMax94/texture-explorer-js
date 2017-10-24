@@ -7,8 +7,10 @@ const port = process.env.PORT || 1213
 const publicPath = `http://localhost:${port}/dist/desktop`
 
 export default merge.smart(baseConfig, {
+  target: 'electron-renderer',
   entry: {
     te: [
+      'babel-polyfill',
       'react-hot-loader/patch',
       path.join(__dirname, 'src/boot.js')
     ]
@@ -32,5 +34,11 @@ export default merge.smart(baseConfig, {
         .on('error', spawnError => console.error(spawnError))
       }
     }
+  },
+  resolve: {
+    modules: [
+      path.join(__dirname, 'src'),
+      'node_modules'
+    ]
   }
 })

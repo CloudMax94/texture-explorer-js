@@ -1,12 +1,12 @@
 import { join } from 'path'
+import textureWorker from './workers/textures'
 
 export default function (path) {
   let proc
   if (process.browser) {
     const workers = {
-      textures: require.resolve('./workers/textures')
+      textures: textureWorker
     }
-    let work = require('webworkify-webpack')
     proc = {
       pos: 0,
       pool: [],
@@ -23,7 +23,7 @@ export default function (path) {
       }
     }
     for (let i = 0; i < 4; i++) {
-      proc.pool.push(work(workers[path]))
+      proc.pool.push(new workers[path]())
     }
   } else {
     const numCPUs = Math.min(4, require('os').cpus().length)
@@ -41,7 +41,13 @@ export default function (path) {
       }
     }
     for (let i = 0; i < numCPUs; i++) {
-      proc.pool.push(require('child_process').fork(join(__dirname, '/workers/', path)))
+      // FIXME: Figure out how to get web workers or
+      //        child processes to work with webpack
+      proc.pool.push({
+        send: () => {},
+        on: () => {}
+      })
+      // proc.pool.push(require('child_process').fork(join(__dirname, '/workers/', path)))
     }
   }
   const worker = {

@@ -1,3 +1,4 @@
+import webpack from 'webpack'
 import path from 'path'
 import merge from 'webpack-merge'
 import baseConfig from './webpack.config.base.dev'
@@ -21,5 +22,16 @@ export default merge.smart(baseConfig, {
     port,
     publicPath,
     contentBase: path.join(__dirname, 'src/static')
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.browser': true
+    })
+  ],
+  resolve: {
+    alias: {
+      electron: path.resolve(__dirname, 'src/lib/shims/electron'),
+      fs: path.resolve(__dirname, 'src/lib/shims/fs')
+    }
   }
 })

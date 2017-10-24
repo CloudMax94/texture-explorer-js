@@ -25,7 +25,7 @@ function initializeMenu (store) {
 
   function updateMenu () {
     Menu.setApplicationMenu(menu)
-    if (process.browser || argv._.indexOf('browsermenu') > -1) {
+    if (process.browser) {
       actions.setApplicationMenu(menu)
     }
   }

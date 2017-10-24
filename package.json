@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "main": "src/main.js",
   "scripts": {
-    "start-hot-desktop": "cross-env HOT=1 NODE_ENV=development electron -r babel-register -r babel-polyfill .",
+    "start-hot-desktop": "cross-env HOT=1 NODE_ENV=development electron -r babel-register -r babel-polyfill . debug",
     "dev-desktop": "cross-env NODE_ENV=development START_HOT=1 node --trace-warnings -r babel-register ./node_modules/.bin/webpack-dev-server --config webpack.config.desktop.dev.js",
     "dev-browser": "cross-env NODE_ENV=development node --trace-warnings -r babel-register ./node_modules/.bin/webpack-dev-server --config webpack.config.browser.dev.js --open",
     "package-browser": "cross-env NODE_ENV=production node --trace-warnings -r babel-register ./node_modules/.bin/webpack --config webpack.config.browser.prod.js"
@@ -64,6 +64,6 @@
     "webpack": "^3.7.1",
     "webpack-dev-server": "^2.9.2",
     "webpack-merge": "^4.1.0",
-    "webworkify-webpack": "^2.0.6"
+    "worker-loader": "^1.1.0"
   }
 }

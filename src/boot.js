@@ -4,6 +4,7 @@ import { createTransform, persistStore } from 'redux-persist'
 import { fromJS } from 'immutable'
 import { remote } from 'electron'
 import { configureStore } from './stores/configureStore'
+import { AppContainer } from 'react-hot-loader'
 import Root from './containers/Root'
 import './sass/style.global.scss'
 
@@ -29,7 +30,6 @@ const storeConfig = {
 
 const persistedStore = persistStore(store, storeConfig, () => {
   if (module.hot) {
-    const AppContainer = require('react-hot-loader').AppContainer
     const hotRender = (Container) => {
       render(
         <AppContainer>
