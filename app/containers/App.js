@@ -10,7 +10,7 @@ import { each } from 'lodash'
 import { exists } from 'fs'
 import { remote } from 'electron'
 
-import { openFile } from '../lib/fileHandler'
+import { openFile } from '../utils/fileHandler'
 
 import Dock from './Dock'
 import Rows from '../components/Rows'

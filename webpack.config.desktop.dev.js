@@ -12,17 +12,17 @@ export default merge.smart(baseConfig, {
     te: [
       'babel-polyfill',
       'react-hot-loader/patch',
-      path.join(__dirname, 'src/boot.js')
+      path.join(__dirname, 'app/index')
     ]
   },
   output: {
     publicPath: publicPath + '/',
-    path: path.join(__dirname, 'dist/desktop')
+    path: path.join(__dirname, 'app/dist/desktop')
   },
   devServer: {
     port,
     publicPath,
-    contentBase: path.join(__dirname, 'dist/desktop'),
+    contentBase: path.join(__dirname, 'app/dist/desktop'),
     before () {
       if (process.env.START_HOT) {
         spawn(
@@ -37,7 +37,7 @@ export default merge.smart(baseConfig, {
   },
   resolve: {
     modules: [
-      path.join(__dirname, 'src'),
+      path.join(__dirname, 'app'),
       'node_modules'
     ]
   }

@@ -6,7 +6,7 @@ import { remote } from 'electron'
 import App from './App'
 
 import { prompt } from '../actions/interface'
-import initializeMenu from '../lib/menu'
+import initializeMenu from '../utils/menu'
 
 class Root extends React.Component {
   componentDidMount () {

@@ -1,11 +1,11 @@
 import React from 'react'
 import { DropTarget } from 'react-dnd'
 import { NativeTypes } from 'react-dnd-html5-backend'
-import { openFile } from '../../lib/fileHandler'
+import { openFile } from '../../utils/fileHandler'
 
 import { BLOB_UNSET } from '../../constants/workspace'
 
-import textureManipulator from '../../lib/textureManipulator'
+import textureManipulator from '../../utils/textureManipulator'
 import ImmutablePureComponent from '../ImmutablePureComponent'
 
 class TextureViewer extends ImmutablePureComponent {

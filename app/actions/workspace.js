@@ -2,10 +2,10 @@ import * as WORKSPACE from '../constants/workspace'
 
 import { Record, Map } from 'immutable'
 import { throttle } from 'lodash'
-import { saveFileAs } from '../lib/fileHandler'
+import { saveFileAs } from '../utils/fileHandler'
 import { prepareProfiles, loadProfile } from './profile'
-import worker from '../lib/worker'
-import textureManipulator from '../lib/textureManipulator'
+import worker from '../utils/worker'
+import textureManipulator from '../utils/textureManipulator'
 
 const textureWorker = worker('textures')
 let idCounter = 0

@@ -13,7 +13,7 @@ import {
   addItemObject
 } from '../actions/profile'
 import { setTreeSize } from '../actions/interface'
-import { itemAddressCompare } from '../lib/helpers'
+import { itemAddressCompare } from '../utils/helpers'
 
 import ImmutablePureComponent from './ImmutablePureComponent'
 import TreeView from './TreeView'

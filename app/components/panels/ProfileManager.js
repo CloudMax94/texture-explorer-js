@@ -2,7 +2,7 @@ import React from 'react'
 import { uniqueId } from 'lodash'
 
 import { remote } from 'electron'
-import { openFile } from '../../lib/fileHandler'
+import { openFile } from '../../utils/fileHandler'
 
 import ImmutablePureComponent from '../ImmutablePureComponent'
 

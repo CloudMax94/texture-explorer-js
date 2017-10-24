@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect'
-import { getItemPath } from '../lib/helpers'
+import { getItemPath } from '../utils/helpers'
 
 const getProfiles = (state) => {
   return state.profile.get('profiles')

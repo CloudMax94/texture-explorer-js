@@ -1,5 +1,5 @@
 import React from 'react'
-import { acceleratorToText } from '../lib/accelerator'
+import { acceleratorToText } from '../utils/accelerator'
 
 class Menu extends React.Component {
   constructor (props) {

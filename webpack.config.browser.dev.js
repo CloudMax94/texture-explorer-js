@@ -11,17 +11,17 @@ export default merge.smart(baseConfig, {
     te: [
       'babel-polyfill',
       'react-hot-loader/patch',
-      path.join(__dirname, 'src/boot.js')
+      path.join(__dirname, 'app/index')
     ]
   },
   output: {
     publicPath: publicPath + '/',
-    path: path.join(__dirname, 'dist/browser')
+    path: path.join(__dirname, 'app/dist/browser')
   },
   devServer: {
     port,
     publicPath,
-    contentBase: path.join(__dirname, 'src/static')
+    contentBase: path.join(__dirname, 'app/static')
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -30,8 +30,8 @@ export default merge.smart(baseConfig, {
   ],
   resolve: {
     alias: {
-      electron: path.resolve(__dirname, 'src/lib/shims/electron'),
-      fs: path.resolve(__dirname, 'src/lib/shims/fs')
+      electron: path.resolve(__dirname, 'app/shims/electron'),
+      fs: path.resolve(__dirname, 'app/shims/fs')
     }
   }
 })

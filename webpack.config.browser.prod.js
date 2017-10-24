@@ -7,7 +7,7 @@ export default merge.smart(baseConfig, {
   entry: {
     te: [
       'babel-polyfill',
-      './src/boot.js'
+      path.join(__dirname, 'app/index')
     ]
   },
   output: {
@@ -20,8 +20,8 @@ export default merge.smart(baseConfig, {
   ],
   resolve: {
     alias: {
-      electron: path.resolve(__dirname, 'src/lib/shims/electron'),
-      fs: path.resolve(__dirname, 'src/lib/shims/fs')
+      electron: path.resolve(__dirname, 'app/shims/electron'),
+      fs: path.resolve(__dirname, 'app/shims/fs')
     }
   }
 })
