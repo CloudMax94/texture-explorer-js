@@ -73,7 +73,7 @@ class TextureFormat {
 
       let data = 0
       each(this.data.bitwise, (bitwise, key) => {
-        data |= ((pixel[key] / bitwise.multiplier) << bitwise.shift)
+        data |= Math.round(pixel[key] / bitwise.multiplier) << bitwise.shift
         data >>>= 0 // Make data unsigned
       })
       out = (out << (this.data.bits * i)) | data
