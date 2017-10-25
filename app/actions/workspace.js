@@ -4,10 +4,9 @@ import { Record, Map } from 'immutable'
 import { throttle } from 'lodash'
 import { saveFileAs } from '../utils/fileHandler'
 import { prepareProfiles, loadProfile } from './profile'
-import worker from '../utils/worker'
+import workerPool from '../utils/workerPool'
 import textureManipulator from '../utils/textureManipulator'
 
-const textureWorker = worker('textures')
 let idCounter = 0
 
 const WorkspaceRecord = Record({
@@ -96,7 +95,7 @@ function generateItemBlob (item, workspace, callback, forced) {
     palette = Array.from(getItemPaletteBuffer(item, workspace))
   }
   const data = Array.from(getItemBuffer(item, workspace)) // Web workers are slow with typed data, so we turn it into regular arrays
-  textureWorker.send({
+  workerPool.send({
     type: 'generatePNGBuffer',
     data: data,
     format: textureFormat.toString(),

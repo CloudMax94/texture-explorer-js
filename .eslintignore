@@ -1,0 +1,14 @@
+logs
+*.log
+*.z64
+node_modules
+ncp-debug.log
+npm-debug.log
+package-lock.json
+release
+dist
+profiles
+.sass-cache/
+.sublime-gulp.cache
+*.sublime-project
+*.sublime-workspace

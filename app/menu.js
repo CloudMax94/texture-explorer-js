@@ -1,13 +1,13 @@
-import { openFile } from './fileHandler'
+import { openFile } from './utils/fileHandler'
 import { remote } from 'electron'
 import { bindActionCreators } from 'redux'
 import {
   toggleAboutDialog,
   resetPanels,
   setApplicationMenu
-} from '../actions/interface'
-import { createDirectory, createTexture } from '../actions/profile'
-import { createWorkspace, saveFile } from '../actions/workspace'
+} from './actions/interface'
+import { createDirectory, createTexture } from './actions/profile'
+import { createWorkspace, saveFile } from './actions/workspace'
 const { Menu, MenuItem, dialog } = remote
 const argv = remote.getGlobal('argv')
 

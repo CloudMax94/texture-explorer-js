@@ -12,7 +12,7 @@ export default {
   module: {
     rules: [
       {
-        test: /\/workers\/.*\.js$/,
+        test: /worker\.js$/,
         use: {
           loader: 'worker-loader',
           options: {

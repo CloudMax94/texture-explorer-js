@@ -30,6 +30,7 @@ app.on('ready', function () {
     width: mainWindowState.width,
     height: mainWindowState.height,
     webPreferences: {
+      nodeIntegrationInWorker: true,
       zoomFactor: global.argv['zoom-factor'] ? global.argv['zoom-factor'] : 1,
       webSecurity: false
     },

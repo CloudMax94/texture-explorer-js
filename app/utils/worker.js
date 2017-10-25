@@ -1,75 +1,43 @@
-import { join } from 'path'
-import textureWorker from './workers/textures'
+import textureManipulator from './textureManipulator'
 
-export default function (path) {
-  let proc
-  if (process.browser) {
-    const workers = {
-      textures: textureWorker
-    }
-    proc = {
-      pos: 0,
-      pool: [],
-      send (msg) {
-        this.pool[this.pos].postMessage(msg)
-        this.pos = (this.pos + 1) % this.pool.length
-      },
-      on (type, callback) {
-        for (let i = 0; i < this.pool.length; i++) {
-          this.pool[i].addEventListener(type, function (ev) {
-            callback(ev.data)
-          })
+function work (msg, callback) {
+  var input = msg.input
+  if (input.type !== 'generatePNGBuffer') {
+    return
+  }
+  var palette
+  if (input.palette) {
+    palette = Buffer.from(input.palette)
+  }
+
+  var img = textureManipulator.generateTexture(Buffer.from(input.data), input.format, input.width, palette)
+  if (img) {
+    img.toPNGBuffer((buffer) => {
+      // TODO: handle errors...?
+      callback(null, {
+        id: msg.id,
+        type: msg.type,
+        output: {
+          img: img,
+          buffer: buffer
         }
-      }
-    }
-    for (let i = 0; i < 4; i++) {
-      proc.pool.push(new workers[path]())
-    }
+      })
+    })
   } else {
-    const numCPUs = Math.min(4, require('os').cpus().length)
-    proc = {
-      pos: 0,
-      pool: [],
-      send (msg) {
-        this.pool[this.pos].send(msg)
-        this.pos = (this.pos + 1) % this.pool.length
-      },
-      on (type, callback) {
-        for (let i = 0; i < this.pool.length; i++) {
-          this.pool[i].on(type, callback)
-        }
-      }
-    }
-    for (let i = 0; i < numCPUs; i++) {
-      // FIXME: Figure out how to get web workers or
-      //        child processes to work with webpack
-      proc.pool.push({
-        send: () => {},
-        on: () => {}
-      })
-      // proc.pool.push(require('child_process').fork(join(__dirname, '/workers/', path)))
-    }
+    callback(null, {
+      id: msg.id,
+      type: msg.type,
+      output: {}
+    })
   }
-  const worker = {
-    process: proc,
-    callbacks: {},
-    send (input, callback) {
-      const d = new Date()
-      const id = d.getTime() + '-' + Math.random()
-      this.callbacks[id] = callback
-      this.process.send({
-        id: id,
-        input: input
-      })
-    }
-  }
-  worker.process.on('message', function (msg) {
-    if (msg.id) {
-      worker.callbacks[msg.id](msg.output)
-      delete worker.callbacks[msg.id]
+}
+
+self.addEventListener('message', function (ev) {
+  work(ev.data, (err, msg) => {
+    if (err) {
+      self.postMessage(err)
     } else {
-      console.log(msg)
+      self.postMessage(msg)
     }
   })
-  return worker
-}
+})

@@ -5,6 +5,9 @@ import { fromJS } from 'immutable'
 import { remote } from 'electron'
 import { configureStore } from './store/configureStore'
 import { AppContainer } from 'react-hot-loader'
+import { prompt } from './actions/interface'
+import initializeMenu from './menu'
+
 import Root from './containers/Root'
 import './sass/style.global.scss'
 
@@ -29,6 +32,15 @@ const storeConfig = {
 }
 
 const persistedStore = persistStore(store, storeConfig, () => {
+  // Initialize the application menu
+  initializeMenu(store)
+  // Hook up dialog shim to the store
+  if ('attachPromptAction' in remote.dialog) {
+    remote.dialog.attachPromptAction((...args) => {
+      store.dispatch(prompt(...args))
+    })
+  }
+  // Render application
   if (module.hot) {
     const hotRender = (Container) => {
       render(
