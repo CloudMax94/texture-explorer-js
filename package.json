@@ -1,7 +1,7 @@
 {
   "name": "texture-explorer",
   "productName": "Texture Explorer.js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "app/main.js",
   "scripts": {
     "start-hot-desktop": "cross-env HOT=1 NODE_ENV=development electron -r babel-register -r babel-polyfill . debug",
