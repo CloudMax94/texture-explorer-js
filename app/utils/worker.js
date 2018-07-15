@@ -1,4 +1,4 @@
-import textureManipulator from './textureManipulator'
+import { generateTexture } from '@cloudmodding/texture-manipulator'
 
 function work (msg, callback) {
   var input = msg.input
@@ -9,11 +9,9 @@ function work (msg, callback) {
   if (input.palette) {
     palette = Buffer.from(input.palette)
   }
-
-  var img = textureManipulator.generateTexture(Buffer.from(input.data), input.format, input.width, palette)
+  var img = generateTexture(Buffer.from(input.data), input.format, input.width, palette)
   if (img) {
-    img.toPNGBuffer((buffer) => {
-      // TODO: handle errors...?
+    img.toPNGBuffer().then(function (buffer) {
       callback(null, {
         id: msg.id,
         type: msg.type,
@@ -22,6 +20,9 @@ function work (msg, callback) {
           buffer: buffer
         }
       })
+      return buffer
+    }).catch(function (error) {
+      console.error(error)
     })
   } else {
     callback(null, {

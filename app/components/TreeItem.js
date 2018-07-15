@@ -3,7 +3,7 @@ import { padStart } from 'lodash'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { remote } from 'electron'
-import textureManipulator from '../utils/textureManipulator'
+import { getFormat } from '@cloudmodding/texture-manipulator'
 import { getItemPath } from '../utils/helpers'
 import ImmutablePureComponent from './ImmutablePureComponent'
 
@@ -79,7 +79,8 @@ class TreeItem extends ImmutablePureComponent {
       '0x' + padStart(item.get('address').toString(16), 8, 0).toUpperCase()
     ])
     if (item.get('type') === 'texture') {
-      const size = item.get('width') * item.get('height') * textureManipulator.getFormat(item.get('format')).sizeModifier()
+      const format = getFormat(item.get('format'))
+      const size = item.get('width') * item.get('height') * format.sizeModifier()
       columns.push(...[
         '0x' + padStart((item.get('address') + size).toString(16), 8, 0).toUpperCase(),
         '0x' + padStart(size.toString(16), 6, 0).toUpperCase(),
@@ -87,7 +88,7 @@ class TreeItem extends ImmutablePureComponent {
         item.get('width'),
         item.get('height')
       ])
-      if (textureManipulator.getFormat(item.get('format')).hasPalette()) {
+      if (format.hasPalette()) {
         columns.push('0x' + padStart(item.get('palette').toString(16), 8, 0).toUpperCase())
       }
     } else if (item.get('type') === 'directory') {

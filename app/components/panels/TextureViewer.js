@@ -5,7 +5,7 @@ import { openFile } from '../../utils/fileHandler'
 
 import { BLOB_UNSET } from '../../constants/workspace'
 
-import textureManipulator from '../../utils/textureManipulator'
+import {pngToPixelData, pixelDataToRaw} from '@cloudmodding/texture-manipulator'
 import ImmutablePureComponent from '../ImmutablePureComponent'
 
 class TextureViewer extends ImmutablePureComponent {
@@ -85,12 +85,11 @@ const fileTarget = {
     }
 
     if (event.dataTransfer.files.length) {
-      openFile(event.dataTransfer.files[0], ({data}) => {
+      openFile(event.dataTransfer.files[0], async ({data}) => {
         const pngBuffer = Buffer.from(data)
-        textureManipulator.pngToPixelData(pngBuffer, (pixelData, imageFormat) => {
-          const buffer = textureManipulator.pixelDataToRaw(pixelData, texture.get('format'))
-          insertData(buffer, texture.get('address'))
-        })
+        let [pixelData] = await pngToPixelData(pngBuffer)
+        const buffer = pixelDataToRaw(pixelData, texture.get('format'))
+        insertData(buffer, texture.get('address'))
       })
     }
   }

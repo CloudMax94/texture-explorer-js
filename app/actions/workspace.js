@@ -5,7 +5,7 @@ import { throttle } from 'lodash'
 import { saveFileAs } from '../utils/fileHandler'
 import { prepareProfiles, loadProfile } from './profile'
 import workerPool from '../utils/workerPool'
-import textureManipulator from '../utils/textureManipulator'
+import {getFormat} from '@cloudmodding/texture-manipulator'
 
 let idCounter = 0
 
@@ -58,7 +58,7 @@ function itemHasValidData (item) {
     if (Number.isInteger(item.get('address')) &&
       Number.isInteger(item.get('width')) &&
       Number.isInteger(item.get('height')) &&
-      textureManipulator.getFormat(item.get('format')).isValid()) {
+      getFormat(item.get('format')).isValid()) {
       return true
     }
   }
@@ -67,7 +67,7 @@ function itemHasValidData (item) {
 
 function getItemBuffer (item, workspace) {
   let start = item.get('address')
-  let end = start + item.get('width') * item.get('height') * textureManipulator.getFormat(item.get('format')).sizeModifier()
+  let end = start + item.get('width') * item.get('height') * getFormat(item.get('format')).sizeModifier()
   return workspace.get('data').slice(start, end)
 }
 
@@ -90,7 +90,7 @@ function generateItemBlob (item, workspace, callback, forced) {
   }
 
   let palette
-  const textureFormat = textureManipulator.getFormat(item.get('format'))
+  const textureFormat = getFormat(item.get('format'))
   if (textureFormat.hasPalette()) {
     palette = Array.from(getItemPaletteBuffer(item, workspace))
   }
@@ -266,7 +266,7 @@ export function insertData (data, start) {
       }
       const textureLength = item.get('width') *
                             item.get('height') *
-                            textureManipulator.getFormat(item.get('format')).sizeModifier()
+                            getFormat(item.get('format')).sizeModifier()
       if (item.get('address') < start + data.length && start < item.get('address') + textureLength) {
         itemIds.push(item.get('id'))
       }

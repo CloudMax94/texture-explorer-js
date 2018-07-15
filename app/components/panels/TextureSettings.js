@@ -1,7 +1,7 @@
 import React from 'react'
 import { padStart } from 'lodash'
 
-import { getFormats, getFormat } from '../../utils/textureManipulator'
+import { getFormats, getFormat } from '@cloudmodding/texture-manipulator'
 
 import ItemSettings from './ItemSettings'
 
