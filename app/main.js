@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, shell } = require('electron')
 const windowStateKeeper = require('electron-window-state')
 global.argv = require('minimist')(process.argv.slice(1))
 const path = require('path')
@@ -60,5 +60,10 @@ app.on('ready', function () {
 
   mainWindow.on('closed', function () {
     mainWindow = null
+  })
+
+  mainWindow.webContents.on('new-window', function (event, url) {
+    event.preventDefault()
+    shell.openExternal(url)
   })
 })

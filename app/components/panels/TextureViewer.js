@@ -64,6 +64,10 @@ class TextureViewer extends ImmutablePureComponent {
     }
   }
 
+  handleZoomChange = (event) => {
+    this.setState({zoom: parseFloat(event.target.value)})
+  }
+
   render () {
     const { blob, connectDropTarget } = this.props
 
@@ -71,8 +75,13 @@ class TextureViewer extends ImmutablePureComponent {
       return null
     }
     return connectDropTarget(
-      <div className={'texture-viewer texture-viewer-mode-' + this.state.mode} >
-        <img src={blob.get('blob')} style={{zoom: this.state.zoom}} onWheel={this.handleWheel} onClick={this.handleClick} />
+      <div className={'texture-viewer texture-viewer-mode-' + this.state.mode}>
+        <div className='texture-viewer-head'>
+          Zoom: <input type='range' min='1' max='10' step='0.2' value={this.state.zoom} onChange={this.handleZoomChange} />
+        </div>
+        <div className='texture-viewer-content'>
+          <img src={blob.get('blob')} style={{zoom: this.state.zoom}} onWheel={this.handleWheel} onClick={this.handleClick} />
+        </div>
       </div>
     )
   }

@@ -105,6 +105,16 @@ export default function workspace (state = fromJS({
         })
       })
     }
+    case PROFILE.ADD_ITEM: {
+      const { profileId, item } = action
+      const currentWorkspace = state.get('currentWorkspace')
+      if (state.getIn(['workspaces', currentWorkspace, 'profile']) === profileId) {
+        if (item.get('type') === 'texture') {
+          return state.setIn(['workspaces', currentWorkspace, 'selectedTexture'], item.get('id'))
+        }
+      }
+      return state
+    }
     default:
       return state
   }

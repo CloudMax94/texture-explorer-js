@@ -59,7 +59,7 @@ function formatHex (int) {
 }
 
 function itemsToObject (items, originId) {
-  const groupedItems = items.sort(itemAddressCompare).groupBy(x => x.get('parentId'))
+  const groupedItems = items.groupBy(x => x.get('parentId'))
   const traverseItems = (id) => {
     let item = items.get(id)
     const obj = {}
@@ -209,7 +209,7 @@ function itemsFromObject (itemObject, type = 'directory', parentId = null) {
     }
   }
   _innerLoop(itemObject, type, parentId)
-  return items
+  return items.sort(itemAddressCompare)
 }
 
 export function importProfile (file, key) {
@@ -510,14 +510,25 @@ export function createTexture () {
     }
 
     let id = getUniqueId()
-    let item = new TextureRecord({
+    const itemConfig = {
       id,
       parentId: selectedDirectory.get('id'),
       address: selectedDirectory.get('address'),
       width: 32,
       height: 32,
       palette: 0
-    })
+    }
+
+    let selectedTexture = state.profile.getIn(['profiles', profileId, 'items', workspace.get('selectedTexture')])
+    if (selectedTexture) {
+      itemConfig.format = selectedTexture.get('format')
+      itemConfig.width = selectedTexture.get('width')
+      itemConfig.height = selectedTexture.get('height')
+      itemConfig.address = selectedTexture.get('address') + itemConfig.width * itemConfig.height * getFormat(selectedTexture.get('format')).bits / 8
+      itemConfig.palette = selectedTexture.get('palette')
+    }
+
+    let item = new TextureRecord(itemConfig)
 
     dispatch({
       type: PROFILE.ADD_ITEM,

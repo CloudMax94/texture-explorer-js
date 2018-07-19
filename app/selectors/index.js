@@ -1,5 +1,6 @@
 import { createSelector } from 'reselect'
-import { getItemPath } from '../utils/helpers'
+import { Map, List } from 'immutable'
+import { getItemPath, getSuccessors } from '../utils/helpers'
 
 const getProfiles = (state) => {
   return state.profile.get('profiles')
@@ -7,6 +8,10 @@ const getProfiles = (state) => {
 
 const getWorkspaces = (state) => {
   return state.workspace.get('workspaces')
+}
+
+export const getSettings = (state) => {
+  return state.ui.get('settings')
 }
 
 export const getCurrentWorkspaceId = (state) => {
@@ -132,7 +137,7 @@ export const getSelectedTextureBlob = createSelector(
   }
 )
 
-export const getSelectedTextureOffset = createSelector(
+export const getSelectedTextureBaseAddress = createSelector(
   getItems,
   getSelectedTexture,
   (items, selectedTexture) => {
@@ -175,7 +180,7 @@ export const getSelectedDirectory = createSelector(
   }
 )
 
-export const getSelectedDirectoryOffset = createSelector(
+export const getSelectedDirectoryBaseAddress = createSelector(
   getItems,
   getSelectedDirectory,
   (items, selectedDirectory) => {
@@ -207,15 +212,60 @@ export const getDirectories = createSelector(
   }
 )
 
-const directorySort = (a, b) => {
-  return a.get('address') - b.get('address')
-}
+// TODO: Store this inside the directory records instead, and update count when
+// adding/removing items. This way it won't have to recalculate constantly
+export const getSuccessorCount = createSelector(
+  getItems,
+  (items) => {
+    let count = Map()
+    if (items !== null) {
+      let mapping = {}
+      items.forEach((i) => {
+        let parent = i.get('parentId')
+        if (!mapping[parent]) {
+          mapping[parent] = []
+        }
+        mapping[parent].push(i.get('id'))
+      })
+      let traverse = function (itemId = 'root') {
+        let deepc = 0
+        let deept = 0
+        let c = 0
+        let t = 0
+        const children = mapping[itemId]
+        if (children) {
+          for (let childId of children) {
+            let [cc, tt] = traverse(childId)
+            deepc += cc
+            deept += tt
+            c += 1
+            if (items.get(childId).type === 'texture') {
+              t += 1
+            }
+          }
+          deepc += c
+          deept += t
+          count = count.set(itemId, Map({
+            items: deepc,
+            textures: deept,
+            childItems: c,
+            childTextures: t
+          }))
+        }
+        return [c, t]
+      }
+      traverse()
+      return count
+    }
+    return null
+  }
+)
 
-export const getSortedDirectories = createSelector(
+export const getGroupedDirectories = createSelector(
   getDirectories,
   (directories) => {
     if (directories !== null) {
-      return directories.sort(directorySort)
+      return directories.groupBy(x => x.parentId)
     }
     return null
   }

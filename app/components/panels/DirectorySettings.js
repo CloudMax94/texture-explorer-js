@@ -10,11 +10,40 @@ class DirectorySettings extends ItemSettings {
       'currentProfileId',
       ['selectedDirectory', 'item'],
       ['selectedDirectoryPath', 'path'],
-      ['selectedDirectoryOffset', 'offset']
+      ['selectedDirectoryBaseAddress', 'baseAddress']
     ]
   }
-  handleLengthChange = (event) => {
+  constructor (props) {
+    super(props)
+    this.sizeInput = React.createRef()
+  }
+  componentWillReceiveProps (nextProps) {
+    if (nextProps.item && (!this.props.item || this.props.item.get('id') !== nextProps.item.get('id'))) {
+      this.updateAddressField(nextProps.item.get('address'))
+      this.updateOffsetField(nextProps.item.get('address') - nextProps.baseAddress)
+      this.updateSizeField(nextProps.item)
+    } else if (!nextProps.item && this.props.item) {
+      this.addressInput.current.value = ''
+      this.offsetInput.current.value = ''
+      this.sizeInput.current.value = ''
+    }
+  }
+  componentDidMount () {
+    if (this.props.item) {
+      this.updateAddressField(this.props.item.get('address'))
+      this.updateOffsetField(this.props.item.get('address') - this.props.baseAddress)
+      this.updateSizeField(this.props.item)
+    }
+  }
+  handleSizeChange = (event) => {
     this.setData('length', parseInt(event.target.value))
+  }
+  updateSizeField = (item) => {
+    if (item.get('id') !== 'root') {
+      this.sizeInput.current.value = '0x' + padStart(item.get('length').toString(16), 8, 0).toUpperCase()
+    } else {
+      this.sizeInput.current.value = ''
+    }
   }
   getExtraFields () {
     const { item } = this.props
@@ -22,10 +51,6 @@ class DirectorySettings extends ItemSettings {
     let readOnly = item && item.get('id') === 'root'
 
     let extraFields = []
-    let size = ''
-    if (item && item.get('id') !== 'root') {
-      size = '0x' + padStart(item.get('length').toString(16), 8, 0).toUpperCase()
-    }
 
     extraFields[0] = (
       <div>
@@ -34,10 +59,9 @@ class DirectorySettings extends ItemSettings {
     )
     extraFields[1] = (
       <div>
-        <input id={this.id + '_size'} type='text' disabled={disabled} readOnly={readOnly} pattern='0x[a-fA-F0-9]+' value={size} onChange={this.handleLengthChange} />
+        <input id={this.id + '_size'} type='text' disabled={disabled} readOnly={readOnly} onChange={this.handleSizeChange} ref={this.sizeInput} />
       </div>
     )
-
     return extraFields
   }
 }

@@ -84,8 +84,8 @@ class App extends React.Component {
     } else if (showAbout) {
       dialog = (<Dialog title={`About ${remote.app.getName()}`} onClose={this.closeAboutDialog}>
         Version: {remote.app.getVersion()}<br />
-        Website: cloudmodding.com<br />
-        Created by CloudMax 2015-2017.
+        Website: <a href='https://cloudmodding.com' target='_blank'>cloudmodding.com</a><br />
+        Created by CloudMax 2015-2018.
       </Dialog>)
     }
 

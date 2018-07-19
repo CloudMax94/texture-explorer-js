@@ -69,6 +69,15 @@ export function setTreeSize (column, size) {
   }
 }
 
+export function setSetting (key, value) {
+  return {
+    type: INTERFACE.SET_SETTING,
+    key,
+    value
+  }
+
+}
+
 export function resetPanels () {
   return {
     type: INTERFACE.RESET_PANELS

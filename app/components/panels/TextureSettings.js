@@ -12,7 +12,7 @@ class TextureSettings extends ItemSettings {
       'currentProfileId',
       ['selectedTexture', 'item'],
       ['selectedTexturePath', 'path'],
-      ['selectedTextureOffset', 'offset']
+      ['selectedTextureBaseAddress', 'baseAddress']
     ]
   }
   handleFormatChange = (event) => {

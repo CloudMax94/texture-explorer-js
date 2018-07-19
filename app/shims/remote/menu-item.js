@@ -53,6 +53,18 @@ class GlobalKeys {
   triggerBinding (event) {
     var binding = this.getBinding(event)
     if (binding) {
+      if (binding.shiftKey && !binding.cmdorctrlKey) {
+        // The binding uses shift, but not cmd or ctrl
+        // So we need to check if user is currently typing
+        let ele = document.activeElement
+        if (ele.tagName === 'TEXTAREA' || (ele.tagName === 'INPUT' && (ele.type === 'text' || ele.type === 'number)'))) {
+          // Make sure that the input isn't disabled or read-only
+          if (!ele.disabled && !ele.readOnly) {
+            // User is typing, do not trigger binding
+            return
+          }
+        }
+      }
       binding.callback(event)
     }
   }

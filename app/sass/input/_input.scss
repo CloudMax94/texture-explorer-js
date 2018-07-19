@@ -1,97 +1,251 @@
 @import 'button';
 @import 'spinner';
 
-input,
+input[type=text],
+input[type=number],
 select {
-    font-family: $font-monospace;
-    background: #373737;
-    border: 1px solid #2c2c2c;
-    box-shadow: 0 1px 1px rgba(255, 255, 255, .1);
-    color: #fff;
-    font-size: 12px;
+  font-family: $font-monospace;
+  background: #373737;
+  border: 1px solid #2c2c2c;
+  box-shadow: 0 1px 1px rgba(255, 255, 255, .1);
+  color: #fff;
+  font-size: 12px;
 
+  &:focus {
+    outline: 0;
+    background: #404040;
+  }
+
+  &[readonly] {
+    user-select: initial;
     &:focus {
-        outline: 0;
-        background: #404040;
+      background: #505050;
     }
+  }
 
-    &[readonly] {
-        user-select: initial;
-        &:focus {
-            background: #505050;
-        }
-    }
-
-    &:disabled,
-    &[readonly] {
-        background: #494949;
-        border-color: #3f3f3f;
-        box-shadow: 0 1px 1px rgba(255, 255, 255, .05);
-        cursor: default !important;
-    }
+  &:disabled,
+  &[readonly] {
+    background: #494949;
+    border-color: #3f3f3f;
+    box-shadow: 0 1px 1px rgba(255, 255, 255, .05);
+    cursor: default !important;
+  }
 }
 
-input {
-    &[type=text] {
-        padding: 0 4px;
-    }
+input[type=text] {
+  padding: 0 4px;
+}
 
-    &[type=number] {
-        padding: 0 0 0 4px;
-    }
+input[type=number] {
+  padding: 0 0 0 4px;
+}
 
-    &[type=text],
-    &[type=number] {
-        cursor: text;
-        padding: 0 0 0 4px;
-        height: 20px;
-    }
+input[type=text],
+input[type=number] {
+  cursor: text;
+  padding: 0 0 0 4px;
+  height: 20px;
 }
 
 select {
-    height: 20px;
+  height: 20px;
+  cursor: pointer;
+
+  option {
     cursor: pointer;
+  }
 
-    option {
-        cursor: pointer;
-    }
-
-    &[size] {
-        cursor: default;
-        height: auto;
-    }
+  &[size] {
+    cursor: default;
+    height: auto;
+  }
 }
 
 .input-columns {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 
-    > div:first-child {
-        margin-right: 8px;
-    }
+  > div:first-child {
+    margin-right: 8px;
+  }
 
-    > div:last-child {
-        flex: 1 1 auto;
-    }
+  > div:last-child {
+    flex: 1 1 auto;
+  }
 }
 
 .inputs {
-    label {
-        display: block;
-        font-size: 13px;
-        line-height: 20px;
-    }
+  label {
+    display: block;
+    font-size: 13px;
+    line-height: 20px;
+  }
 
-    input,
-    select,
-    button {
-        width: 100%;
-    }
+  input[type=text],
+  input[type=number],
+  select,
+  button {
+    width: 100%;
+  }
 
-    label,
-    input,
-    select,
-    button {
-        margin-top: 4px;
+  label,
+  input,
+  select,
+  button {
+    margin-top: 4px;
+  }
+}
+
+.checkbox-label {
+  cursor: pointer;
+}
+
+input[type=checkbox] {
+  z-index: 2;
+  position: relative;
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin: 0 8px 0 0;
+
+  background: #373737;
+  border: 1px solid #2c2c2c;
+  box-shadow: 0 1px 1px rgba(255, 255, 255, .1);
+  color: #fff;
+  font-size: 15px;
+  vertical-align: text-bottom;
+
+  cursor: pointer;
+
+  &:focus {
+    outline: 0;
+    background: #404040;
+  }
+
+  @extend .icon;
+  &:checked {
+    @extend .icon-checkmark;
+    &:before {
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      text-align: center;
     }
+  }
+}
+
+@mixin range-thumb {
+  background: #404040;
+  border: 1px solid #2c2c2c;
+  border-radius: 0;
+  box-shadow: none;
+  height: 20px;
+  width: 8px;
+  cursor: pointer;
+
+}
+
+@mixin range-thumb-focus {
+  background: #474747;
+}
+
+@mixin range-track {
+    width: 100%;
+    height: 8px;
+
+    background: #373737;
+    border: 1px solid #2c2c2c;
+    border-radius: 0;
+    box-shadow: 0 1px 1px rgba(255, 255, 255, .05);
+
+    cursor: pointer;
+}
+
+@mixin range-track-focus {
+  background: #404040;
+}
+
+input[type=range] {
+  //////////////////////////////
+  //RESET
+  //////////////////////////////
+  -webkit-appearance: none; // Hides the slider so that custom slider can be made
+  width: 100%; // Specific width is required for Firefox.
+  background: transparent; // Otherwise white in Chrome
+  margin: 0;
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+  }
+  &:focus {
+    outline: none; // Removes the blue border. You should probably do some kind of focus styling for accessibility reasons though.
+  }
+  &::-ms-track {
+    width: 100%;
+    cursor: pointer;
+    // Hides the slider so custom styles can be added
+    background: transparent;
+    border-color: transparent;
+    color: transparent;
+  }
+
+  //////////////////////////////
+  //THUMB
+  //////////////////////////////
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    @include range-thumb;
+    margin-top: ((8px - 20px) / 2 - 1px); // Need to specify a margin in Chrome
+  }
+  &::-moz-range-thumb {
+    @include range-thumb;
+  }
+  &:focus {
+    &::-webkit-slider-thumb {
+      @include range-thumb-focus;
+    }
+    &::-moz-range-thumb {
+      @include range-thumb-focus;
+    }
+  }
+  &::-ms-thumb {
+    @include range-thumb;
+  }
+
+  //////////////////////////////
+  //TRACK
+  //////////////////////////////
+
+  &::-webkit-slider-runnable-track {
+    @include range-track;
+  }
+  &::-moz-range-track {
+    @include range-track;
+  }
+  &::-ms-track {
+    @include range-track;
+  }
+  &::-ms-fill-lower,
+  &::-ms-fill-upper {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  &:focus {
+    &::-webkit-slider-runnable-track {
+      @include range-track-focus;
+    }
+    &::-moz-range-track {
+      @include range-track-focus;
+    }
+    &::-ms-track {
+      @include range-track-focus;
+    }
+  }
 }

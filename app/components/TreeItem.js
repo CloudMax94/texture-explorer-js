@@ -62,7 +62,7 @@ class TreeItem extends ImmutablePureComponent {
     menu.append(new MenuItem({
       label: 'Delete',
       click: () => {
-        this.props.deleteItem(item.get('id'))
+        this.props.addItemObject(item.get('id'))
       }
     }))
 
@@ -74,13 +74,23 @@ class TreeItem extends ImmutablePureComponent {
     const columns = [
       path
     ]
-    columns.push(...[
-      (offset < 0 ? '-' : '') + '0x' + padStart(Math.abs(offset).toString(16), 8, 0).toUpperCase(),
-      '0x' + padStart(item.get('address').toString(16), 8, 0).toUpperCase()
-    ])
+    // Offset
+    columns.push((offset < 0 ? '-' : '') + '0x' + padStart(Math.abs(offset).toString(16), 8, 0).toUpperCase())
+    // Offset End
+    let offsetEnd = ''
+    let size = 0
+    let format
     if (item.get('type') === 'texture') {
-      const format = getFormat(item.get('format'))
-      const size = item.get('width') * item.get('height') * format.sizeModifier()
+      format = getFormat(item.get('format'))
+      size = item.get('width') * item.get('height') * format.bits / 8
+    } else if (item.get('type') === 'directory') {
+      size = item.get('length')
+    }
+    offsetEnd = offset + size
+    columns.push((offsetEnd < 0 ? '-' : '') + '0x' + padStart(Math.abs(offsetEnd).toString(16), 8, 0).toUpperCase())
+    // Address
+    columns.push('0x' + padStart(item.get('address').toString(16), 8, 0).toUpperCase())
+    if (item.get('type') === 'texture') {
       columns.push(...[
         '0x' + padStart((item.get('address') + size).toString(16), 8, 0).toUpperCase(),
         '0x' + padStart(size.toString(16), 6, 0).toUpperCase(),
@@ -93,8 +103,8 @@ class TreeItem extends ImmutablePureComponent {
       }
     } else if (item.get('type') === 'directory') {
       columns.push(...[
-        '0x' + padStart((item.get('address') + item.get('length')).toString(16), 8, 0).toUpperCase(),
-        '0x' + padStart(item.get('length').toString(16), 6, 0).toUpperCase()
+        '0x' + padStart((item.get('address') + size).toString(16), 8, 0).toUpperCase(),
+        '0x' + padStart(size.toString(16), 6, 0).toUpperCase()
       ])
     }
     const classes = 'tree-item ' + (focused ? 'focused' : '')

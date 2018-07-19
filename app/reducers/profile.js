@@ -1,5 +1,6 @@
 import { fromJS } from 'immutable'
 import * as PROFILE from '../constants/profile'
+import { itemAddressCompare } from '../utils/helpers'
 
 export default function profile (state = fromJS({
   profiles: {}
@@ -31,11 +32,17 @@ export default function profile (state = fromJS({
     }
     case PROFILE.ADD_ITEM: {
       const { profileId, item } = action
-      return state.setIn(['profiles', profileId, 'items', item.get('id')], item)
+      return state.setIn(
+        ['profiles', profileId, 'items'],
+        state.getIn(['profiles', action.profileId, 'items']).set(item.get('id'), item).sort(itemAddressCompare)
+      )
     }
     case PROFILE.ADD_ITEMS: {
       const { profileId, items } = action
-      return state.mergeIn(['profiles', profileId, 'items'], items)
+      return state.setIn(
+        ['profiles', profileId, 'items'],
+        state.getIn(['profiles', action.profileId, 'items']).merge(items).sort(itemAddressCompare)
+      )
     }
     case PROFILE.DELETE_ITEMS: {
       const { profileId, itemIds } = action
@@ -44,7 +51,12 @@ export default function profile (state = fromJS({
       })
     }
     case PROFILE.SET_ITEM_DATA:
-      return state.setIn(['profiles', action.profileId, 'items', action.itemId, action.key], action.value)
+      let items = state.getIn(['profiles', action.profileId, 'items'])
+      items = items.setIn([action.itemId, action.key], action.value)
+      if (action.key === 'address') {
+        items = items.sort(itemAddressCompare)
+      }
+      return state.setIn(['profiles', action.profileId, 'items'], items)
     default:
       return state
   }

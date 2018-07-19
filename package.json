@@ -1,7 +1,7 @@
 {
   "name": "texture-explorer",
   "productName": "Texture Explorer.js",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "main": "app/main.js",
   "scripts": {
     "start-hot-desktop": "cross-env HOT=1 NODE_ENV=development electron -r babel-register -r babel-polyfill . debug",
@@ -23,10 +23,10 @@
     "immutable": "^4.0.0-rc.7",
     "lodash": "^4.17.4",
     "minimist": "^1.2.0",
-    "react": "^16.0.0",
+    "react": "^16.4",
     "react-dnd": "^2.5.4",
     "react-dnd-html5-backend": "^2.5.4",
-    "react-dom": "^16.0.0",
+    "react-dom": "^16.4",
     "react-redux": "^5.0.6",
     "react-virtual-list": "^2.2.1",
     "redux": "^3.7.2",

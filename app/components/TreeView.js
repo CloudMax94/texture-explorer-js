@@ -9,7 +9,7 @@ import TreeHeader from './TreeHeader'
 
 const ItemHeight = 20
 
-const columnNames = ['File', 'Offset', 'Start', 'End', 'Size', 'Format', 'Width', 'Height', 'Palette Address']
+const columnNames = ['File', 'Offset Start', 'Offset End', 'Address Start', 'Address End', 'Size', 'Format', 'Width', 'Height', 'Palette Address']
 
 const VirtualTreeView = ({
   virtual,
@@ -44,13 +44,14 @@ class TreeView extends ImmutablePureComponent {
       horizontalScroll: 0,
       focusedItem: null
     }
+    this.scrollContainer = React.createRef()
   }
   componentWillMount () {
     this.id = uniqueId('workspace_content_')
   }
   componentDidMount () {
     this.VirtualList = VirtualList({
-      container: this.scrollContainer
+      container: this.scrollContainer.current
     })(VirtualTreeView)
     this.setState({
       VirtualList: true
@@ -64,27 +65,35 @@ class TreeView extends ImmutablePureComponent {
     if (this.props.directoryId !== nextProps.directoryId) {
       this.setState({focusedItem: null})
     }
+    if (this.props.textureId !== nextProps.textureId) {
+      // If selected texture has changed, focus it
+      this.setState({focusedItem: nextProps.textureId})
+    }
   }
   componentWillUpdate (nextProps, nextState) {
+    const scrollContainer = this.scrollContainer.current
     if (this.props.directoryId !== nextProps.directoryId) {
       // We scroll to top when directory changes
-      this.scrollContainer.scrollTop = 0
+      scrollContainer.scrollTop = 0
     } else if (this.state.focusedItem !== nextState.focusedItem && nextState.focusedItem) {
       // When focused item changes, scroll the new one into view
       let index = nextProps.items.findIndex((item) => item.get('id') === nextState.focusedItem)
       if (index > -1) {
         let position = ItemHeight * index
-        let { scrollTop, clientHeight } = this.scrollContainer
+        let { scrollTop, clientHeight } = scrollContainer
         if (position < scrollTop) {
-          this.scrollContainer.scrollTop = position
+          scrollContainer.scrollTop = position
         } else if (position > scrollTop + clientHeight - ItemHeight) {
-          this.scrollContainer.scrollTop = position - clientHeight + ItemHeight
+          scrollContainer.scrollTop = position - clientHeight + ItemHeight
         }
       }
     }
   }
   focusItem = (item) => {
     this.setState({focusedItem: item.get('id')})
+    if (item.get('type') === 'texture' && !this.props.doubleClickSelect) {
+      this.selectItem(item)
+    }
   }
   selectItem = (item) => {
     if (item.get('type') === 'directory') {
@@ -99,7 +108,7 @@ class TreeView extends ImmutablePureComponent {
   handleKeyDown = (event) => {
     const { focusedItem } = this.state
     const { items } = this.props
-    if (items) {
+    if (items && items.size) {
       if (focusedItem) {
         const currentIndex = items.findIndex((item) => item.get('id') === focusedItem)
         if (currentIndex > -1) {
@@ -109,20 +118,20 @@ class TreeView extends ImmutablePureComponent {
               break
             case 38: // Up Arrow
               if (currentIndex > 0) {
-                this.setState({focusedItem: items.getIn([currentIndex - 1, 'id'])})
+                this.focusItem(items.get(currentIndex - 1))
               }
               break
             case 40: // Down Arrow
               if (currentIndex < items.size - 1) {
-                this.setState({focusedItem: items.getIn([currentIndex + 1, 'id'])})
+                this.focusItem(items.get(currentIndex + 1))
               }
               break
             case 46: // Delete
               if (items.size > 1) {
                 if (currentIndex < items.size - 1) {
-                  this.setState({focusedItem: items.getIn([currentIndex + 1, 'id'])})
+                  this.focusItem(items.get(currentIndex + 1))
                 } else {
-                  this.setState({focusedItem: items.getIn([items.size, 'id'])})
+                  this.focusItem(items.get(items.size - 2))
                 }
               } else {
                 this.setState({focusedItem: null})
@@ -138,22 +147,26 @@ class TreeView extends ImmutablePureComponent {
               return
           }
           event.preventDefault()
-        }
-      } else {
-        switch (event.keyCode) {
-          case 38: // Up Arrow
-          case 40: // Down Arrow
-            event.preventDefault()
-            this.setState({focusedItem: items.getIn([0, 'id'])})
-            break
+          return
         }
       }
+      switch (event.keyCode) {
+        case 38: // Up Arrow
+          this.focusItem(items.get(items.size - 1))
+          break
+        case 40: // Down Arrow
+          this.focusItem(items.get(0))
+          break
+        default:
+          return
+      }
+      event.preventDefault()
     }
   }
   handlePaste = (event) => {
     var clipboardData, pastedData
     // paste is attached to document, so we need to make sure that this element is focused
-    if (document.activeElement === this.scrollContainer) {
+    if (document.activeElement === this.scrollContainer.current) {
       clipboardData = event.clipboardData || window.clipboardData
       pastedData = clipboardData.getData('Text')
       try {
@@ -184,7 +197,7 @@ class TreeView extends ImmutablePureComponent {
           columns={columnNames}
           setTreeSize={this.props.setTreeSize}
         />
-        <div className='tree-content' tabIndex='0' onScroll={this.handleScroll} onKeyDown={this.handleKeyDown} ref={(scrollContainer) => { this.scrollContainer = scrollContainer }}>
+        <div className='tree-content' tabIndex='0' onScroll={this.handleScroll} onKeyDown={this.handleKeyDown} ref={this.scrollContainer}>
           {this.state.VirtualList ? <this.VirtualList
             width={width}
             items={this.props.items ? this.props.items.toArray() : []}

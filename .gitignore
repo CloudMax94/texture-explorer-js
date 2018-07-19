@@ -8,6 +8,7 @@ package-lock.json
 release
 dist
 profiles
+private
 .sass-cache/
 .sublime-gulp.cache
 *.sublime-project

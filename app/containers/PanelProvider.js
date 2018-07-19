@@ -10,12 +10,15 @@ import * as selectors from '../selectors'
 
 import ImmutablePureComponent from '../components/ImmutablePureComponent'
 
+import { Map } from 'immutable'
+
 import Finder from '../components/panels/Finder'
 import TextureViewer from '../components/panels/TextureViewer'
 import Overview from '../components/panels/Overview'
 import TextureSettings from '../components/panels/TextureSettings'
 import DirectorySettings from '../components/panels/DirectorySettings'
 import ProfileManager from '../components/panels/ProfileManager'
+import Settings from '../components/panels/Settings'
 
 const mapping = {
   'textureSettings': TextureSettings,
@@ -23,7 +26,8 @@ const mapping = {
   'itemPreview': TextureViewer,
   'overview': Overview,
   'profileManager': ProfileManager,
-  'finder': Finder
+  'finder': Finder,
+  'settings': Settings
 }
 
 function getPanelClass (panelId) {
@@ -37,13 +41,13 @@ class PanelProvider extends ImmutablePureComponent {
     if (!Panel) {
       return null
     }
-    return <Panel {...this.props.state} {...this.props.actions} />
+    return <Panel {...this.props.dependencies.toObject()} {...this.props.actions} />
   }
 }
 
 function mapStateToProps (state, ownProps) {
   const panelId = ownProps.panel
-  const dependencies = {}
+  let dependencies = Map()
   let Panel = getPanelClass(panelId)
   if (Panel) {
     let stateDeps = (Panel.dependencies || {}).state
@@ -56,14 +60,14 @@ function mapStateToProps (state, ownProps) {
         }
         let selectorName = 'get' + stateDep.charAt(0).toUpperCase() + stateDep.slice(1)
         if (selectorName in selectors) {
-          dependencies[propName] = selectors[selectorName](state)
+          dependencies = dependencies.set(propName, selectors[selectorName](state))
         } else {
           console.warn(`Panel "${panelId}" tried to load non-existent state dependency "${stateDep}"`)
         }
       }
     }
   }
-  return {state: dependencies}
+  return {dependencies}
 }
 
 const allActions = {

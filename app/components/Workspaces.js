@@ -13,7 +13,7 @@ import {
   addItemObject
 } from '../actions/profile'
 import { setTreeSize } from '../actions/interface'
-import { itemAddressCompare } from '../utils/helpers'
+import { itemAddressCompare, getItemPath } from '../utils/helpers'
 
 import ImmutablePureComponent from './ImmutablePureComponent'
 import TreeView from './TreeView'
@@ -62,12 +62,14 @@ class Workspace extends ImmutablePureComponent {
       items,
       currentWorkspace,
       selectedDirectory,
+      selectedTexture,
       setCurrentDirectory,
       setCurrentTexture,
       deleteItem,
       addItemObject,
       copyItemToClipboard,
-      setTreeSize
+      setTreeSize,
+      settings
     } = this.props
 
     const tabs = workspaces.toList().map((workspace, i) => {
@@ -89,7 +91,8 @@ class Workspace extends ImmutablePureComponent {
       let search = this.state.search.toLowerCase()
       if (search.length) {
         filteredItems = items.toList().filter(item => {
-          if (item.get('type') === 'texture' && item.get('name').toLowerCase().indexOf(search) > -1) {
+          let path = getItemPath(items, item.get('id'), 0)
+          if (path.toLowerCase().indexOf(search) > -1) {
             let parentId = item.get('parentId')
             while (parentId) {
               if (parentId === selectedDirectory) {
@@ -99,9 +102,9 @@ class Workspace extends ImmutablePureComponent {
             }
           }
           return false
-        }).sort(itemAddressCompare)
+        })
       } else {
-        filteredItems = items.toList().filter(item => item.get('parentId') === selectedDirectory).sort(itemAddressCompare)
+        filteredItems = items.toList().filter(item => item.get('parentId') === selectedDirectory)
       }
     }
     return (
@@ -115,12 +118,14 @@ class Workspace extends ImmutablePureComponent {
             profileId={profileId}
             items={filteredItems}
             directoryId={selectedDirectory}
+            textureId={selectedTexture}
             setCurrentDirectory={setCurrentDirectory}
             setCurrentTexture={setCurrentTexture}
             setTreeSize={setTreeSize}
             deleteItem={deleteItem}
             addItemObject={addItemObject}
             copyItemToClipboard={copyItemToClipboard}
+            doubleClickSelect={settings.get('doubleClickSelect') === true}
           />
         </div>
         <div className='search-bar'>
@@ -136,6 +141,7 @@ function mapStateToProps (state) {
   let workspace = state.workspace.getIn(['workspaces', currentWorkspace])
   let items
   let selectedDirectory
+  let selectedTexture
   let profileId
   if (workspace) {
     profileId = workspace.get('profile')
@@ -143,14 +149,17 @@ function mapStateToProps (state) {
     if (selectedDirectory) {
       items = state.profile.getIn(['profiles', workspace.get('profile'), 'items'])
     }
+    selectedTexture = workspace.get('selectedTexture')
   }
   return {
     sizes: state.ui.get('treeSizes'),
     workspaces: state.workspace.get('workspaces'),
     currentWorkspace,
     selectedDirectory,
+    selectedTexture,
     items,
-    profileId
+    profileId,
+    settings: state.ui.get('settings')
   }
 }
 

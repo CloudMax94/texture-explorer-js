@@ -29,7 +29,7 @@ class TreeHandle extends ImmutablePureComponent {
 
   handleMouseDown = (event) => {
     this.startPos = event.clientX
-    this.startSize = this.props.size
+    this.startSize = this.props.size || 0
 
     window.addEventListener('mousemove', this.handleMouseMove, false)
   }
@@ -46,11 +46,12 @@ class TreeHeader extends ImmutablePureComponent {
     return (
       <div className='tree-header' style={this.props.style}>
         {this.props.columns.map((col, i) => {
-          const style = {width: this.props.sizes.get(i) + 'px'}
+          const size = Math.max(50, this.props.sizes.get(i) || 0)
+          const style = {width: size + 'px'}
           return (
             <div key={i} className='tree-header-col' style={style}>
               {col}
-              <TreeHandle index={i} size={this.props.sizes.get(i)} setTreeSize={this.props.setTreeSize} />
+              <TreeHandle index={i} size={size} setTreeSize={this.props.setTreeSize} />
             </div>
           )
         })}

@@ -105,7 +105,7 @@ function initializeMenu (store) {
 
   const newDirectoryItem = new MenuItem({
     label: 'New &Directory',
-    accelerator: 'Shift+N',
+    accelerator: process.browser ? 'Shift+N' : 'CmdOrCtrl+N',
     enabled: false,
     click: () => {
       actions.createDirectory()
@@ -115,7 +115,7 @@ function initializeMenu (store) {
 
   const newTextureItem = new MenuItem({
     label: 'New &Texture',
-    accelerator: 'Shift+T',
+    accelerator: process.browser ? 'Shift+T' : 'CmdOrCtrl+T',
     enabled: false,
     click: () => {
       actions.createTexture()

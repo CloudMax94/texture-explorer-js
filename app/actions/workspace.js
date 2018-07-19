@@ -67,7 +67,7 @@ function itemHasValidData (item) {
 
 function getItemBuffer (item, workspace) {
   let start = item.get('address')
-  let end = start + item.get('width') * item.get('height') * getFormat(item.get('format')).sizeModifier()
+  let end = start + item.get('width') * item.get('height') * getFormat(item.get('format')).bits / 8
   return workspace.get('data').slice(start, end)
 }
 
@@ -266,7 +266,7 @@ export function insertData (data, start) {
       }
       const textureLength = item.get('width') *
                             item.get('height') *
-                            getFormat(item.get('format')).sizeModifier()
+                            getFormat(item.get('format')).bits / 8
       if (item.get('address') < start + data.length && start < item.get('address') + textureLength) {
         itemIds.push(item.get('id'))
       }

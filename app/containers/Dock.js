@@ -26,7 +26,8 @@ const panelNames = {
   'itemPreview': 'Texture Viewer',
   'overview': 'Directory Tree',
   'profileManager': 'Profile Manager',
-  'finder': 'Texture Finder'
+  'finder': 'Texture Finder',
+  'settings': 'Settings'
 }
 
 const NecessaryDockProps = [
