@@ -4,8 +4,16 @@
   box-sizing: border-box;
   -webkit-touch-callout: none;
   user-select: none;
-  cursor: default;
 }
+
+* {
+  cursor: default;
+  &:before,
+  &:after {
+    cursor: inherit;
+  }
+}
+
 html {
   text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;

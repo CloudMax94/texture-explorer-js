@@ -106,9 +106,9 @@ class Overview extends ImmutablePureComponent {
 
   handleKeyDown = (event) => {
     const { focusedItem } = this.state
-    const { profileId, deleteItem, copyItemToClipboard } = this.props
-    const items = List(this.getOrderedItems(this.props.groupedDirectories))
-    if (items && items.size) {
+    const { profileId, deleteItem, copyItemToClipboard, groupedDirectories } = this.props
+    if (groupedDirectories && groupedDirectories.size) {
+      const items = List(this.getOrderedItems(groupedDirectories))
       if (focusedItem) {
         const currentIndex = items.findIndex((item) => item.get('id') === focusedItem)
         if (currentIndex > -1) {

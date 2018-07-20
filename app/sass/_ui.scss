@@ -182,6 +182,18 @@
   display: none;
 }
 
+.welcome {
+  flex: 1 1 auto;
+  padding: 8px;
+}
+
+.welcome-title {
+  font-size: 20px;
+  border-bottom: 1px solid #6d6d6d;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+}
+
 .texture-viewer {
   flex: 1 1 auto;
   display: flex;

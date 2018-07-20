@@ -26,82 +26,92 @@ $menu-popup-separator-margin:   5px 0;
  */
 
 .menu {
-    display: block;
-    font-size: $menu-font-size;
-    line-height: $menu-item-height;
-    box-shadow: 5px 10px 15px 0 rgba(0, 0, 0, .25);
+  display: block;
+  font-size: $menu-font-size;
+  line-height: $menu-item-height;
+  box-shadow: 5px 10px 15px 0 rgba(0, 0, 0, .25);
 
-    .menu {
-        display: none;
-        position: absolute;
+  .menu {
+    display: none;
+    position: absolute;
+    .menu-access-key {
+      // Access keys are always shown for submenus
+      text-decoration: underline;
     }
+  }
 
-    &.menu-navigating .menu-access-key {
-        text-decoration: underline;
-    }
+  &.menu-holding .menu-access-key {
+    text-decoration: underline;
+  }
 }
 
 .menu-item {
-    color: $menu-color;
+  color: $menu-color;
+  cursor: pointer;
+  display: block;
+  padding: $menu-item-padding;
+  position: relative;
+  white-space: nowrap;
+
+  &.disabled {
+    color: darken($menu-color, 15%);
+    cursor: default;
+  }
+
+  &:not(.disabled).active-menu {
+    background: $menu-background-color-hover;
+    box-shadow: 0 0 0 rgba($menu-background-color-hover, .75);
+    color: $menu-color-hover;
+
+    > .menu {
+      display: block;
+    }
+  }
+
+  &.parent:after {
+    border-bottom: 4px solid transparent;
+    border-left: 6px solid $menu-color;
+    border-top: 4px solid transparent;
+    content: '';
     cursor: pointer;
-    display: block;
-    padding: $menu-item-padding;
-    position: relative;
-    white-space: nowrap;
+    height: 0;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translate(0, -50%);
+    width: 0;
+  }
 
-    &.disabled {
-        color: darken($menu-color, 15%);
-        cursor: default;
-    }
+  .menu {
+    left: 100%;
+    top: 0;
+  }
 
-    &:not(.disabled):hover,
-    &:not(.disabled).active-menu {
-        background: $menu-background-color-hover;
-        box-shadow: 0 0 0 rgba($menu-background-color-hover, .75);
-        color: $menu-color-hover;
+  display: flex;
+  flex: 1 0 100%;
+  justify-content: space-between;
 
-        > .menu {
-            display: block;
-        }
-    }
-
-    &.parent:after {
-        border-bottom: 4px solid transparent;
-        border-left: 6px solid $menu-color;
-        border-top: 4px solid transparent;
-        content: '';
-        cursor: pointer;
-        height: 0;
-        position: absolute;
-        right: 8px;
-        top: 50%;
-        transform: translate(0, -50%);
-        width: 0;
-    }
-
-    .menu {
-        left: 100%;
-        top: 0;
-    }
-
-    display: flex;
-    flex: 1 0 100%;
-    justify-content: space-between;
-
-    &[data-accelerator]:after {
-        color: darken($menu-color, 15%);
-        cursor: inherit;
-        content: attr(data-accelerator);
-        margin-left: 8px;
-        flex: 0 0 auto;
-    }
+  &[data-accelerator]:after {
+    color: darken($menu-color, 15%);
+    content: attr(data-accelerator);
+    margin-left: 8px;
+    flex: 0 0 auto;
+  }
 
 }
 
+.menu-item-label {
+  cursor: inherit;
+}
+
+.menu-access-key {
+  cursor: inherit;
+}
+
 .menu-separator {
-    border-top: $menu-separator-style;
-    display: block;
-    margin: $menu-separator-margin;
+  border-top: $menu-separator-style;
+  display: block;
+  margin: $menu-separator-margin;
 }
 
 /**
@@ -109,48 +119,54 @@ $menu-popup-separator-margin:   5px 0;
  */
 
 .application-menu {
-    display: block;
-    margin-bottom: 1px;
-    background: $menu-bar-background-color;
-    position: relative;
-    z-index: 1000;
-    flex-shrink: 0;
+  display: block;
+  margin-bottom: 1px;
+  background: $menu-bar-background-color;
+  position: relative;
+  z-index: 10000;
+  flex-shrink: 0;
 
-    .menu-item {
-        text-shadow: $menu-text-shadow;
+  .menu-item {
+    text-shadow: $menu-text-shadow;
 
-        .menu {
-            background: $menu-background-color;
-            border: 1px solid $menu-border-color;
-            min-width: $menu-item-min-width;
-        }
+    .menu {
+      background: $menu-background-color;
+      border: 1px solid $menu-border-color;
+      min-width: $menu-item-min-width;
     }
+  }
 
-    > .menu {
-        box-shadow: 0;
+  > .menu {
+    box-shadow: 0;
 
-        > .menu-item {
-            float: left;
+    > .menu-item {
+      float: left;
 
-            &:hover,
-            &.active-menu {
-                $color: rgba(0, 0, 0, .5);
-                box-shadow: inset  0 1px 0 $color,
-                            inset  1px 0 0 $color,
-                            inset -1px 0 0 $color;
-            }
+      &.active-menu {
+        $color: rgba(0, 0, 0, .5);
+        box-shadow: inset  0 1px 0 $color,
+                    inset  1px 0 0 $color,
+                    inset -1px 0 0 $color;
+      }
 
-            &.parent:after {
-                display: none;
-            }
+      &.parent:after {
+        display: none;
+      }
 
-            > .menu {
-                left: 0;
-                top: 100%;
-            }
-        }
-
+      > .menu {
+        left: 0;
+        top: 100%;
+      }
     }
+  }
+}
+
+.menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /**
@@ -158,35 +174,45 @@ $menu-popup-separator-margin:   5px 0;
  */
 
 .context-menu-backdrop {
-    z-index: 10000;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  z-index: 10000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .context-menu {
-    z-index: 10000;
-    display: block;
-    position: absolute;
-    background: $menu-background-color;
-    border: 1px solid $menu-border-color;
-    min-width: $menu-item-min-width;
-    padding: $menu-popup-padding 0;
-    font-size: 13px;
+  z-index: 10000;
+  display: block;
+  position: absolute;
+  background: $menu-background-color;
+  border: 1px solid $menu-border-color;
+  min-width: $menu-item-min-width;
+  padding: $menu-popup-padding 0;
+  font-size: 13px;
 
-    .menu-separator {
-        border-top: $menu-popup-separator-style;
-        margin: $menu-popup-separator-margin;
+  .menu-separator {
+    border-top: $menu-popup-separator-style;
+    margin: $menu-popup-separator-margin;
+  }
+
+  .menu-item {
+    color: $menu-color;
+    padding: 4px 8px;
+
+    &.parent:after {
+      border-left-color: $menu-popup-color;
     }
 
-    .menu-item {
-        color: $menu-color;
-        padding: 4px 8px;
+    &:not(.disabled):hover {
+      background: $menu-background-color-hover;
+      box-shadow: 0 0 0 rgba($menu-background-color-hover, .75);
+      color: $menu-color-hover;
 
-        &.parent:after {
-            border-left-color: $menu-popup-color;
-        }
+      > .menu {
+        display: block;
+      }
     }
+  }
 }

@@ -1,133 +1,22 @@
 import React from 'react'
 import { acceleratorToText } from '../utils/accelerator'
 
-class Menu extends React.Component {
-  constructor (props) {
-    super(props)
-    this.state = {
-      navigating: false,
-      activeMenu: null
-    }
+class MenuItem extends React.Component {
+  handleClick = (event) => {
+    this.props.onClick(this.props.item)
+    event.preventDefault()
+    event.stopPropagation()
   }
 
-  componentDidMount () {
-    /*
-    document.addEventListener('keydown', this.handleNavigation)
-
-    document.addEventListener('keydown', this.checkForAltKey)
-    document.addEventListener('keyup', this.checkForAltKey)
-    document.addEventListener('mousedown', this.checkForAltKey)
-    */
+  handleMouseEnter = () => {
+    this.props.onHover(this.props.item)
   }
 
-  componentWillUnmount () {
-    /*
-    document.removeEventListener('keydown', this.handleNavigation)
-
-    document.removeEventListener('keydown', this.checkForAltKey)
-    document.removeEventListener('keyup', this.checkForAltKey)
-    document.removeEventListener('mousedown', this.checkForAltKey)
-    */
-  }
-
-  checkForAltKey = (event) => {
-    if (this.props.primary) {
-      if (!event.altKey && this.state.navigating && !this.state.activeMenu) {
-        // If alt key no longer pressed, cancel navigation!
-        this.setState({
-          navigating: false
-        })
-      }
-    }
-  }
-
-  handleNavigation = (event) => {
-    if (this.props.primary) {
-      if (!this.state.navigating && event.which === 18) {
-        event.preventDefault()
-        this.setState({navigating: true})
-      } else if (this.state.navigating || this.state.activeMenu) {
-        event.preventDefault()
-
-        if (event.which === 27) { // Escape
-          this.setState({
-            navigating: false,
-            activeMenu: null,
-            activeItem: null
-          })
-        } else if (event.which === 38) { // Up Arrow
-          let index = (this.state.activeItem || 0) - 1
-          if (index < 0) {
-            index = this.state.activeMenu.items.length - 1
-          }
-          this.setState({
-            activeItem: index
-          })
-        } else if (event.which === 40) { // Down Arrow
-
-        } else if (event.which === 37) { // Left Arrow
-          let newMenu = this.state.activeMenu
-          this.props.menu.items.some((item, i) => {
-            if (item.submenu === this.state.activeMenu) {
-              let index = i - 1
-              if (index === -1) {
-                index = this.props.menu.items.length - 1
-              }
-              newMenu = this.props.menu.items[index].submenu
-              return true
-            }
-          })
-          this.setState({
-            activeMenu: newMenu,
-            activeItem: null
-          })
-        } else if (event.which === 39) { // Right Arrow
-          let newMenu = this.state.activeMenu
-          this.props.menu.items.some((item, i) => {
-            if (item.submenu === this.state.activeMenu) {
-              let index = i + 1
-              if (index === this.props.menu.items.length) {
-                index = 0
-              }
-              newMenu = this.props.menu.items[index].submenu
-              return true
-            }
-          })
-          this.setState({
-            activeMenu: newMenu,
-            activeItem: null
-          })
-        } else {
-          let items = this.props.menu.items
-          if (this.state.activeMenu) {
-            items = this.state.activeMenu.items
-          }
-          this.props.menu.items.some((item) => {
-            let label = item.label.replace(/&&/g, '&')
-            let index = label.indexOf('&')
-            if (index >= 0) {
-              let accessKey = label.substr(index + 1, 1).charCodeAt(0)
-              if (event.which === accessKey) {
-                this.setState({activeMenu: item.submenu})
-                return true
-              }
-            }
-          })
-        }
-      }
-    }
-  }
-
-  handleClick (item) {
-    if (item.enabled && item.click) {
-      item.click()
-    }
-  }
-
-  renderItem (item, key) {
+  render () {
+    const {item, active, onClose} = this.props
     if (item.type === 'separator') {
       return (
-        <div key={key} className='menu-separator' />
+        <div className='menu-separator' onMouseEnter={this.handleMouseEnter} />
       )
     }
 
@@ -141,20 +30,18 @@ class Menu extends React.Component {
     if (item.submenu) {
       classes.push('parent')
       subMenu = (
-        <Menu menu={item.submenu} />
+        <Menu menu={item.submenu} active={active} onClose={onClose} />
       )
     }
 
-    if (this.state.activeMenu === item.submenu) {
+    if (active) {
       classes.push('active-menu')
     }
 
-    let accessKey
     let label = item.label.replace(/&&/g, '&')
     let index = label.indexOf('&')
     if (index >= 0) {
       let character = label.substr(index + 1, 1)
-      accessKey = character.charCodeAt(0)
       label = [
         label.substr(0, index),
         <span key='access-key' className='menu-access-key'>{character}</span>,
@@ -163,38 +50,257 @@ class Menu extends React.Component {
     }
 
     return (
-      <div key={key}
+      <div
         className={classes.join(' ')}
         data-accelerator={acceleratorToText(item.accelerator)}
-        onClick={this.handleClick.bind(this, item)}
+        onClick={this.handleClick} onMouseEnter={this.handleMouseEnter}
       >
-        <span>{label}</span>
+        <span className='menu-item-label'>{label}</span>
         {subMenu}
       </div>
     )
   }
+}
+
+class Menu extends React.Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      holding: false,
+      activeItem: null
+    }
+  }
+
+  componentDidMount () {
+    document.addEventListener('keydown', this.handleNavigation)
+    document.addEventListener('keydown', this.checkForAltKey)
+    document.addEventListener('keyup', this.checkForAltKey)
+    document.addEventListener('mousedown', this.checkForAltKey)
+  }
+
+  componentWillReceiveProps (nextProps) {
+    if (!nextProps.primary && !nextProps.active && this.props.active) {
+      // Not a primary menu, and it is being deactivated, reset active item
+      this.setState({activeItem: null})
+    }
+  }
+
+  componentWillUnmount () {
+    document.removeEventListener('keydown', this.handleNavigation)
+    document.removeEventListener('keydown', this.checkForAltKey)
+    document.removeEventListener('keyup', this.checkForAltKey)
+    document.removeEventListener('mousedown', this.checkForAltKey)
+  }
+
+  checkForAltKey = (event) => {
+    if (this.props.primary) {
+      if (!event.altKey && this.state.holding) {
+        // If alt key no longer pressed
+        this.setState({
+          holding: false
+        })
+      }
+    }
+  }
+
+  navigateBack = () => {
+    let index = this.state.activeItem
+    if (index === null) {
+      index = 0
+    }
+    let startIndex = index
+    while (true) {
+      index--
+      if (index === -1) {
+        index = this.props.menu.items.length - 1
+      }
+      if (index === startIndex) {
+        if (this.state.activeItem === null) {
+          break
+        }
+        return
+      }
+      let item = this.props.menu.items[index]
+      if (item.enabled === false) {
+        continue
+      }
+      if (item.type !== 'separator') {
+        break
+      }
+    }
+    this.setState({
+      activeItem: index
+    })
+  }
+
+  navigateForward = () => {
+    let index = this.state.activeItem
+    if (index === null) {
+      index = this.props.menu.items.length - 1
+    }
+    let startIndex = index
+    while (true) {
+      index++
+      if (index === this.props.menu.items.length) {
+        index = 0
+      }
+      if (index === startIndex) {
+        if (this.state.activeItem === null) {
+          break
+        }
+        return
+      }
+      let item = this.props.menu.items[index]
+      if (item.enabled === false) {
+        continue
+      }
+      if (item.type !== 'separator') {
+        break
+      }
+    }
+    this.setState({
+      activeItem: index
+    })
+  }
+
+  handleNavigation = (event) => {
+    if (this.props.primary) {
+      if (!this.state.holding && event.which === 18) {
+        this.setState({holding: true})
+        event.preventDefault()
+      } else if (this.state.activeItem !== null) {
+        switch (event.which) {
+          case 27: // Escape
+            this.setState({
+              activeItem: null
+            })
+            event.preventDefault()
+            break
+          case 37: // Left Arrow
+            this.navigateBack()
+            event.preventDefault()
+            break
+          case 39: // Right Arrow
+            this.navigateForward()
+            event.preventDefault()
+            break
+        }
+      }
+    } else {
+      // Not primary menu
+      if (!this.props.active) {
+        return
+      }
+      switch (event.which) {
+        case 13: // Enter
+          if (this.state.activeItem !== null) {
+            this.handleClick(this.props.menu.items[this.state.activeItem])
+          }
+          event.preventDefault()
+          break
+        case 38: // Up Arrow
+          this.navigateBack()
+          event.preventDefault()
+          break
+        case 40: // Down Arrow
+          this.navigateForward()
+          event.preventDefault()
+          break
+      }
+    }
+    if (this.state.holding || !this.props.primary) {
+      // Primary menu can navigate with access keys only when holding
+      this.props.menu.items.some((item, i) => {
+        if (item.type === 'separator') {
+          return
+        }
+        let label = item.label.replace(/&&/g, '&')
+        let index = label.indexOf('&')
+        if (index >= 0) {
+          let accessKey = label.substr(index + 1, 1).charCodeAt(0)
+          if (event.which === accessKey) {
+            this.handleClick(item)
+            event.preventDefault()
+            event.stopPropagation()
+            event.stopImmediatePropagation()
+          }
+        }
+      })
+    }
+  }
+
+  handleClick = (item) => {
+    if (this.props.primary) {
+      let index = this.props.menu.items.indexOf(item)
+      this.setState({
+        activeItem: index
+      })
+    } else if (item.enabled && item.click) {
+      if (this.props.onClose) {
+        this.props.onClose()
+      }
+      item.click()
+    }
+  }
+
+  handleHover = (item) => {
+    if (!this.props.primary || this.state.activeItem !== null) {
+      if (item.type === 'separator' || item.enabled === false) {
+        this.setState({
+          activeItem: null
+        })
+      } else {
+        let index = this.props.menu.items.indexOf(item)
+        if (this.state.activeItem !== index) {
+          this.setState({
+            activeItem: index
+          })
+        }
+      }
+    }
+  }
+
+  handleMouseLeave = () => {
+    if (!this.props.primary) {
+      this.setState({
+        activeItem: null
+      })
+    }
+  }
+
+  handleClose = () => {
+    if (this.props.onClose) {
+      this.props.onClose()
+    }
+    if (this.props.primary) {
+      this.setState({
+        activeItem: null
+      })
+    }
+  }
 
   render () {
-    if (!this.props.menu) {
+    const {menu} = this.props
+    const {holding, activeItem} = this.state
+
+    if (!menu) {
       return null
     }
-    const menuItems = this.props.menu.items.map((item, i) => {
-      return this.renderItem(item, i)
-    })
 
-    const classes = [
-      'menu'
-    ]
+    const classes = ['menu']
 
-    if (this.state.navigating) {
-      classes.push('menu-navigating')
+    if (holding) {
+      classes.push('menu-holding')
     }
 
-    return (
-      <div className={classes.join(' ')}>
-        {menuItems}
+    return [
+      this.props.primary && this.state.activeItem !== null ? <div key='backdrop' className='menu-backdrop' onClick={this.handleClose} /> : null,
+      <div key='menu' className={classes.join(' ')} onMouseLeave={this.handleMouseLeave}>
+        {menu.items.map((item, i) => (
+          <MenuItem key={i} item={item} active={activeItem === i} onClick={this.handleClick} onHover={this.handleHover} onClose={this.handleClose} />
+        ))}
       </div>
-    )
+    ]
   }
 }
 

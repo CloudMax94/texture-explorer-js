@@ -141,7 +141,32 @@ export function createWorkspace (input) {
     const data = input.data
     const filePath = input.path
     const name = input.name
-    const key = data.toString('utf8', 0x3B, 0x3F) + data.readUInt8(0x3F)
+    let key
+    let isN64ROM = false
+    if (data.length >= 0x40) {
+      switch (data.readUInt32BE(0)) {
+        case 0x80371240:
+          isN64ROM = true
+          break
+        case 0x37804012: {
+          data.swap16()
+          isN64ROM = true
+          break
+        }
+        case 0x40123780: {
+          data.swap32()
+          isN64ROM = true
+          break
+        }
+      }
+    }
+
+    if (isN64ROM) {
+      key = data.toString('utf8', 0x3B, 0x3F) + data.readUInt8(0x3F)
+    } else {
+      key = name
+    }
+
     let id = (idCounter++).toString(36)
 
     dispatch(prepareProfiles(key))

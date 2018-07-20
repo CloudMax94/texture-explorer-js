@@ -13,7 +13,8 @@ import {
   addItemObject
 } from '../actions/profile'
 import { setTreeSize } from '../actions/interface'
-import { itemAddressCompare, getItemPath } from '../utils/helpers'
+import { getItemPath } from '../utils/helpers'
+import { remote } from 'electron'
 
 import ImmutablePureComponent from './ImmutablePureComponent'
 import TreeView from './TreeView'
@@ -87,7 +88,7 @@ class Workspace extends ImmutablePureComponent {
       )
     })
     let filteredItems = null
-    if (items) {
+    if (items && selectedDirectory) {
       let search = this.state.search.toLowerCase()
       if (search.length) {
         filteredItems = items.toList().filter(item => {
@@ -107,12 +108,10 @@ class Workspace extends ImmutablePureComponent {
         filteredItems = items.toList().filter(item => item.get('parentId') === selectedDirectory)
       }
     }
-    return (
-      <div className='workspace'>
-        <div className='workspace-tabs'>
-          {tabs}
-        </div>
-        <div className='workspace-content'>
+    let content = []
+    if (selectedDirectory) {
+      content.push(
+        <div key='tree' className='workspace-content'>
           <TreeView
             sizes={sizes}
             profileId={profileId}
@@ -127,10 +126,36 @@ class Workspace extends ImmutablePureComponent {
             copyItemToClipboard={copyItemToClipboard}
             doubleClickSelect={settings.get('doubleClickSelect') === true}
           />
-        </div>
-        <div className='search-bar'>
+        </div>,
+        <div key='search' className='search-bar'>
           <input ref={(searchbar) => { this.searchbar = searchbar }} type='text' disabled={!selectedDirectory} placeholder='Search...' onChange={this.handleSearch} />
         </div>
+      )
+    } else {
+      content.push(
+        <div key='welcome' className='workspace-content'>
+          <div className='welcome'>
+            <div className='welcome-title'>Welcome to Texture Explorer.js {remote.app.getVersion()}</div>
+            <div>Profiles are not included with the program, they can be downloaded <a href='https://github.com/CloudMax94/texture-explorer-profiles' target='_blank'>here</a>.</div>
+            <div>After opening a file, you can import profiles with the Profile Manager.</div>
+            <br />
+            <div>You can download textures by dragging them from the Texture Viewer.</div>
+            <div>You can import textures by dropping them on the Texture Viewer.<br />Make sure that the height and width matches when importing a texture.</div>
+            <div>To import textures with palettes, you must use Indexed PNGs.</div>
+            <div>Note that ci4 and ci8 doesn't support ia16 palettes at the moment.</div>
+            <br />
+            <div>N64 ROMs are byte-swapped to big-endian when loaded, and stay as big-endian when saved.</div>
+            <div>They also use the ID and Version from the ROM header as File Key, instead of filename.</div>
+          </div>
+        </div>
+      )
+    }
+    return (
+      <div className='workspace'>
+        <div className='workspace-tabs'>
+          {tabs}
+        </div>
+        {content}
       </div>
     )
   }
