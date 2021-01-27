@@ -36,12 +36,12 @@ function getPanelClass (panelId) {
 
 class PanelProvider extends ImmutablePureComponent {
   render () {
-    let panelId = this.props.panel
+    const {panel: panelId, layoutDirection} = this.props
     let Panel = getPanelClass(panelId)
     if (!Panel) {
       return null
     }
-    return <Panel {...this.props.dependencies.toObject()} {...this.props.actions} />
+    return <Panel {...this.props.dependencies.toObject()} {...this.props.actions} layoutDirection={layoutDirection} />
   }
 }
 

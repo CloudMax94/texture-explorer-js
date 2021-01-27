@@ -1,58 +1,94 @@
-@mixin hex-spinner {
-    color: #fff;
-    cursor: pointer;
-    text-align: center;
-    width: 14px;
+@mixin spinner {
+  width: 16px;
 
-    &:before,
-    &:after {
-        border-left: 3px solid transparent;
-        border-right: 3px solid transparent;
-        content: '';
-        cursor:pointer;
-        display: block;
-        height: 0;
-        left: 50%;
-        position: absolute;
-        transform: translateX(-50%);
-    }
+  div {
+    position: absolute;
+    right: 0;
+    width: 100%;
+    height: 50%;
+    cursor: pointer;
 
     &:before {
+      border: solid transparent;
+      border-width: 0 3px;
+      content: '';
+      display: block;
+      height: 0;
+      left: 50%;
+      margin-left: -1px;
+      position: absolute;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    &:first-child {
+      top: 0;
+      &:before {
+        top: 4px;
         border-bottom: 4px solid #666;
-        pointer-events: none;
-        top: 2px;
+      }
+      &:hover:before {
+        border-bottom-color: #eee;
+      }
     }
 
-    &:after {
+    &:last-child {
+      bottom: 0;
+      &:before {
+        bottom: 4px;
         border-top: 4px solid #666;
-        bottom: 2px;
-        pointer-events: none;
+      }
+      &:hover:before {
+        border-top-color: #eee;
+      }
     }
+  }
 }
 
-.hex-wrap {
-    position: relative;
+.input-spinner-wrap {
+  position: relative;
 
-    .hex-input {
-        padding-right: 14px;
-        &.hidden + .hex-spinner {
-            display: none;
-        }
+  input {
+    padding-right: 16px;
+    &.hidden + .input-spinner {
+      display: none;
     }
+    &[disabled] + .input-spinner,
+    &[readOnly] + .input-spinner {
+      display: none !important;
+    }
+    &:focus + .input-spinner,
+    &:hover + .input-spinner {
+      display: block;
+    }
+  }
 
-    .hex-spinner {
-        @include hex-spinner;
-        bottom: 1px;
-        position: absolute;
-        right: 1px;
-        top: 1px;
+  .input-spinner {
+    @include spinner;
+    display: none;
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    top: 0px;
+    &:hover {
+      display: block;
     }
+  }
+  .inputs & {
+    margin-top: 4px;
+    input {
+      margin-top: 0;
+    }
+  }
 }
 
-input[type=number]::-webkit-inner-spin-button {
-    @include hex-spinner;
+// Hide number spinner buttons
+input[type=number] {
+  -moz-appearance: textfield;
+  &::-webkit-inner-spin-button {
     -webkit-appearance: none;
     display: block;
     margin-right: 0;
     position: relative;
+  }
 }

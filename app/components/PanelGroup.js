@@ -62,9 +62,23 @@ const groupTarget = {
 }
 
 class PanelTab extends React.Component {
+  handleClick = (event) => {
+    this.props.onClick(this.props.panelId)
+  }
+
+  handleContextMenu = (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    this.props.onContextMenu(this.props.panelId, [event.clientX, event.clientY])
+  }
+
   render () {
-    const { className, onClick, onContextMenu, children, connectDragSource } = this.props
-    return connectDragSource(<div className={className} onClick={onClick} onContextMenu={onContextMenu}>{children}</div>)
+    const { className, children, connectDragSource, overflown } = this.props
+    let style = null
+    if (overflown) {
+      style = {visibility: 'hidden'}
+    }
+    return connectDragSource(<div className={className} style={style} onClick={this.handleClick} onContextMenu={this.handleContextMenu}>{children}</div>)
   }
 }
 
@@ -76,10 +90,44 @@ const DraggablePanelTab = DragSource(tabType, tabSource, (connect, monitor) => (
 class PanelGroup extends ImmutablePureComponent {
   constructor (props) {
     super(props)
-    this.state = {dropAfter: false}
+    this.state = {
+      dropAfter: false,
+      overflow: 0
+    }
   }
 
-  setCurrentPanel (panelId) {
+  componentDidMount () {
+    if (window.ResizeObserver) {
+      this.observer = new ResizeObserver(entries => {
+        let entry = entries[0]
+        let header = entry.target
+        let end = 0
+        let overflow = 0
+        for (let tab of header.children) {
+          let tabRect = tab.getBoundingClientRect()
+          end += tabRect.width
+          if (end > entry.contentRect.width) {
+            break
+          }
+          overflow++
+        }
+        if (this.state.overflow !== overflow) {
+          this.setState({overflow})
+        }
+      })
+      this.observer.observe(findDOMNode(this).querySelector('.panel-tabs'))
+    } else {
+      this.setState({overflow: Infinity})
+    }
+  }
+
+  componentWillUnmount () {
+    if (this.observer) {
+      this.observer.disconnect()
+    }
+  }
+
+  setCurrentPanel = (panelId) => {
     this.props.setCurrentPanel(this.props.panelGroupId, panelId)
   }
 
@@ -119,10 +167,8 @@ class PanelGroup extends ImmutablePureComponent {
     menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY)
   }
 
-  handleTabContext (panelId, event) {
+  handleTabContext = (panelId, position) => {
     const { movePanelToDock } = this.props
-    event.preventDefault()
-    event.stopPropagation()
     const menu = new Menu()
 
     menu.append(new MenuItem({
@@ -153,7 +199,7 @@ class PanelGroup extends ImmutablePureComponent {
       }
     }))
 
-    menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY)
+    menu.popup(remote.getCurrentWindow(), ...position)
   }
 
   handleDragDirection = (event) => {
@@ -167,38 +213,82 @@ class PanelGroup extends ImmutablePureComponent {
     this.setState({dropAfter: pos >= 0.5})
   }
 
+  renderTab = (label, panelId) => {
+    const {panelGroupId, currentPanel, layoutDirection} = this.props
+    let classes = 'panel-tab'
+    if (currentPanel === panelId) {
+      classes += ' selected'
+    }
+    let index = this.props.panels.keySeq().indexOf(panelId)
+    return <DraggablePanelTab
+      key={panelId}
+      panelId={panelId}
+      panelGroupId={panelGroupId}
+      className={classes}
+      layoutDirection={layoutDirection}
+      onClick={this.setCurrentPanel}
+      onContextMenu={this.handleTabContext}
+      overflown={index >= this.state.overflow}
+    >{label}</DraggablePanelTab>
+  }
+
+  renderOverflownTab = (label, panelId) => {
+    const {panelGroupId, currentPanel, layoutDirection} = this.props
+    let classes = 'panel-tab-overflown'
+    if (currentPanel === panelId) {
+      classes += ' selected'
+    }
+    return <DraggablePanelTab
+      key={panelId}
+      panelId={panelId}
+      panelGroupId={panelGroupId}
+      className={classes}
+      layoutDirection={layoutDirection}
+      onClick={this.setCurrentPanel}
+      onContextMenu={this.handleTabContext}
+    >{label}</DraggablePanelTab>
+  }
+
+  renderOverflow = () => {
+    const {panels, currentPanel} = this.props
+    let classes = 'panel-tab-overflow'
+    let overflownPanels = panels.slice(this.state.overflow)
+    if (overflownPanels.keySeq().find(key => key === currentPanel)) {
+      classes += ' selected'
+    }
+    return (
+      <div className={classes}>
+        ⋮
+        <div className='panel-tab-menu'>
+          {overflownPanels.map(this.renderOverflownTab).toList()}
+        </div>
+      </div>
+    )
+  }
+
   render () {
     const {
       panels,
-      panelGroupId,
       layoutDirection,
-      currentPanel,
       connectDropTargetPanel,
       connectDropTargetHeader,
       isOverHeader,
       isOverPanel
     } = this.props
     const panel = this.props.children
+    const tabsStyle = {}
+    if (this.state.overflow === Infinity) {
+      tabsStyle.whiteSpace = 'nowrap'
+    }
     return connectDropTargetPanel(
       <div className='panel' onDragOver={this.handleDragDirection} onDragEnter={this.handleDragDirection}>
         {connectDropTargetHeader(
           <div className='panel-header' onContextMenu={this.handleGroupContext}>
-            {panels.map((panelName, panelId) => {
-              let classes = 'panel-tab'
-              if (currentPanel === panelId) {
-                classes += ' selected'
-              }
-              return <DraggablePanelTab
-                key={panelId}
-                panelId={panelId}
-                panelGroupId={panelGroupId}
-                className={classes}
-                layoutDirection={layoutDirection}
-                onClick={this.setCurrentPanel.bind(this, panelId)}
-                onContextMenu={this.handleTabContext.bind(this, panelId)}
-              >{panelName}</DraggablePanelTab>
-            }).toList()}
+            <div className='panel-tabs' style={tabsStyle}>
+              {panels.map(this.renderTab).toList()}
+            </div>
             {isOverHeader ? <div className='panel-tab-drop' /> : null}
+            {this.state.overflow < panels.size ? this.renderOverflow() : null}
           </div>
         )}
         <div className='panel-content'>

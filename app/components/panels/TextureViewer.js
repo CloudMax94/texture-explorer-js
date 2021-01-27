@@ -69,18 +69,22 @@ class TextureViewer extends ImmutablePureComponent {
   }
 
   render () {
-    const { blob, connectDropTarget } = this.props
-
+    const { texture, blob, connectDropTarget } = this.props
+    const { zoom } = this.state
     if (!blob || !blob.get('blob')) {
       return null
+    }
+    let style = {
+      height: texture.get('height') * zoom + 'px',
+      width: texture.get('width') * zoom + 'px'
     }
     return connectDropTarget(
       <div className={'texture-viewer texture-viewer-mode-' + this.state.mode}>
         <div className='texture-viewer-head'>
-          Zoom: <input type='range' min='1' max='10' step='0.2' value={this.state.zoom} onChange={this.handleZoomChange} />
+          Zoom: <input type='range' min='1' max='10' step='0.2' value={zoom} onChange={this.handleZoomChange} />
         </div>
         <div className='texture-viewer-content'>
-          <img src={blob.get('blob')} style={{zoom: this.state.zoom}} onWheel={this.handleWheel} onClick={this.handleClick} />
+          <img src={blob.get('blob')} style={style} onWheel={this.handleWheel} onClick={this.handleClick} />
         </div>
       </div>
     )
@@ -92,9 +96,9 @@ const fileTarget = {
     if (monitor.didDrop()) {
       return
     }
-
-    if (event.dataTransfer.files.length) {
-      openFile(event.dataTransfer.files[0], async ({data}) => {
+    const files = monitor.getItem().files
+    if (files && files.length) {
+      openFile(files[0], async ({data}) => {
         const pngBuffer = Buffer.from(data)
         let [pixelData] = await pngToPixelData(pngBuffer)
         const buffer = pixelDataToRaw(pixelData, texture.get('format'))

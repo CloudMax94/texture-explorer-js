@@ -1,5 +1,4 @@
 @import 'button';
-@import 'spinner';
 
 input[type=text],
 input[type=number],
@@ -17,6 +16,7 @@ select {
   }
 
   &[readonly] {
+    -moz-user-select: initial;
     user-select: initial;
     &:focus {
       background: #505050;
@@ -85,6 +85,7 @@ select {
   input[type=number],
   select,
   button {
+    display: block;
     width: 100%;
   }
 
@@ -93,6 +94,16 @@ select {
   select,
   button {
     margin-top: 4px;
+  }
+  hr {
+    margin: 14px 0 13px;
+    height: 1px;
+    border: 0;
+    background: rgba(255, 255, 255, .1);
+  }
+
+  .panel-item > & {
+    width: 100%;
   }
 }
 
@@ -104,6 +115,7 @@ input[type=checkbox] {
   z-index: 2;
   position: relative;
   appearance: none;
+  -moz-appearance: none;
   -webkit-appearance: none;
   flex: 0 0 16px;
   width: 16px;
@@ -249,3 +261,5 @@ input[type=range] {
     }
   }
 }
+
+@import 'spinner';

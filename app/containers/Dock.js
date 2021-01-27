@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
-import { is } from 'immutable'
+import { is, List, OrderedMap } from 'immutable'
 
 import {
   setDockSize,
@@ -42,30 +42,32 @@ class Dock extends React.Component {
   handleResize = (size) => {
     this.props.setDockSize(this.props.index, size)
   }
+  renderPanelGroup = (panelGroup) => {
+    const { index, layoutDirection } = this.props
+    let currentPanel = panelGroup.get('currentPanel')
+    return <PanelGroup
+      key={panelGroup.get('id')}
+      panelGroupId={panelGroup.get('id')}
+      dockId={index}
+      panels={panelGroup.get('panels')}
+      currentPanel={currentPanel}
+      setCurrentPanel={this.props.setCurrentPanel}
+      movePanelToDock={this.props.movePanelToDock}
+      movePanelToPanelGroup={this.props.movePanelToPanelGroup}
+      movePanelNextToPanelGroup={this.props.movePanelNextToPanelGroup}
+      movePanelGroupToDock={this.props.movePanelGroupToDock}
+    >
+      <PanelProvider panel={currentPanel} layoutDirection={layoutDirection === 'vertical' ? 'horizontal' : 'vertical'} />
+    </PanelGroup>
+  }
   render () {
-    const { panelGroups, size, index } = this.props
-    const content = panelGroups.map((panelGroup) => {
-      let panelId = panelGroup.get('currentPanel')
-      return <PanelGroup
-        key={panelGroup.get('id')}
-        panelGroupId={panelGroup.get('id')}
-        dockId={index}
-        panels={panelGroup.get('panels').map((panel, panelId) => panelNames[panelId])}
-        currentPanel={panelId}
-        setCurrentPanel={this.props.setCurrentPanel}
-        movePanelToDock={this.props.movePanelToDock}
-        movePanelToPanelGroup={this.props.movePanelToPanelGroup}
-        movePanelNextToPanelGroup={this.props.movePanelNextToPanelGroup}
-        movePanelGroupToDock={this.props.movePanelGroupToDock}
-      >
-        <PanelProvider panel={panelId} />
-      </PanelGroup>
-    }).toList()
+    const { panelGroups, size, index, layoutDirection } = this.props
+    const content = panelGroups.map(this.renderPanelGroup).toList()
     if (!content.size) {
       return null
     }
     let Wrap
-    if (this.props.layoutDirection === 'vertical') {
+    if (layoutDirection === 'vertical') {
       Wrap = Columns
     } else {
       Wrap = Rows
@@ -77,7 +79,7 @@ class Dock extends React.Component {
     let handle = <Handle
       key='handle'
       size={size}
-      layoutDirection={this.props.layoutDirection}
+      layoutDirection={layoutDirection}
       onResize={this.handleResize}
       reverse={!after}
     />
@@ -91,13 +93,20 @@ class Dock extends React.Component {
 }
 
 function mapStateToProps (state, ownProps) {
-  let panelGroups = state.ui.get('panelGroups').filter((panelGroup) =>
-    panelGroup.get('dock') === ownProps.index
-  ).map((panelGroup) =>
-    panelGroup.set('panels', state.ui.get('panels').filter((panel) =>
-      panel.get('panelGroup') === panelGroup.get('id')
-    ))
-  )
+  let panelGroups = List()
+  for (let panelGroup of state.ui.get('panelGroups').values()) {
+    if (panelGroup.get('dock') !== ownProps.index) {
+      continue
+    }
+    let groupId = panelGroup.get('id')
+    let panels = OrderedMap()
+    for (let [id, panel] of state.ui.get('panels').entries()) {
+      if (panel.get('panelGroup') === groupId) {
+        panels = panels.set(id, panelNames[id])
+      }
+    }
+    panelGroups = panelGroups.push(panelGroup.set('panels', panels))
+  }
   return {
     size: state.ui.getIn(['docks', ownProps.index, 'size']),
     panelGroups

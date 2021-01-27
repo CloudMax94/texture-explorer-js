@@ -19,20 +19,22 @@ const VirtualTreeView = ({
   focusedItem,
   deleteItem
 }) => {
+  const items = []
+  for (let item of virtual.items.values()) {
+    items.push(
+      <TreeItem
+        key={item.get('id')}
+        item={item}
+        focused={item.get('id') === focusedItem}
+        handleFocus={handleFocus}
+        handleDoubleClick={handleDoubleClick}
+        deleteItem={deleteItem}
+      />
+    )
+  }
   return (
     <div style={{...virtual.style, minWidth: width + 'px', minHeight: '100%'}}>
-      {virtual.items.map(item => {
-        return (
-          <TreeItem
-            key={item.get('id')}
-            item={item}
-            focused={item.get('id') === focusedItem}
-            handleFocus={handleFocus}
-            handleDoubleClick={handleDoubleClick}
-            deleteItem={deleteItem}
-          />
-        )
-      })}
+      {items}
     </div>
   )
 }
@@ -184,10 +186,11 @@ class TreeView extends ImmutablePureComponent {
   }
   render () {
     let style = ''
-    this.props.sizes.forEach((item, i) => {
-      style += `#${this.id} .tree-col:nth-child(${i + 1}) {width: ${item}px}`
-    })
-    let width = this.props.sizes.reduce((a, b) => a + b, 0)
+    let width = 0
+    for (let [i, w] of this.props.sizes.entries()) {
+      style += `#${this.id} .tree-col:nth-child(${i + 1}) {width: ${w}px}`
+      width += w
+    }
     return (
       <div className='tree-view' id={this.id}>
         <style>{style}</style>

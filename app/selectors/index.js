@@ -39,6 +39,16 @@ export const getCurrentWorkspaceKey = createSelector(
   }
 )
 
+export const getCurrentWorkspaceSize = createSelector(
+  getCurrentWorkspace,
+  (currentWorkspace) => {
+    if (currentWorkspace !== null) {
+      return currentWorkspace.get('data').length
+    }
+    return null
+  }
+)
+
 export const getProfileList = createSelector(
   getCurrentWorkspace,
   getProfiles,
@@ -202,11 +212,15 @@ export const getSelectedDirectoryPath = createSelector(
   }
 )
 
+function isDirectory (x) {
+  return x.get('type') === 'directory'
+}
+
 export const getDirectories = createSelector(
   getItems,
   (items) => {
     if (items !== null) {
-      return items.filter(x => x.get('type') === 'directory')
+      return items.filter(isDirectory)
     }
     return null
   }
@@ -220,13 +234,13 @@ export const getSuccessorCount = createSelector(
     let count = Map()
     if (items !== null) {
       let mapping = {}
-      items.forEach((i) => {
+      for (let i of items.values()) {
         let parent = i.get('parentId')
         if (!mapping[parent]) {
           mapping[parent] = []
         }
         mapping[parent].push(i.get('id'))
-      })
+      }
       let traverse = function (itemId = 'root') {
         let deepc = 0
         let deept = 0
@@ -261,11 +275,15 @@ export const getSuccessorCount = createSelector(
   }
 )
 
+function parentId (x) {
+  return x.parentId
+}
+
 export const getGroupedDirectories = createSelector(
   getDirectories,
   (directories) => {
     if (directories !== null) {
-      return directories.groupBy(x => x.parentId)
+      return directories.groupBy(parentId)
     }
     return null
   }

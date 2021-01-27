@@ -279,9 +279,13 @@ class Menu extends React.Component {
     }
   }
 
+  renderItem = (item, i) => (
+    <MenuItem key={i} item={item} active={this.state.activeItem === i} onClick={this.handleClick} onHover={this.handleHover} onClose={this.handleClose} />
+  )
+
   render () {
     const {menu} = this.props
-    const {holding, activeItem} = this.state
+    const {holding} = this.state
 
     if (!menu) {
       return null
@@ -296,9 +300,7 @@ class Menu extends React.Component {
     return [
       this.props.primary && this.state.activeItem !== null ? <div key='backdrop' className='menu-backdrop' onClick={this.handleClose} /> : null,
       <div key='menu' className={classes.join(' ')} onMouseLeave={this.handleMouseLeave}>
-        {menu.items.map((item, i) => (
-          <MenuItem key={i} item={item} active={activeItem === i} onClick={this.handleClick} onHover={this.handleHover} onClose={this.handleClose} />
-        ))}
+        {menu.items.map(this.renderItem)}
       </div>
     ]
   }

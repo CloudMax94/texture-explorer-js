@@ -62,15 +62,34 @@ class TreeItem extends ImmutablePureComponent {
     menu.append(new MenuItem({
       label: 'Delete',
       click: () => {
-        this.props.addItemObject(item.get('id'))
+        this.props.deleteItem(item.get('id'))
       }
     }))
 
     menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY)
   }
 
+  renderColumn = (data, i) => {
+    const {item, blob} = this.props
+    let icon = null
+    if (i === 0) {
+      if (item.get('type') === 'directory') {
+        icon = <i className='tree-icon icon'>file_directory</i>
+      } else if (item.get('type') === 'texture') {
+        if (blob) {
+          icon = <i className='tree-icon' style={{backgroundImage: 'url(' + blob + ')'}}>&nbsp;</i>
+        } else {
+          icon = <i className='tree-icon icon'>file_media</i>
+        }
+      }
+    }
+    return (
+      <div key={i} className='tree-col' onClick={this.handleClick} onDoubleClick={this.handleDoubleClick}>{icon}{data}</div>
+    )
+  }
+
   render () {
-    const { item, offset, focused, path, blob } = this.props
+    const { item, offset, focused, path } = this.props
     const columns = [
       path
     ]
@@ -91,42 +110,26 @@ class TreeItem extends ImmutablePureComponent {
     // Address
     columns.push('0x' + padStart(item.get('address').toString(16), 8, 0).toUpperCase())
     if (item.get('type') === 'texture') {
-      columns.push(...[
+      columns.push(
         '0x' + padStart((item.get('address') + size).toString(16), 8, 0).toUpperCase(),
         '0x' + padStart(size.toString(16), 6, 0).toUpperCase(),
         item.get('format'),
         item.get('width'),
         item.get('height')
-      ])
+      )
       if (format.hasPalette()) {
         columns.push('0x' + padStart(item.get('palette').toString(16), 8, 0).toUpperCase())
       }
     } else if (item.get('type') === 'directory') {
-      columns.push(...[
+      columns.push(
         '0x' + padStart((item.get('address') + size).toString(16), 8, 0).toUpperCase(),
         '0x' + padStart(size.toString(16), 6, 0).toUpperCase()
-      ])
+      )
     }
     const classes = 'tree-item ' + (focused ? 'focused' : '')
     return (
-      <div className={classes} ref={(ele) => { this.ele = ele }} onContextMenu={this.handleContext}>
-        {columns.map((data, i) => {
-          let icon = null
-          if (i === 0) {
-            if (item.get('type') === 'directory') {
-              icon = <i className='tree-icon icon'>file_directory</i>
-            } else if (item.get('type') === 'texture') {
-              if (blob) {
-                icon = <i className='tree-icon' style={{backgroundImage: 'url(' + blob + ')'}}>&nbsp;</i>
-              } else {
-                icon = <i className='tree-icon icon'>file_media</i>
-              }
-            }
-          }
-          return (
-            <div key={i} className='tree-col' onClick={this.handleClick} onDoubleClick={this.handleDoubleClick}>{icon}{data}</div>
-          )
-        })}
+      <div className={classes} onContextMenu={this.handleContext}>
+        {columns.map(this.renderColumn)}
       </div>
     )
   }

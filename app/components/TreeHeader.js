@@ -42,19 +42,20 @@ class TreeHandle extends ImmutablePureComponent {
 }
 
 class TreeHeader extends ImmutablePureComponent {
+  renderColumn = (col, i) => {
+    const size = Math.max(50, this.props.sizes.get(i) || 0)
+    const style = {width: size + 'px'}
+    return (
+      <div key={i} className='tree-header-col' style={style}>
+        {col}
+        <TreeHandle index={i} size={size} setTreeSize={this.props.setTreeSize} />
+      </div>
+    )
+  }
   render () {
     return (
       <div className='tree-header' style={this.props.style}>
-        {this.props.columns.map((col, i) => {
-          const size = Math.max(50, this.props.sizes.get(i) || 0)
-          const style = {width: size + 'px'}
-          return (
-            <div key={i} className='tree-header-col' style={style}>
-              {col}
-              <TreeHandle index={i} size={size} setTreeSize={this.props.setTreeSize} />
-            </div>
-          )
-        })}
+        {this.props.columns.map(this.renderColumn)}
       </div>
     )
   }

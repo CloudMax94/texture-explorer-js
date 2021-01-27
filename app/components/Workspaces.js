@@ -19,12 +19,37 @@ import { remote } from 'electron'
 import ImmutablePureComponent from './ImmutablePureComponent'
 import TreeView from './TreeView'
 
+class WorkspaceTab extends ImmutablePureComponent {
+  handleClick = (event) => {
+    this.props.onClick(this.props.workspaceId)
+  }
+  handleCloseClick = (event) => {
+    event.stopPropagation()
+    this.props.onClose(this.props.workspaceId)
+  }
+  render () {
+    const classes = [
+      'workspace-tab'
+    ]
+    if (this.props.selected) {
+      classes.push('selected')
+    }
+    return (
+      <div className={classes.join(' ')} onClick={this.handleClick}>
+        <span className='btnText'>{this.props.children}</span>
+        <span className='closeBtn' onClick={this.handleCloseClick}>x</span>
+      </div>
+    )
+  }
+}
+
 class Workspace extends ImmutablePureComponent {
   constructor (props) {
     super(props)
     this.state = {
       'search': ''
     }
+    this.searchbar = React.createRef()
   }
 
   componentDidMount () {
@@ -38,22 +63,31 @@ class Workspace extends ImmutablePureComponent {
   handleSearchHotkey = (event) => {
     if ((event.metaKey || event.ctrlKey) && event.which === 70) {
       event.preventDefault()
-      this.searchbar.focus()
+      this.searchbar.current.focus()
     }
   }
 
-  handleTabClick (workspace) {
-    this.props.setCurrentWorkspace(workspace)
+  handleTabClick = (workspaceId) => {
+    this.props.setCurrentWorkspace(workspaceId)
   }
 
-  handleCloseClick (workspaceId, event) {
-    event.stopPropagation()
+  handleCloseClick = (workspaceId) => {
     this.props.deleteWorkspace(workspaceId)
   }
 
   handleSearch = (event) => {
     this.setState({search: event.target.value})
   }
+
+  filterChildren = (item) => {
+    return item.get('parentId') === this.props.selectedDirectory
+  }
+
+  mapTabs = (workspace, i) => (
+    <WorkspaceTab key={i} selected={workspace.get('id') === this.props.currentWorkspace} workspaceId={workspace.get('id')} onClick={this.handleTabClick} onClose={this.handleCloseClick}>
+      {workspace.get('name')}
+    </WorkspaceTab>
+  )
 
   render () {
     const {
@@ -73,27 +107,47 @@ class Workspace extends ImmutablePureComponent {
       settings
     } = this.props
 
-    const tabs = workspaces.toList().map((workspace, i) => {
-      const classes = [
-        'workspace-tab'
-      ]
-      if (workspace.get('id') === currentWorkspace) {
-        classes.push('selected')
-      }
-      return (
-        <div key={i} className={classes.join(' ')} onClick={this.handleTabClick.bind(this, workspace)}>
-          <span className='btnText'>{workspace.get('name')}</span>
-          <span className='closeBtn' onClick={this.handleCloseClick.bind(this, workspace.get('id'))}>x</span>
-        </div>
-      )
-    })
+    const tabs = workspaces.toList().map(this.mapTabs)
     let filteredItems = null
     if (items && selectedDirectory) {
       let search = this.state.search.toLowerCase()
       if (search.length) {
+        let parts = search.split(' ')
+        let formats = []
+        let types = []
+        let filteredSearch = []
+        for (let i = 0; i < parts.length; i++) {
+          let part = parts[i]
+          let filterPos = part.indexOf('=')
+          if (filterPos > 0) {
+            let filter = part.slice(0, filterPos)
+            let value = part.slice(filterPos + 1)
+            if (filter === 'format') {
+              formats.push(...value.split(','))
+            } else if (filter === 'type') {
+              types.push(...value.split(','))
+            } else {
+              filteredSearch.push(part)
+            }
+          } else {
+            filteredSearch.push(part)
+          }
+        }
+        filteredSearch = filteredSearch.join(' ')
         filteredItems = items.toList().filter(item => {
-          let path = getItemPath(items, item.get('id'), 0)
-          if (path.toLowerCase().indexOf(search) > -1) {
+          if (formats.length && !formats.includes(item.get('format'))) {
+            return false
+          }
+          if (types.length && !types.includes(item.get('type'))) {
+            return false
+          }
+          let searchString
+          if (settings.get('includePathInSearch') === true) {
+            searchString = getItemPath(items, item.get('id'), 0)
+          } else {
+            searchString = item.get('name')
+          }
+          if (searchString.toLowerCase().indexOf(filteredSearch) > -1) {
             let parentId = item.get('parentId')
             while (parentId) {
               if (parentId === selectedDirectory) {
@@ -105,7 +159,7 @@ class Workspace extends ImmutablePureComponent {
           return false
         })
       } else {
-        filteredItems = items.toList().filter(item => item.get('parentId') === selectedDirectory)
+        filteredItems = items.toList().filter(this.filterChildren)
       }
     }
     let content = []
@@ -128,7 +182,7 @@ class Workspace extends ImmutablePureComponent {
           />
         </div>,
         <div key='search' className='search-bar'>
-          <input ref={(searchbar) => { this.searchbar = searchbar }} type='text' disabled={!selectedDirectory} placeholder='Search...' onChange={this.handleSearch} />
+          <input ref={this.searchbar} type='text' disabled={!selectedDirectory} placeholder='Search...' onChange={this.handleSearch} />
         </div>
       )
     } else {

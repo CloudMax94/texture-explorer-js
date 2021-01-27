@@ -56,13 +56,15 @@ function getInsertId (panelGroups) {
   }
   return getInsertId
 }
+const defaultSettings = Map({
+  doubleClickSelect: false,
+  includePathInSearch: false
+})
 
 export default function ui (state = fromJS({
   treeSizes: [300, 115, 115, 115, 115, 95, 85, 60, 60, 130],
   treeVisibility: [true, true, true, true, true, true, true, true, true, true],
-  settings: {
-    doubleClickSelect: false
-  },
+  settings: defaultSettings,
   menu: null,
   showAbout: false,
   prompt: null
@@ -71,12 +73,18 @@ export default function ui (state = fromJS({
     case REHYDRATE:
       if (action.payload && action.payload.ui) {
         state = state.merge(action.payload.ui)
+        // Add missing settings
+        for (let [key, value] of defaultSettings.entries()) {
+          if (!state.hasIn(['settings', key])) {
+            state.setIn(['settings', key], value)
+          }
+        }
         // Check for missing panels, and if there are any,
         // add them all as a new panel group on dock 3
         let panels = defaultDocks.get('panels').keySeq().toJS()
         let missingPanels = []
         for (let panelId of panels) {
-          if (!state.getIn(['panels', panelId])) {
+          if (!state.hasIn(['panels', panelId])) {
             missingPanels.push(panelId)
           }
         }

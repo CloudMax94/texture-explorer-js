@@ -129,10 +129,10 @@ export function setCurrentTexture (item) {
   }
 }
 
-export function setCurrentWorkspace (workspace) {
+export function setCurrentWorkspace (workspaceId) {
   return {
     type: WORKSPACE.SET_CURRENT_WORKSPACE,
-    workspace
+    workspaceId
   }
 }
 
@@ -197,7 +197,7 @@ export function createWorkspace (input) {
 
     dispatch({
       type: WORKSPACE.SET_CURRENT_WORKSPACE,
-      workspace: workspace
+      workspaceId: id
     })
   }
 }

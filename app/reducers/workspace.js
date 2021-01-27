@@ -12,7 +12,7 @@ export default function workspace (state = fromJS({
     case WORKSPACE.SET_CURRENT_TEXTURE:
       return state.setIn(['workspaces', state.get('currentWorkspace'), 'selectedTexture'], action.item.get('id'))
     case WORKSPACE.SET_CURRENT_WORKSPACE:
-      return state.set('currentWorkspace', action.workspace.id)
+      return state.set('currentWorkspace', action.workspaceId)
     case WORKSPACE.INSERT_DATA:
       let { data, start } = action
       return state.updateIn(['workspaces', state.get('currentWorkspace')], (workspace) => {

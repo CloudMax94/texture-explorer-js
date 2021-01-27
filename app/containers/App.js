@@ -22,6 +22,10 @@ import Dialog from '../components/Dialog'
 const argv = remote.getGlobal('argv')
 
 class App extends React.Component {
+  constructor (props) {
+    super(props)
+    this.promptInput = React.createRef()
+  }
   componentDidMount () {
     each(argv._, (filePath) => {
       if (filePath !== '.') {
@@ -68,7 +72,7 @@ class App extends React.Component {
           if (callback) {
             button = button.set('callback', () => {
               closePrompt()
-              callback(this.promptInput.value)
+              callback(this.promptInput.current.value)
             })
           } else {
             button = button.set('callback', onClose)
@@ -78,14 +82,14 @@ class App extends React.Component {
       }
       dialog = <Dialog title={settings.get('title')} buttons={buttons} onClose={onClose}>
         <div className='inputs'>
-          <input ref={(input) => { this.promptInput = input }} type={settings.get('type')} defaultValue={settings.get('value')} />
+          <input ref={this.promptInput} type={settings.get('type')} defaultValue={settings.get('value')} />
         </div>
       </Dialog>
     } else if (showAbout) {
       dialog = (<Dialog title={`About ${remote.app.getName()}`} onClose={this.closeAboutDialog}>
         Version: {remote.app.getVersion()}<br />
         Website: <a href='https://cloudmodding.com' target='_blank'>cloudmodding.com</a><br />
-        Created by CloudMax 2015-2018.
+        Created by CloudMax 2015-2021.
       </Dialog>)
     }
 
@@ -130,10 +134,9 @@ const fileTarget = {
     if (monitor.didDrop()) {
       return
     }
-    if (event.dataTransfer.files.length) {
-      event.preventDefault()
-      event.stopPropagation()
-      openFile(event.dataTransfer.files[0], (data) => {
+    const files = monitor.getItem().files
+    if (files && files.length) {
+      openFile(files[0], (data) => {
         props.createWorkspace(data)
       })
     }

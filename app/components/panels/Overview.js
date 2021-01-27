@@ -104,17 +104,19 @@ class Overview extends ImmutablePureComponent {
     return items
   }
 
+  isFocusedItem = (item) => item.get('id') === this.state.focusedItem
+
   handleKeyDown = (event) => {
     const { focusedItem } = this.state
     const { profileId, deleteItem, copyItemToClipboard, groupedDirectories } = this.props
     if (groupedDirectories && groupedDirectories.size) {
       const items = List(this.getOrderedItems(groupedDirectories))
       if (focusedItem) {
-        const currentIndex = items.findIndex((item) => item.get('id') === focusedItem)
+        const currentIndex = items.findIndex(this.isFocusedItem)
         if (currentIndex > -1) {
           switch (event.keyCode) {
             case 13: // Enter
-              this.selectItem(items.find((item) => item.get('id') === focusedItem))
+              this.selectItem(items.find(this.isFocusedItem))
               break
             case 38: // Up Arrow
               if (currentIndex > 0) {
@@ -184,28 +186,34 @@ class Overview extends ImmutablePureComponent {
     this.focusItem(item)
   }
 
-  render () {
-    const { groupedDirectories, successorCount } = this.props
-    const items = []
-    const traverseDirectories = (id, depth = 0) => {
-      const children = groupedDirectories.get(id)
-      if (!children) {
-        return
-      }
-      children.toList().map((directory) => {
-        let classes = 'tree-item'
-        if (directory.get('id') === this.props.selectedDirectoryId) {
-          classes += ' selected'
-        }
-        if (directory.get('id') === this.state.focusedItem) {
-          classes += ' focused'
-        }
-        items.push(<OverviewItem key={directory.get('id')} className={classes} directory={directory} depth={depth} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick} count={successorCount.getIn([directory.get('id'), 'childTextures']) || 0} />)
-        traverseDirectories(directory.get('id'), depth + 1)
-      })
+  traverseDirectories = (id, depth = 0) => {
+    const children = this.props.groupedDirectories.get(id)
+    if (!children) {
+      return
     }
+    let items = []
+    for (let directory of children.values()) {
+      let classes = 'tree-item'
+      if (directory.get('id') === this.props.selectedDirectoryId) {
+        classes += ' selected'
+      }
+      if (directory.get('id') === this.state.focusedItem) {
+        classes += ' focused'
+      }
+      items.push(<OverviewItem key={directory.get('id')} className={classes} directory={directory} depth={depth} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick} count={this.props.successorCount.getIn([directory.get('id'), 'childTextures']) || 0} />)
+      let children = this.traverseDirectories(directory.get('id'), depth + 1)
+      if (children) {
+        items.push(...children)
+      }
+    }
+    return items
+  }
+
+  render () {
+    const { groupedDirectories } = this.props
+    let items = []
     if (groupedDirectories) {
-      traverseDirectories(null)
+      items = items.concat(this.traverseDirectories(null))
     }
     return (
       <div className='directory-tree'>

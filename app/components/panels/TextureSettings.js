@@ -4,6 +4,7 @@ import { padStart } from 'lodash'
 import { getFormats, getFormat } from '@cloudmodding/texture-manipulator'
 
 import ItemSettings from './ItemSettings'
+import HexSpinner from '../HexSpinner'
 
 class TextureSettings extends ItemSettings {
   static dependencies = {
@@ -24,11 +25,17 @@ class TextureSettings extends ItemSettings {
   handleWidthChange = (event) => {
     this.setData('width', parseInt(event.target.value))
   }
-  handlePaletteChange = (event) => {
-    this.setData('palette', parseInt(event.target.value))
+  handlePaletteChange = (value) => {
+    this.setData('palette', value)
   }
+  handlePaletteOffsetChange = (value) => {
+    this.setData('palette', value + this.props.baseAddress)
+  }
+  renderFormat = (format) => (
+    <option key={format.id} value={format.name}>{format.name}</option>
+  )
   getExtraFields () {
-    const { item } = this.props
+    const { item, baseAddress } = this.props
 
     let disabled = !item
 
@@ -36,7 +43,6 @@ class TextureSettings extends ItemSettings {
     let formatName = ''
     let width = ''
     let height = ''
-    let palette = ''
     let extraFields = []
 
     if (item) {
@@ -45,32 +51,45 @@ class TextureSettings extends ItemSettings {
       formatName = format.name
       width = item.get('width')
       height = item.get('height')
-      palette = '0x' + padStart(item.get('palette').toString(16), 8, 0).toUpperCase()
     }
 
-    extraFields[0] = (
-      <div>
-        <label htmlFor={this.id + '_format'}>Format: </label>
-        <label htmlFor={this.id + '_width'}>Width: </label>
-        <label htmlFor={this.id + '_height'}>Height: </label>
-        {hasPalette ? <label htmlFor={this.id + '_palette'}>Palette: </label> : null}
-      </div>
+    extraFields[0] = [
+      <label key='format' htmlFor={this.id + '_format'}>Format: </label>,
+      <label key='width' htmlFor={this.id + '_width'}>Width: </label>,
+      <label key='height' htmlFor={this.id + '_height'}>Height: </label>
+    ]
+
+    let formatInput = (
+      <select key='format' id={this.id + '_format'} disabled={disabled} value={formatName} onChange={this.handleFormatChange}>
+        {!disabled ? getFormats().map(this.renderFormat) : null}
+      </select>
     )
 
-    let formatInput = (<select id={this.id + '_format'} disabled={disabled} value={formatName} onChange={this.handleFormatChange}>
-      {!disabled ? getFormats().map((format) => {
-        return <option key={format.id} value={format.name}>{format.name}</option>
-      }) : null}
-    </select>)
+    extraFields[1] = [
+      formatInput,
+      <input key='width' id={this.id + '_width'} type='number' disabled={disabled} value={width} onChange={this.handleWidthChange} />,
+      <input key='height' id={this.id + '_height'} type='number' disabled={disabled} value={height} onChange={this.handleHeightChange} />
+    ]
 
-    extraFields[1] = (
-      <div>
-        {formatInput}
-        <input id={this.id + '_width'} type='number' disabled={disabled} value={width} onChange={this.handleWidthChange} />
-        <input id={this.id + '_height'} type='number' disabled={disabled} value={height} onChange={this.handleHeightChange} />
-        {hasPalette ? <input id={this.id + '_palette'} type='text' pattern='0x[a-fA-F0-9]+' value={palette} onChange={this.handlePaletteChange} /> : null}
-      </div>
-    )
+    if (hasPalette) {
+      let palette = item.get('palette')
+      let paletteOffset = item.get('palette') - baseAddress
+
+      extraFields[0].push(<label key='palette'>Palette</label>)
+      extraFields[1].push(<label key='palette' className='input'><hr /></label>)
+
+      extraFields[0].push(<label key='palette_address' htmlFor={this.id + '_palette'}>Address: </label>)
+      extraFields[1].push(<HexSpinner key='palette_address' id={this.id + '_palette'} value={palette} onChange={this.handlePaletteChange} />)
+
+      extraFields[0].push(<label key='palette_offset' htmlFor={this.id + '_palette_offset'}>Offset: </label>)
+      extraFields[1].push(<HexSpinner key='palette_offset' id={this.id + '_palette_offset'} value={paletteOffset} onChange={this.handlePaletteOffsetChange} />)
+
+      extraFields[0].push(<label key='palette_format' htmlFor={this.id + '_palette_format'}>Format: </label>)
+      extraFields[1].push(<select key='palette_format' id={this.id + '_palette_format'} disabled value='rgb5a1'>
+        <option value='ia16'>ia16</option>
+        <option value='rgb5a1'>rgb5a1</option>
+      </select>)
+    }
 
     return extraFields
   }
