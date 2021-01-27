@@ -25,38 +25,6 @@ const WorkspaceRecord = Record({
   selectedTexture: null
 })
 
-function asyncThrottle (func, cbArg, timeout, keys) {
-  let running = false
-  let queued = null
-  let queueFunc = (...args) => {
-    if (running) {
-      queued = args
-      return
-    }
-    running = true
-    let cb = args[cbArg]
-    args[cbArg] = (...argss) => {
-      cb(...argss)
-      if (queued) {
-        setTimeout(() => {
-          let args = queued
-          queued = null
-          running = false
-          queueFunc(...args)
-        }, timeout)
-      } else {
-        running = false
-      }
-    }
-    func(...args)
-  }
-  if (timeout > 0) {
-    return throttle(queueFunc, timeout)
-  } else {
-    return queueFunc
-  }
-}
-
 function itemHasValidData (item) {
   if (item.get('type') === 'texture') {
     if (Number.isInteger(item.get('address')) &&
@@ -208,46 +176,66 @@ export function deleteWorkspace (workspaceId) {
   }
 }
 
-const blobThrottler = {
-  throttlers: {},
-  call: function (...args) {
-    let key = args[0].get('id') + '-' + args[1].get('id')
-    if (!(key in this.throttlers)) {
-      this.throttlers[key] = asyncThrottle(generateItemBlob, 2, 1000)
-    }
-    this.throttlers[key](...args)
-  },
-  promise: function (...args) {
+const blobHandler = {
+  dirty: {},
+  resolvers: {},
+  dispatch: false,
+  getState: false,
+  schedule: function (dispatch, getState, textureId, workspaceId) {
+    blobHandler.dispatch = dispatch
+    blobHandler.getState = getState
+    dispatch({
+      type: WORKSPACE.START_UPDATE_ITEM_BLOB,
+      workspaceId,
+      itemId: textureId
+    })
     return new Promise((resolve, reject) => {
-      blobThrottler.call(...args, resolve)
+      let key = textureId + ',' + workspaceId
+      if (!(key in blobHandler.resolvers)) {
+        // if texture is not being generated at the moment, create a list of resolvers & start generating the texture
+        blobHandler.resolvers[key] = [resolve]
+        blobHandler.generate(textureId, workspaceId)
+      } else {
+        // schedule it for another generation
+        blobHandler.dirty[key] = true
+        blobHandler.resolvers[key].push(resolve)
+      }
+    })
+  },
+  generate (textureId, workspaceId) {
+    let args = arguments
+    let state = blobHandler.getState()
+    let workspace = state.workspace.getIn(['workspaces', workspaceId])
+    let item = state.profile.getIn(['profiles', workspace.get('profile'), 'items', textureId])
+    let key = textureId + ',' + workspaceId
+    generateItemBlob(item, workspace, (blob) => {
+      if (blobHandler.dirty[key]) {
+        // It's been dirtied, we generate it again
+        delete blobHandler.dirty[key]
+        blobHandler.generate(...args)
+      } else {
+        // Resolve all promises that are waiting for this texture to finish generating!
+        blobHandler.dispatch({
+          type: WORKSPACE.UPDATE_ITEM_BLOB,
+          workspaceId,
+          itemId: textureId,
+          blob
+        })
+        for (let resolve of blobHandler.resolvers[key]) {
+          resolve(blob)
+        }
+        delete blobHandler.resolvers[key]
+      }
     })
   }
 }
 
 export function updateItemBlob (itemId, workspaceId) {
   return async (dispatch, getState) => {
-    let state = getState()
     if (!workspaceId) {
       return
     }
-
-    dispatch({
-      type: WORKSPACE.START_UPDATE_ITEM_BLOB,
-      workspaceId,
-      itemId
-    })
-
-    let workspace = state.workspace.getIn(['workspaces', workspaceId])
-    let item = state.profile.getIn(['profiles', workspace.get('profile'), 'items', itemId])
-
-    blobThrottler.call(item, workspace, (blob) => {
-      dispatch({
-        type: WORKSPACE.UPDATE_ITEM_BLOB,
-        workspaceId,
-        itemId,
-        blob
-      })
-    })
+    blobHandler.schedule(dispatch, getState, itemId, workspaceId)
   }
 }
 
@@ -266,25 +254,13 @@ export function downloadItem (itemId) {
     let zip = new JSZip()
     let usedNames = []
     for (let successorId of successorIds) {
-      console.log(successorId)
       let item = state.profile.getIn(['profiles', profileId, 'items', successorId])
       if (item.get('type') !== 'texture') {
         continue
       }
-      let blob = item.get('blob')
+      let blob = workspace.getIn(['blobs', successorId, 'blob'])
       if (!blob) {
-        dispatch({
-          type: WORKSPACE.START_UPDATE_ITEM_BLOB,
-          workspaceId,
-          itemId: successorId
-        })
-        blob = await blobThrottler.promise(item, workspace)
-        dispatch({
-          type: WORKSPACE.UPDATE_ITEM_BLOB,
-          workspaceId,
-          itemId: successorId,
-          blob
-        })
+        blob = await blobHandler.schedule(dispatch, getState, successorId, workspaceId)
         if (!blob) {
           continue // Failed to generate blob, do not include it in zip
         }

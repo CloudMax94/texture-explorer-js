@@ -266,18 +266,18 @@
   overflow: hidden;
 
   img {
+    float: left;
     max-width: none;
-    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAJklEQVQoU2M8duzYfwYk0Nvbi8xlYKSDguDgYBQ3FBcXo7qB9goA4ishLVP9OQAAAAAASUVORK5CYII=) repeat;
     image-rendering: -moz-crisp-edges;
     image-rendering: pixelated;
   }
   &.texture-viewer-mode-1 {
-    img {
+    .texture-viewer-texture {
       background: #ff00ff;
     }
   }
   &.texture-viewer-mode-2 {
-    img {
+    .texture-viewer-texture {
       background: #00ff00;
     }
   }
@@ -311,6 +311,11 @@
   padding: 0 8px 8px;
 
   // padding-top: (20px + 8px + 8px - 1px);
+}
+
+.texture-viewer-texture {
+  display: inline-block;
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAJklEQVQoU2M8duzYfwYk0Nvbi8xlYKSDguDgYBQ3FBcXo7qB9goA4ishLVP9OQAAAAAASUVORK5CYII=) repeat;
 }
 
 .profile-manager {

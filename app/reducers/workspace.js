@@ -31,15 +31,15 @@ export default function workspace (state = fromJS({
     case WORKSPACE.UPDATE_ITEM_BLOB:
       state = state.mergeIn(['workspaces', action.workspaceId, 'blobs', action.itemId], {})
       return state.updateIn(['workspaces', action.workspaceId, 'blobs', action.itemId], (item) => {
-        let oldBlob = item.get('blob')
-        if (oldBlob) {
-          URL.revokeObjectURL(oldBlob)
+        let oldUrl = item.get('url')
+        if (oldUrl) {
+          URL.revokeObjectURL(oldUrl)
         }
         item = item.set('blobState', WORKSPACE.BLOB_SET)
         if (!action.blob) {
-          return item.set('blob', null)
+          return item.set('blob', null).set('url', null)
         }
-        return item.set('blob', URL.createObjectURL(action.blob))
+        return item.set('blob', action.blob).set('url', URL.createObjectURL(action.blob))
       })
     case WORKSPACE.CLEAR_ITEM_BLOBS: {
       const { itemIds, workspaceId } = action
@@ -74,7 +74,7 @@ export default function workspace (state = fromJS({
       ) {
         const workspaces = state.get('workspaces').map((workspace) => {
           if (workspace.getIn(['blobs', itemId, 'blobState']) === WORKSPACE.BLOB_SET) {
-            workspace = workspace.setIn(['blobs', action.itemId, 'blobState'], WORKSPACE.BLOB_UNSET)
+            workspace = workspace.setIn(['blobs', itemId, 'blobState'], WORKSPACE.BLOB_UNSET)
           }
           return workspace
         })
