@@ -41,28 +41,38 @@ class TreeItem extends ImmutablePureComponent {
   }
 
   handleContext = (event) => {
-    const { item } = this.props
+    const { item, deleteItem, downloadItem, handleDoubleClick, handleFocus } = this.props
 
     event.preventDefault()
     event.stopPropagation()
 
-    this.props.handleFocus(item)
+    handleFocus(item)
 
     const menu = new Menu()
 
     menu.append(new MenuItem({
       label: item.get('type') === 'directory' ? 'Open' : 'Edit',
       click: () => {
-        this.props.handleDoubleClick(item)
+        handleDoubleClick(item)
       }
     }))
+
+    if (item.get('type') === 'directory') {
+      menu.append(new MenuItem({type: 'separator'}))
+      menu.append(new MenuItem({
+        label: 'Download',
+        click: () => {
+          downloadItem(item.get('id'))
+        }
+      }))
+    }
 
     menu.append(new MenuItem({type: 'separator'}))
 
     menu.append(new MenuItem({
       label: 'Delete',
       click: () => {
-        this.props.deleteItem(item.get('id'))
+        deleteItem(item.get('id'))
       }
     }))
 

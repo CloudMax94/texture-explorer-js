@@ -17,7 +17,8 @@ const VirtualTreeView = ({
   handleFocus,
   handleDoubleClick,
   focusedItem,
-  deleteItem
+  deleteItem,
+  downloadItem
 }) => {
   const items = []
   for (let item of virtual.items.values()) {
@@ -29,6 +30,7 @@ const VirtualTreeView = ({
         handleFocus={handleFocus}
         handleDoubleClick={handleDoubleClick}
         deleteItem={deleteItem}
+        downloadItem={downloadItem}
       />
     )
   }
@@ -209,6 +211,7 @@ class TreeView extends ImmutablePureComponent {
             handleDoubleClick={this.selectItem}
             focusedItem={this.state.focusedItem}
             deleteItem={this.props.deleteItem}
+            downloadItem={this.props.downloadItem}
           /> : null}
         </div>
       </div>

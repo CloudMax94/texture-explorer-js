@@ -1,10 +1,13 @@
 import React from 'react'
 
-import { List, is } from 'immutable'
+import { List } from 'immutable'
 
 import ImmutablePureComponent from '../ImmutablePureComponent'
 
 import VirtualList from 'react-virtual-list'
+
+import { remote } from 'electron'
+const { MenuItem, Menu } = remote
 
 const ItemHeight = 20
 
@@ -14,6 +17,43 @@ class OverviewItem extends ImmutablePureComponent {
   }
   handleDoubleClick = () => {
     this.props.onDoubleClick(this.props.directory)
+  }
+  handleContext = (event) => {
+    const { onClick, onDoubleClick, directory, deleteItem, downloadItem } = this.props
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    onClick(directory)
+
+    const menu = new Menu()
+
+    menu.append(new MenuItem({
+      label: 'Open',
+      click: () => {
+        onDoubleClick(directory)
+      }
+    }))
+
+    menu.append(new MenuItem({type: 'separator'}))
+
+    menu.append(new MenuItem({
+      label: 'Download',
+      click: () => {
+        downloadItem(directory.get('id'))
+      }
+    }))
+
+    menu.append(new MenuItem({type: 'separator'}))
+
+    menu.append(new MenuItem({
+      label: 'Delete',
+      click: () => {
+        deleteItem(directory.get('id'))
+      }
+    }))
+
+    menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY)
   }
   render () {
     const {directory, depth, className, count} = this.props
@@ -25,7 +65,7 @@ class OverviewItem extends ImmutablePureComponent {
     }
     return (
       <div className={className}>
-        <div className='tree-row' style={{paddingLeft: (24 * depth) + 8 + 'px'}} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick}>
+        <div className='tree-row' style={{paddingLeft: (24 * depth) + 8 + 'px'}} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick} onContextMenu={this.handleContext}>
           <i className='tree-icon icon' data-count={countDisplay}>file_directory</i>
           {directory.get('name')}
         </div>
@@ -48,6 +88,7 @@ class Overview extends ImmutablePureComponent {
       'setCurrentDirectory',
       'setCurrentTexture',
       'deleteItem',
+      'downloadItem',
       'copyItemToClipboard'
     ],
     state: [
@@ -200,7 +241,7 @@ class Overview extends ImmutablePureComponent {
       if (directory.get('id') === this.state.focusedItem) {
         classes += ' focused'
       }
-      items.push(<OverviewItem key={directory.get('id')} className={classes} directory={directory} depth={depth} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick} count={this.props.successorCount.getIn([directory.get('id'), 'childTextures']) || 0} />)
+      items.push(<OverviewItem key={directory.get('id')} className={classes} directory={directory} depth={depth} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick} count={this.props.successorCount.getIn([directory.get('id'), 'childTextures']) || 0} deleteItem={this.props.deleteItem} downloadItem={this.props.downloadItem} />)
       let children = this.traverseDirectories(directory.get('id'), depth + 1)
       if (children) {
         items.push(...children)

@@ -5,7 +5,8 @@ import {
   deleteWorkspace,
   setCurrentWorkspace,
   setCurrentDirectory,
-  setCurrentTexture
+  setCurrentTexture,
+  downloadItem
 } from '../actions/workspace'
 import {
   deleteItem,
@@ -95,12 +96,12 @@ class Workspace extends ImmutablePureComponent {
       sizes,
       profileId,
       items,
-      currentWorkspace,
       selectedDirectory,
       selectedTexture,
       setCurrentDirectory,
       setCurrentTexture,
       deleteItem,
+      downloadItem,
       addItemObject,
       copyItemToClipboard,
       setTreeSize,
@@ -176,6 +177,7 @@ class Workspace extends ImmutablePureComponent {
             setCurrentTexture={setCurrentTexture}
             setTreeSize={setTreeSize}
             deleteItem={deleteItem}
+            downloadItem={downloadItem}
             addItemObject={addItemObject}
             copyItemToClipboard={copyItemToClipboard}
             doubleClickSelect={settings.get('doubleClickSelect') === true}
@@ -249,6 +251,7 @@ function mapDispatchToProps (dispatch) {
     setCurrentDirectory,
     setCurrentTexture,
     deleteItem,
+    downloadItem,
     addItemObject,
     copyItemToClipboard,
     setTreeSize

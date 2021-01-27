@@ -6,6 +6,10 @@ import { saveFileAs } from '../utils/fileHandler'
 import { prepareProfiles, loadProfile } from './profile'
 import workerPool from '../utils/workerPool'
 import {getFormat} from '@cloudmodding/texture-manipulator'
+import { getSuccessors, getItemPath } from '../utils/helpers'
+
+import FileSaver from 'file-saver'
+import JSZip from 'jszip'
 
 let idCounter = 0
 
@@ -78,12 +82,7 @@ function getItemPaletteBuffer (item, workspace) {
   )
 }
 
-function generateItemBlob (item, workspace, callback, forced) {
-  if (!forced && item.get('blob')) {
-    callback(null)
-    return
-  }
-
+function generateItemBlob (item, workspace, callback) {
   if (item.get('type') !== 'texture' || !itemHasValidData(item)) {
     callback(null)
     return
@@ -217,6 +216,11 @@ const blobThrottler = {
       this.throttlers[key] = asyncThrottle(generateItemBlob, 2, 1000)
     }
     this.throttlers[key](...args)
+  },
+  promise: function (...args) {
+    return new Promise((resolve, reject) => {
+      blobThrottler.call(...args, resolve)
+    })
   }
 }
 
@@ -243,7 +247,60 @@ export function updateItemBlob (itemId, workspaceId) {
         itemId,
         blob
       })
-    }, true)
+    })
+  }
+}
+
+export function downloadItem (itemId) {
+  return async (dispatch, getState) => {
+    let state = getState()
+    let workspaceId = state.workspace.get('currentWorkspace')
+    let workspace = state.workspace.getIn(['workspaces', workspaceId])
+    if (!workspace) {
+      return
+    }
+    let profileId = workspace.get('profile')
+    let items = state.profile.getIn(['profiles', profileId, 'items'])
+    // TODO - Check item type and support downloading a single texture in addition to entires directories
+    let successorIds = [itemId, ...getSuccessors(state.profile.getIn(['profiles', profileId, 'items']), itemId)]
+    let zip = new JSZip()
+    let usedNames = []
+    for (let successorId of successorIds) {
+      console.log(successorId)
+      let item = state.profile.getIn(['profiles', profileId, 'items', successorId])
+      if (item.get('type') !== 'texture') {
+        continue
+      }
+      let blob = item.get('blob')
+      if (!blob) {
+        dispatch({
+          type: WORKSPACE.START_UPDATE_ITEM_BLOB,
+          workspaceId,
+          itemId: successorId
+        })
+        blob = await blobThrottler.promise(item, workspace)
+        dispatch({
+          type: WORKSPACE.UPDATE_ITEM_BLOB,
+          workspaceId,
+          itemId: successorId,
+          blob
+        })
+        if (!blob) {
+          continue // Failed to generate blob, do not include it in zip
+        }
+      }
+      let p = getItemPath(items, successorId, itemId)
+      let c = 1
+      let name = p
+      while (usedNames.indexOf(name) !== -1) {
+        name = `${p} (${++c})`
+      }
+      usedNames.push(name)
+      zip.file(name + '.png', blob)
+    }
+    zip.generateAsync({type: 'blob'}).then((content) => {
+      FileSaver.saveAs(content, `textures.zip`)
+    })
   }
 }
 
