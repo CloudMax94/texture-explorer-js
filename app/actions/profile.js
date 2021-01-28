@@ -599,3 +599,37 @@ export function setItemData (profileId, itemId, key, value) {
     })
   }
 }
+
+export function moveItem (profileId, itemId, destinationId) {
+  return async (dispatch, getState) => {
+    let state = getState()
+    let item = state.profile.getIn(['profiles', profileId, 'items', itemId])
+    let destinationItem = state.profile.getIn(['profiles', profileId, 'items', destinationId])
+    if (!item || !destinationItem) {
+      return // the source or destination does not exist
+    }
+    if (destinationItem.get('type') !== 'directory') {
+      // If the destination isn't a directory, set destination to the parent of it
+      destinationId = destinationItem.get('parentId')
+    }
+    // Make sure that the item we're moving isn't an ancestor of the destination
+    let ancestorId = destinationId
+    while (ancestorId) {
+      let ancestor = state.profile.getIn(['profiles', profileId, 'items', ancestorId])
+      if (!ancestor) {
+        return // An ancestor is missing, exit! this should never happen...
+      }
+      if (ancestor.get('id') === itemId) {
+        return // The destination has the source item as an ancestor!
+      }
+      ancestorId = ancestor.get('parentId') // Check next ancestor
+    }
+    dispatch({
+      type: PROFILE.SET_ITEM_DATA,
+      profileId,
+      itemId,
+      key: 'parentId',
+      value: destinationId
+    })
+  }
+}

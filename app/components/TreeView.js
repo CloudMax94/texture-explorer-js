@@ -2,6 +2,7 @@ import React from 'react'
 
 import { uniqueId } from 'lodash'
 import VirtualList from 'react-virtual-list'
+import { DropTarget } from 'react-dnd'
 
 import ImmutablePureComponent from './ImmutablePureComponent'
 import TreeItem from './TreeItem'
@@ -17,6 +18,7 @@ const VirtualTreeView = ({
   handleFocus,
   handleDoubleClick,
   focusedItem,
+  moveItem,
   deleteItem,
   downloadItem
 }) => {
@@ -29,6 +31,7 @@ const VirtualTreeView = ({
         focused={item.get('id') === focusedItem}
         handleFocus={handleFocus}
         handleDoubleClick={handleDoubleClick}
+        moveItem={moveItem}
         deleteItem={deleteItem}
         downloadItem={downloadItem}
       />
@@ -186,6 +189,10 @@ class TreeView extends ImmutablePureComponent {
       }
     }
   }
+  handleMoveItem = (itemId, destinationId) => {
+    const {profileId} = this.props
+    this.props.moveItem(profileId, itemId, destinationId)
+  }
   render () {
     let style = ''
     let width = 0
@@ -194,29 +201,42 @@ class TreeView extends ImmutablePureComponent {
       width += w
     }
     return (
-      <div className='tree-view' id={this.id}>
-        <style>{style}</style>
-        <TreeHeader
-          style={{marginLeft: -this.state.horizontalScroll + 'px'}}
-          sizes={this.props.sizes}
-          columns={columnNames}
-          setTreeSize={this.props.setTreeSize}
-        />
-        <div className='tree-content' tabIndex='0' onScroll={this.handleScroll} onKeyDown={this.handleKeyDown} ref={this.scrollContainer}>
-          {this.state.VirtualList ? <this.VirtualList
-            width={width}
-            items={this.props.items ? this.props.items.toArray() : []}
-            itemHeight={ItemHeight}
-            handleFocus={this.focusItem}
-            handleDoubleClick={this.selectItem}
-            focusedItem={this.state.focusedItem}
-            deleteItem={this.props.deleteItem}
-            downloadItem={this.props.downloadItem}
-          /> : null}
+      this.props.connectDropTarget(
+        <div className='tree-view' id={this.id}>
+          <style>{style}</style>
+          <TreeHeader
+            style={{marginLeft: -this.state.horizontalScroll + 'px'}}
+            sizes={this.props.sizes}
+            columns={columnNames}
+            setTreeSize={this.props.setTreeSize}
+          />
+          <div className='tree-content' tabIndex='0' onScroll={this.handleScroll} onKeyDown={this.handleKeyDown} ref={this.scrollContainer}>
+            {this.state.VirtualList ? <this.VirtualList
+              width={width}
+              items={this.props.items ? this.props.items.toArray() : []}
+              itemHeight={ItemHeight}
+              handleFocus={this.focusItem}
+              handleDoubleClick={this.selectItem}
+              focusedItem={this.state.focusedItem}
+              deleteItem={this.props.deleteItem}
+              downloadItem={this.props.downloadItem}
+              moveItem={this.handleMoveItem}
+            /> : null}
+          </div>
         </div>
-      </div>
+      )
     )
   }
 }
 
-export default TreeView
+export default DropTarget('TREE_ITEM', {
+  drop (props, monitor, component) {
+    if (monitor.didDrop()) {
+      return
+    }
+    const item = monitor.getItem()
+    props.moveItem(props.profileId, item.id, props.directoryId)
+  }
+}, (connect, monitor) => ({
+  connectDropTarget: connect.dropTarget()
+}))(TreeView)

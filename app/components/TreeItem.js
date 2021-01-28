@@ -2,6 +2,7 @@ import React from 'react'
 import { padStart } from 'lodash'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
+import { DragSource, DropTarget } from 'react-dnd'
 import { remote } from 'electron'
 import { getFormat } from '@cloudmodding/texture-manipulator'
 import { getItemPath } from '../utils/helpers'
@@ -96,7 +97,7 @@ class TreeItem extends ImmutablePureComponent {
   }
 
   render () {
-    const { item, offset, focused, path } = this.props
+    const { item, offset, focused, path, connectDropTarget, connectDragSource } = this.props
     const columns = [
       path
     ]
@@ -135,9 +136,11 @@ class TreeItem extends ImmutablePureComponent {
     }
     const classes = 'tree-item ' + (focused ? 'focused' : '')
     return (
-      <div className={classes} onContextMenu={this.handleContext}>
-        {columns.map(this.renderColumn)}
-      </div>
+      connectDropTarget(connectDragSource(
+        <div className={classes} onContextMenu={this.handleContext}>
+          {columns.map(this.renderColumn)}
+        </div>
+      ))
     )
   }
 }
@@ -166,4 +169,27 @@ function mapDispatchToProps (dispatch) {
   }, dispatch)
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TreeItem)
+export default DropTarget('TREE_ITEM', {
+  drop (props, monitor, component) {
+    if (monitor.didDrop()) {
+      return
+    }
+    const item = monitor.getItem()
+    props.moveItem(item.id, props.item.get('id'))
+  }
+}, (connect, monitor) => ({
+  connectDropTarget: connect.dropTarget()
+}))(
+  DragSource('TREE_ITEM', {
+    beginDrag (props) {
+      return {
+        id: props.item.get('id')
+      }
+    }
+  }, (connect, monitor) => ({
+    connectDragSource: connect.dragSource(),
+    isDragging: monitor.isDragging()
+  }))(
+    connect(mapStateToProps, mapDispatchToProps)(TreeItem)
+  )
+)

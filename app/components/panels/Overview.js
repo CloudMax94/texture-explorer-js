@@ -1,9 +1,7 @@
 import React from 'react'
-
 import { List } from 'immutable'
-
 import ImmutablePureComponent from '../ImmutablePureComponent'
-
+import { DragSource, DropTarget } from 'react-dnd'
 import VirtualList from 'react-virtual-list'
 
 import { remote } from 'electron'
@@ -56,7 +54,7 @@ class OverviewItem extends ImmutablePureComponent {
     menu.popup(remote.getCurrentWindow(), event.clientX, event.clientY)
   }
   render () {
-    const {directory, depth, className, count} = this.props
+    const {directory, depth, className, count, connectDropTarget, connectDragSource} = this.props
     let countDisplay = count
     if (count === 0) {
       countDisplay = ''
@@ -64,15 +62,42 @@ class OverviewItem extends ImmutablePureComponent {
       countDisplay = '*'
     }
     return (
-      <div className={className}>
-        <div className='tree-row' style={{paddingLeft: (24 * depth) + 8 + 'px'}} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick} onContextMenu={this.handleContext}>
-          <i className='tree-icon icon' data-count={countDisplay}>file_directory</i>
-          {directory.get('name')}
+      connectDropTarget(connectDragSource(
+        <div className={className}>
+          <div className='tree-row' style={{paddingLeft: (24 * depth) + 8 + 'px'}} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick} onContextMenu={this.handleContext}>
+            <i className='tree-icon icon' data-count={countDisplay}>file_directory</i>
+            {directory.get('name')}
+          </div>
         </div>
-      </div>
+      ))
     )
   }
 }
+
+const DraggableOverviewItem = DropTarget('TREE_ITEM', {
+  drop (props, monitor, component) {
+    if (monitor.didDrop()) {
+      return
+    }
+    const item = monitor.getItem()
+    let sourceId = item.id
+    let destinationId = props.directory.get('id')
+    props.moveItem(sourceId, destinationId)
+  }
+}, (connect, monitor) => ({
+  connectDropTarget: connect.dropTarget()
+}))(
+  DragSource('TREE_ITEM', {
+    beginDrag (props) {
+      return {
+        id: props.directory.get('id')
+      }
+    }
+  }, (connect, monitor) => ({
+    connectDragSource: connect.dragSource(),
+    isDragging: monitor.isDragging()
+  }))(OverviewItem)
+)
 
 const VirtualOverview = ({virtual}) => {
   return (
@@ -89,6 +114,7 @@ class Overview extends ImmutablePureComponent {
       'setCurrentTexture',
       'deleteItem',
       'downloadItem',
+      'moveItem',
       'copyItemToClipboard'
     ],
     state: [
@@ -227,21 +253,29 @@ class Overview extends ImmutablePureComponent {
     this.focusItem(item)
   }
 
+  handleMoveItem = (itemId, destinationId) => {
+    const {profileId} = this.props
+    this.props.moveItem(profileId, itemId, destinationId)
+  }
+
   traverseDirectories = (id, depth = 0) => {
-    const children = this.props.groupedDirectories.get(id)
+    const {successorCount, deleteItem, downloadItem, groupedDirectories, selectedDirectoryId} = this.props
+    const children = groupedDirectories.get(id)
     if (!children) {
       return
     }
     let items = []
     for (let directory of children.values()) {
       let classes = 'tree-item'
-      if (directory.get('id') === this.props.selectedDirectoryId) {
+      if (directory.get('id') === selectedDirectoryId) {
         classes += ' selected'
       }
       if (directory.get('id') === this.state.focusedItem) {
         classes += ' focused'
       }
-      items.push(<OverviewItem key={directory.get('id')} className={classes} directory={directory} depth={depth} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick} count={this.props.successorCount.getIn([directory.get('id'), 'childTextures']) || 0} deleteItem={this.props.deleteItem} downloadItem={this.props.downloadItem} />)
+      items.push(
+        <DraggableOverviewItem key={directory.get('id')} className={classes} directory={directory} depth={depth} onClick={this.handleClick} onDoubleClick={this.handleDoubleClick} count={successorCount.getIn([directory.get('id'), 'childTextures']) || 0} deleteItem={deleteItem} downloadItem={downloadItem} moveItem={this.handleMoveItem} />
+      )
       let children = this.traverseDirectories(directory.get('id'), depth + 1)
       if (children) {
         items.push(...children)

@@ -9,6 +9,7 @@ import {
   downloadItem
 } from '../actions/workspace'
 import {
+  moveItem,
   deleteItem,
   copyItemToClipboard,
   addItemObject
@@ -100,6 +101,7 @@ class Workspace extends ImmutablePureComponent {
       selectedTexture,
       setCurrentDirectory,
       setCurrentTexture,
+      moveItem,
       deleteItem,
       downloadItem,
       addItemObject,
@@ -176,6 +178,7 @@ class Workspace extends ImmutablePureComponent {
             setCurrentDirectory={setCurrentDirectory}
             setCurrentTexture={setCurrentTexture}
             setTreeSize={setTreeSize}
+            moveItem={moveItem}
             deleteItem={deleteItem}
             downloadItem={downloadItem}
             addItemObject={addItemObject}
@@ -250,6 +253,7 @@ function mapDispatchToProps (dispatch) {
     setCurrentWorkspace,
     setCurrentDirectory,
     setCurrentTexture,
+    moveItem,
     deleteItem,
     downloadItem,
     addItemObject,
