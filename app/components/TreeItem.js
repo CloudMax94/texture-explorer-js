@@ -7,8 +7,7 @@ import { getFormat } from '@cloudmodding/texture-manipulator'
 import { getItemPath } from '../utils/helpers'
 import ImmutablePureComponent from './ImmutablePureComponent'
 
-import { BLOB_UNSET } from '../constants/workspace'
-import { updateItemBlob } from '../actions/workspace'
+import { maybeUpdateItemBlob } from '../actions/workspace'
 
 const { MenuItem, Menu } = remote
 
@@ -22,11 +21,9 @@ class TreeItem extends ImmutablePureComponent {
   }
 
   blobUpdate (props) {
-    const { item, workspaceId, updateItemBlob, blobState } = props
+    const { item, workspaceId, maybeUpdateItemBlob } = props
     if (item) {
-      if (blobState === BLOB_UNSET) {
-        updateItemBlob(item.get('id'), workspaceId)
-      }
+      maybeUpdateItemBlob(item.get('id'), workspaceId)
     }
   }
 
@@ -155,19 +152,17 @@ function mapStateToProps (state, ownProps) {
   let path = getItemPath(items, itemId, items.getIn([workspace.get('selectedDirectory'), 'id']))
 
   let blob = workspace.getIn(['blobs', itemId, 'url'])
-  let blobState = workspace.getIn(['blobs', itemId, 'blobState']) || BLOB_UNSET
   return {
     offset,
     path,
     workspaceId,
-    blob,
-    blobState
+    blob
   }
 }
 
 function mapDispatchToProps (dispatch) {
   return bindActionCreators({
-    updateItemBlob
+    maybeUpdateItemBlob
   }, dispatch)
 }
 

@@ -10,7 +10,7 @@ function work (msg, callback) {
     palette = Buffer.from(input.palette)
   }
   var img = generateTexture(Buffer.from(input.data), input.format, input.width, palette)
-  if (img) {
+  if (img && img.size) {
     img.toPNGBuffer().then(function (buffer) {
       callback(null, {
         id: msg.id,

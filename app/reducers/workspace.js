@@ -27,19 +27,28 @@ export default function workspace (state = fromJS({
       }
       return state.deleteIn(['workspaces', action.workspaceId], action.workspace)
     case WORKSPACE.START_UPDATE_ITEM_BLOB:
-      return state.mergeIn(['workspaces', action.workspaceId, 'blobs', action.itemId], {blobState: WORKSPACE.BLOB_SETTING})
+      return state.mergeIn(['workspaces', action.workspaceId, 'blobs', action.itemId], {
+        dirty: false,
+        generating: true
+      })
+    case WORKSPACE.END_UPDATE_ITEM_BLOB:
+      return state.mergeIn(['workspaces', action.workspaceId, 'blobs', action.itemId], {
+        generating: false
+      })
     case WORKSPACE.UPDATE_ITEM_BLOB:
-      state = state.mergeIn(['workspaces', action.workspaceId, 'blobs', action.itemId], {})
+      state = state.mergeIn(['workspaces', action.workspaceId, 'blobs', action.itemId], {
+        blob: null,
+        url: null
+      })
       return state.updateIn(['workspaces', action.workspaceId, 'blobs', action.itemId], (item) => {
         let oldUrl = item.get('url')
         if (oldUrl) {
           URL.revokeObjectURL(oldUrl)
         }
-        item = item.set('blobState', WORKSPACE.BLOB_SET)
-        if (!action.blob) {
-          return item.set('blob', null).set('url', null)
+        if (action.blob) {
+          return item.set('blob', action.blob).set('url', URL.createObjectURL(action.blob))
         }
-        return item.set('blob', action.blob).set('url', URL.createObjectURL(action.blob))
+        return item
       })
     case WORKSPACE.CLEAR_ITEM_BLOBS: {
       const { itemIds, workspaceId } = action
@@ -50,7 +59,7 @@ export default function workspace (state = fromJS({
             if (oldBlob) {
               URL.revokeObjectURL(oldBlob)
             }
-            return blob.set('blobState', WORKSPACE.BLOB_UNSET).set('blob', null)
+            return blob.set('blob', null)
           }
           return blob
         })
@@ -73,8 +82,9 @@ export default function workspace (state = fromJS({
         key === 'palette'
       ) {
         const workspaces = state.get('workspaces').map((workspace) => {
-          if (workspace.getIn(['blobs', itemId, 'blobState']) === WORKSPACE.BLOB_SET) {
-            workspace = workspace.setIn(['blobs', itemId, 'blobState'], WORKSPACE.BLOB_UNSET)
+          if (workspace.hasIn(['blobs', itemId])) {
+            console.log('setting dirty!', itemId)
+            workspace = workspace.setIn(['blobs', itemId, 'dirty'], true)
           }
           return workspace
         })

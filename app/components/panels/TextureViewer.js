@@ -3,14 +3,12 @@ import { DropTarget } from 'react-dnd'
 import { NativeTypes } from 'react-dnd-html5-backend'
 import { openFile } from '../../utils/fileHandler'
 
-import { BLOB_UNSET } from '../../constants/workspace'
-
 import {pngToPixelData, pixelDataToRaw} from '@cloudmodding/texture-manipulator'
 import ImmutablePureComponent from '../ImmutablePureComponent'
 
 class TextureViewer extends ImmutablePureComponent {
   static dependencies = {
-    actions: ['updateItemBlob', 'insertData'],
+    actions: ['maybeUpdateItemBlob', 'insertData'],
     state: [
       ['selectedTexture', 'texture'],
       ['selectedTextureBlob', 'blob'],
@@ -39,11 +37,9 @@ class TextureViewer extends ImmutablePureComponent {
   }
 
   blobUpdate (props) {
-    const { texture, workspaceId, updateItemBlob, blob } = props
+    const { texture, workspaceId, maybeUpdateItemBlob } = props
     if (texture) {
-      if (!blob || blob.get('blobState') === BLOB_UNSET) {
-        updateItemBlob(texture.get('id'), workspaceId)
-      }
+      maybeUpdateItemBlob(texture.get('id'), workspaceId)
     }
   }
 
@@ -77,6 +73,7 @@ class TextureViewer extends ImmutablePureComponent {
     let style = {
       zoom
     }
+    let generatingIndicator = <div className={'texture-viewer-indicator' + (blob.get('generating') ? ' texture-viewer-indicator-visible' : '')} />
     return connectDropTarget(
       <div className={'texture-viewer texture-viewer-mode-' + this.state.mode}>
         <div className='texture-viewer-head'>
@@ -86,6 +83,7 @@ class TextureViewer extends ImmutablePureComponent {
           <div className='texture-viewer-texture'>
             <img src={blob.get('url')} style={style} onWheel={this.handleWheel} onClick={this.handleClick} />
           </div>
+          {generatingIndicator}
         </div>
       </div>
     )

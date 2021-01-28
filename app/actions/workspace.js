@@ -1,7 +1,6 @@
 import * as WORKSPACE from '../constants/workspace'
 
 import { Record, Map } from 'immutable'
-import { throttle } from 'lodash'
 import { saveFileAs } from '../utils/fileHandler'
 import { prepareProfiles, loadProfile } from './profile'
 import workerPool from '../utils/workerPool'
@@ -177,65 +176,80 @@ export function deleteWorkspace (workspaceId) {
 }
 
 const blobHandler = {
-  dirty: {},
   resolvers: {},
   dispatch: false,
   getState: false,
   schedule: function (dispatch, getState, textureId, workspaceId) {
     blobHandler.dispatch = dispatch
     blobHandler.getState = getState
-    dispatch({
-      type: WORKSPACE.START_UPDATE_ITEM_BLOB,
-      workspaceId,
-      itemId: textureId
-    })
     return new Promise((resolve, reject) => {
       let key = textureId + ',' + workspaceId
       if (!(key in blobHandler.resolvers)) {
-        // if texture is not being generated at the moment, create a list of resolvers & start generating the texture
+        // texture is not being generated at the moment, so we start generating it
         blobHandler.resolvers[key] = [resolve]
         blobHandler.generate(textureId, workspaceId)
       } else {
-        // schedule it for another generation
-        blobHandler.dirty[key] = true
+        // already generating, add resolver to list
         blobHandler.resolvers[key].push(resolve)
       }
     })
   },
   generate (textureId, workspaceId) {
+    // Dispatch that generation has started
+    // This says that generation is already ongoing
+    // This also clears dirty property as we will be generating with the current settings
+    blobHandler.dispatch({
+      type: WORKSPACE.START_UPDATE_ITEM_BLOB,
+      workspaceId,
+      itemId: textureId
+    })
     let args = arguments
     let state = blobHandler.getState()
     let workspace = state.workspace.getIn(['workspaces', workspaceId])
     let item = state.profile.getIn(['profiles', workspace.get('profile'), 'items', textureId])
     let key = textureId + ',' + workspaceId
     generateItemBlob(item, workspace, (blob) => {
-      if (blobHandler.dirty[key]) {
-        // It's been dirtied, we generate it again
-        delete blobHandler.dirty[key]
+      // Dispatch new blob, even if it is dirtied, so it can be shown while waiting for the live one.
+      blobHandler.dispatch({
+        type: WORKSPACE.UPDATE_ITEM_BLOB,
+        workspaceId,
+        itemId: textureId,
+        blob
+      })
+      if (blobHandler.getState().workspace.getIn(['workspaces', workspaceId, 'blobs', textureId, 'dirty'])) {
+        // The blob was dirtied while generating it, so we have to generate it again
         blobHandler.generate(...args)
       } else {
-        // Resolve all promises that are waiting for this texture to finish generating!
+        // The blob was not dirtied
+        // This clears the generating property
         blobHandler.dispatch({
-          type: WORKSPACE.UPDATE_ITEM_BLOB,
+          type: WORKSPACE.END_UPDATE_ITEM_BLOB,
           workspaceId,
-          itemId: textureId,
-          blob
+          itemId: textureId
         })
-        for (let resolve of blobHandler.resolvers[key]) {
+        // we can now resolve everywhere
+        let resolvers = blobHandler.resolvers[key]
+        delete blobHandler.resolvers[key]
+        for (let resolve of resolvers) {
           resolve(blob)
         }
-        delete blobHandler.resolvers[key]
       }
     })
   }
 }
 
-export function updateItemBlob (itemId, workspaceId) {
+// This action should be called when components that use the blobs are mounted/updated
+// This way we only actually update blobs when necessary
+export function maybeUpdateItemBlob (itemId, workspaceId) {
   return async (dispatch, getState) => {
     if (!workspaceId) {
       return
     }
-    blobHandler.schedule(dispatch, getState, itemId, workspaceId)
+    let blob = getState().workspace.getIn(['workspaces', workspaceId, 'blobs', itemId])
+    if (!blob || blob.get('dirty')) {
+      // blob does not exist, or is dirty, schedule it
+      blobHandler.schedule(dispatch, getState, itemId, workspaceId)
+    }
   }
 }
 
@@ -259,7 +273,7 @@ export function downloadItem (itemId) {
         continue
       }
       let blob = workspace.getIn(['blobs', successorId, 'blob'])
-      if (!blob) {
+      if (!blob || blob.get('dirty')) {
         blob = await blobHandler.schedule(dispatch, getState, successorId, workspaceId)
         if (!blob) {
           continue // Failed to generate blob, do not include it in zip
