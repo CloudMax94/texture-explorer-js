@@ -66,7 +66,6 @@ export default function ui (state = fromJS({
   treeVisibility: [true, true, true, true, true, true, true, true, true, true],
   settings: defaultSettings,
   menu: null,
-  showAbout: false,
   prompt: null,
   popout: []
 }).merge(defaultDocks), action) {
@@ -186,12 +185,6 @@ export default function ui (state = fromJS({
       }))
     case INTERFACE.CLOSE_PROMPT:
       return state.set('prompt', null)
-    case INTERFACE.TOGGLE_ABOUT_DIALOG:
-      let newState = action.state
-      if (typeof newState === 'undefined') {
-        newState = !state.get('showAbout')
-      }
-      return state.set('showAbout', newState)
     case INTERFACE.OPEN_POPOUT:
       if (state.get('popout').indexOf(action.popout) >= 0) {
         return state

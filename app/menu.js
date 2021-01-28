@@ -1,9 +1,10 @@
+import React from 'react'
 import { openFile } from './utils/fileHandler'
 import { remote } from 'electron'
 import { bindActionCreators } from 'redux'
 import {
-  toggleAboutDialog,
   resetPanels,
+  prompt,
   setApplicationMenu
 } from './actions/interface'
 import { createDirectory, createTexture } from './actions/profile'
@@ -20,7 +21,7 @@ function initializeMenu (store) {
     createDirectory,
     createTexture,
     setApplicationMenu,
-    toggleAboutDialog
+    prompt
   }, dispatch)
 
   function updateMenu () {
@@ -237,7 +238,17 @@ function initializeMenu (store) {
   const aboutItem = new MenuItem({
     label: '&About ' + remote.app.getName(),
     click: () => {
-      actions.toggleAboutDialog(true)
+      actions.prompt({
+        title: `About ${remote.app.getName()}`,
+        message: `Version: ${remote.app.getVersion()}<br />
+                  Website: <a href='https://cloudmodding.com' target='_blank'>cloudmodding.com</a><br />
+                  Created by CloudMax 2015-2021.`,
+        buttons: [
+          {
+            text: 'Close'
+          }
+        ]
+      })
     }
   })
   helpSubMenu.append(aboutItem)

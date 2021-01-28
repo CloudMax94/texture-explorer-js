@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { DropTarget } from 'react-dnd'
 import { NativeTypes } from 'react-dnd-html5-backend'
-import { toggleAboutDialog, closePrompt, closePopout } from '../actions/interface'
+import { closePrompt, closePopout } from '../actions/interface'
 import { createWorkspace } from '../actions/workspace'
 
 import { each } from 'lodash'
@@ -61,9 +61,6 @@ class App extends React.Component {
   }
   handleContextMenu = (event) => {
     event.preventDefault()
-  }
-  closeAboutDialog = () => {
-    this.props.toggleAboutDialog(false)
   }
   getPopoutDOM = (id) => {
     if (!(id in this.popouts)) {
@@ -130,7 +127,6 @@ class App extends React.Component {
       menu,
       prompt,
       closePrompt,
-      showAbout,
       popout,
       connectDropTarget
     } = this.props
@@ -153,7 +149,7 @@ class App extends React.Component {
           if (callback) {
             button = button.set('callback', () => {
               closePrompt()
-              callback(this.promptInput.current.value)
+              callback(this.promptInput.current ? this.promptInput.current.value : undefined)
             })
           } else {
             button = button.set('callback', onClose)
@@ -161,17 +157,20 @@ class App extends React.Component {
           return button
         })
       }
+      let inputs = null
+      let type = settings.get('type')
+      let message = settings.get('message')
+      if (type) {
+        inputs = (
+          <div className='inputs'>
+            <input ref={this.promptInput} type={settings.get('type')} defaultValue={settings.get('value')} />
+          </div>
+        )
+      }
       dialog = <Dialog title={settings.get('title')} buttons={buttons} onClose={onClose}>
-        <div className='inputs'>
-          <input ref={this.promptInput} type={settings.get('type')} defaultValue={settings.get('value')} />
-        </div>
+        {message ? <div className='prompt-message' dangerouslySetInnerHTML={{__html: message}} /> : ''}
+        {inputs}
       </Dialog>
-    } else if (showAbout) {
-      dialog = (<Dialog title={`About ${remote.app.getName()}`} onClose={this.closeAboutDialog}>
-        Version: {remote.app.getVersion()}<br />
-        Website: <a href='https://cloudmodding.com' target='_blank'>cloudmodding.com</a><br />
-        Created by CloudMax 2015-2021.
-      </Dialog>)
     }
 
     let popouts = []
@@ -206,7 +205,6 @@ class App extends React.Component {
 function mapStateToProps (state) {
   return {
     menu: state.ui.get('menu'),
-    showAbout: state.ui.get('showAbout'),
     prompt: state.ui.get('prompt'),
     popout: state.ui.get('popout')
   }
@@ -215,7 +213,6 @@ function mapStateToProps (state) {
 function mapDispatchToProps (dispatch) {
   return bindActionCreators({
     // Interface
-    toggleAboutDialog,
     closePrompt,
     closePopout,
     // Workspace

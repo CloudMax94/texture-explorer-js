@@ -51,7 +51,21 @@ class ProfileManager extends ImmutablePureComponent {
     })
   }
   handleDelete = (event) => {
-    this.props.deleteProfile(this.props.profileId)
+    this.props.prompt({
+      title: 'Delete Profile',
+      message: `Do you want to delete "${this.props.profileList.get(this.props.profileId)}"?`,
+      buttons: [
+        {
+          text: 'OK',
+          callback: () => {
+            this.props.deleteProfile(this.props.profileId)
+          }
+        },
+        {
+          text: 'Cancel'
+        }
+      ]
+    })
   }
   handleCreate = (event) => {
     this.props.prompt({

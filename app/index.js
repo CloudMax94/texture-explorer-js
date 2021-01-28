@@ -17,7 +17,6 @@ const store = configureStore()
 const interfaceTransform = createTransform(
   (inboundState, key) => {
     return inboundState.delete('menu')
-                       .delete('showAbout')
                        .delete('prompt')
                        .delete('popout').toJS()
   },

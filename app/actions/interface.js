@@ -84,13 +84,6 @@ export function resetPanels () {
   }
 }
 
-export function toggleAboutDialog (state = undefined) {
-  return {
-    type: INTERFACE.TOGGLE_ABOUT_DIALOG,
-    state
-  }
-}
-
 export function prompt (settings, callback) {
   return {
     type: INTERFACE.SET_PROMPT,
