@@ -104,3 +104,18 @@ export function closePrompt () {
     type: INTERFACE.CLOSE_PROMPT
   }
 }
+
+export function popoutPanel (popout) {
+  return {
+    type: INTERFACE.OPEN_POPOUT,
+    popout
+  }
+}
+
+
+export function closePopout (popout) {
+  return {
+    type: INTERFACE.CLOSE_POPOUT,
+    popout
+  }
+}

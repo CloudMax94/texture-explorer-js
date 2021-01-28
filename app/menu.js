@@ -24,7 +24,8 @@ function initializeMenu (store) {
   }, dispatch)
 
   function updateMenu () {
-    Menu.setApplicationMenu(menu)
+    Menu.setApplicationMenu(null)
+    remote.getCurrentWindow().setMenu(menu)
     if (process.browser) {
       actions.setApplicationMenu(menu)
     }

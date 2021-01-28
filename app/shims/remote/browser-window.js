@@ -36,6 +36,9 @@ export function getFocusedWindow () {
           document.msExitFullscreen()
         }
       }
+    },
+    setMenu (menu) {
+      // NOTE: Shis does not support setMenu, this is just a stub.
     }
   }
 }

@@ -32,7 +32,8 @@ app.on('ready', function () {
     webPreferences: {
       nodeIntegrationInWorker: true,
       zoomFactor: global.argv['zoom-factor'] ? global.argv['zoom-factor'] : 1,
-      webSecurity: false
+      webSecurity: false,
+      nativeWindowOpen: true
     },
     icon: path.join(__dirname, 'icon.png'),
     backgroundColor: '#262626'
@@ -62,8 +63,23 @@ app.on('ready', function () {
     mainWindow = null
   })
 
-  mainWindow.webContents.on('new-window', function (event, url) {
+  mainWindow.webContents.on('new-window', function (event, url, frameName, disposition, options, additionalFeatures) {
     event.preventDefault()
-    shell.openExternal(url)
+    if (frameName === 'TE.js Panel') {
+      Object.assign(options, {
+        show: false,
+        backgroundColor: '#2a2d32',
+        menuBarVisible: false,
+        webPreferences: {
+          enableRemoteModule: false,
+          nodeIntegration: false,
+          contextIsolation: true
+        }
+      })
+      event.newGuest = new BrowserWindow(options)
+      event.newGuest.once('ready-to-show', () => event.newGuest.show())
+    } else {
+      shell.openExternal(url)
+    }
   })
 })

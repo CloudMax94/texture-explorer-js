@@ -222,6 +222,22 @@
   }
 }
 
+.panel-popout {
+  display: flex;
+  body {
+    @extend .panel-content;
+  }
+}
+
+.popout-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin: auto;
+  text-align: center;
+}
+
 .workspace-tabs {
   @extend .panel-header;
 }

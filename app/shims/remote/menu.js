@@ -75,8 +75,8 @@ class Menu {
   }
 }
 Menu.setApplicationMenu = function (menu) {
-  // NOTE: This shim does not support setApplicationMenu!
-  //       Add the menu directly to the interface store instead
+  // NOTE: Shim does not support setApplicationMenu, this is just a stub.
+  //       In electron this sets the application menu for main window & all popups
 }
 var buildFromTemplateSubmenus = function (item) {
   if (item.submenu) {

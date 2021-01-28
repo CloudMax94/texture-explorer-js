@@ -168,7 +168,7 @@ class PanelGroup extends ImmutablePureComponent {
   }
 
   handleTabContext = (panelId, position) => {
-    const { movePanelToDock } = this.props
+    const { movePanelToDock, popoutPanel } = this.props
     const menu = new Menu()
 
     menu.append(new MenuItem({
@@ -198,6 +198,16 @@ class PanelGroup extends ImmutablePureComponent {
         movePanelToDock(panelId, 3)
       }
     }))
+
+    if (['overview'].indexOf(panelId) === -1) {
+      menu.append(new MenuItem({type: 'separator'}))
+      menu.append(new MenuItem({
+        label: 'Pop out Panel',
+        click: () => {
+          popoutPanel(panelId)
+        }
+      }))
+    }
 
     menu.popup(remote.getCurrentWindow(), ...position)
   }

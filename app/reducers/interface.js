@@ -67,7 +67,8 @@ export default function ui (state = fromJS({
   settings: defaultSettings,
   menu: null,
   showAbout: false,
-  prompt: null
+  prompt: null,
+  popout: []
 }).merge(defaultDocks), action) {
   switch (action.type) {
     case REHYDRATE:
@@ -191,6 +192,17 @@ export default function ui (state = fromJS({
         newState = !state.get('showAbout')
       }
       return state.set('showAbout', newState)
+    case INTERFACE.OPEN_POPOUT:
+      if (state.get('popout').indexOf(action.popout) >= 0) {
+        return state
+      }
+      return state.set('popout', state.get('popout').push(action.popout))
+    case INTERFACE.CLOSE_POPOUT:
+      let i = state.get('popout').indexOf(action.popout)
+      if (i < 0) {
+        return state
+      }
+      return state.set('popout', state.get('popout').splice(i, 1))
     default:
       return state
   }

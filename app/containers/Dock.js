@@ -10,7 +10,9 @@ import {
   movePanelToDock,
   movePanelToPanelGroup,
   movePanelNextToPanelGroup,
-  movePanelGroupToDock
+  movePanelGroupToDock,
+  popoutPanel,
+  closePopout
 } from '../actions/interface'
 
 import PanelProvider from './PanelProvider'
@@ -31,10 +33,15 @@ const panelNames = {
 }
 
 const NecessaryDockProps = [
-  'panelGroups', 'size', 'index', 'layoutDirection'
+  'panelGroups', 'size', 'index', 'layoutDirection', 'popout'
 ]
 
 class Dock extends React.Component {
+  constructor (props) {
+    super(props)
+    this.containerEl = document.createElement('div')
+    this.popouts = {}
+  }
   shouldComponentUpdate (nextProps, nextState) {
     let shouldUpdate = !NecessaryDockProps.every((p) => is(nextProps[p], this.props[p]))
     return shouldUpdate
@@ -42,9 +49,25 @@ class Dock extends React.Component {
   handleResize = (size) => {
     this.props.setDockSize(this.props.index, size)
   }
+  handleClosePopout = (event) => {
+    this.props.closePopout(event.target.value)
+  }
   renderPanelGroup = (panelGroup) => {
     const { index, layoutDirection } = this.props
     let currentPanel = panelGroup.get('currentPanel')
+
+    let panel
+    if (this.props.popout.indexOf(currentPanel) >= 0) {
+      panel = (
+        <div className='popout-message'>
+          <div>This panel is popped.</div>
+          <button style={{marginTop: '8px'}} onClick={this.handleClosePopout} value={currentPanel}>Close popout</button>
+        </div>
+      )
+    } else {
+      panel = <PanelProvider panel={currentPanel} layoutDirection={layoutDirection === 'vertical' ? 'horizontal' : 'vertical'} />
+    }
+
     return <PanelGroup
       key={panelGroup.get('id')}
       panelGroupId={panelGroup.get('id')}
@@ -56,8 +79,9 @@ class Dock extends React.Component {
       movePanelToPanelGroup={this.props.movePanelToPanelGroup}
       movePanelNextToPanelGroup={this.props.movePanelNextToPanelGroup}
       movePanelGroupToDock={this.props.movePanelGroupToDock}
+      popoutPanel={this.props.popoutPanel}
     >
-      <PanelProvider panel={currentPanel} layoutDirection={layoutDirection === 'vertical' ? 'horizontal' : 'vertical'} />
+      {panel}
     </PanelGroup>
   }
   render () {
@@ -109,7 +133,8 @@ function mapStateToProps (state, ownProps) {
   }
   return {
     size: state.ui.getIn(['docks', ownProps.index, 'size']),
-    panelGroups
+    panelGroups,
+    popout: state.ui.get('popout')
   }
 }
 
@@ -120,7 +145,9 @@ function mapDispatchToProps (dispatch) {
     movePanelToDock,
     movePanelToPanelGroup,
     movePanelNextToPanelGroup,
-    movePanelGroupToDock
+    movePanelGroupToDock,
+    popoutPanel,
+    closePopout
   }, dispatch)
 }
 
