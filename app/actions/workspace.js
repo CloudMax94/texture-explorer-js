@@ -272,12 +272,14 @@ export function downloadItem (itemId) {
       if (item.get('type') !== 'texture') {
         continue
       }
-      let blob = workspace.getIn(['blobs', successorId, 'blob'])
+      let blob = workspace.getIn(['blobs', successorId])
       if (!blob || blob.get('dirty')) {
         blob = await blobHandler.schedule(dispatch, getState, successorId, workspaceId)
         if (!blob) {
           continue // Failed to generate blob, do not include it in zip
         }
+      } else {
+        blob = blob.get('blob')
       }
       let p = getItemPath(items, successorId, itemId)
       let c = 1
