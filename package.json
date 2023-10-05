@@ -40,7 +40,7 @@
     "babel-loader": "^7.1.2",
     "cross-env": "^5.1.0",
     "css-loader": "^0.28.7",
-    "electron": "1.8.1",
+    "electron": "22.3.25",
     "eslint": "^4.8.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-config-standard-jsx": "^4.0.2",
