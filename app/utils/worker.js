@@ -9,7 +9,17 @@ function work (msg, callback) {
   if (input.palette) {
     palette = Buffer.from(input.palette)
   }
-  var img = generateTexture(Buffer.from(input.data), input.format, input.width, palette)
+  let img
+  try {
+    img = generateTexture(Buffer.from(input.data), input.format, input.width, palette)
+  } catch (error) {
+    callback(null, {
+      id: msg.id,
+      type: msg.type,
+      output: {}
+    })
+    return
+  }
   if (img && img.size) {
     img.toPNGBuffer().then(function (buffer) {
       callback(null, {
@@ -23,6 +33,11 @@ function work (msg, callback) {
       return buffer
     }).catch(function (error) {
       console.error(error)
+      callback(null, {
+        id: msg.id,
+        type: msg.type,
+        output: {}
+      })
     })
   } else {
     callback(null, {
