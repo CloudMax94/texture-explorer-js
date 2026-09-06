@@ -1,4 +1,4 @@
-import { generateTexture } from '@cloudmodding/texture-manipulator'
+import { generateTexture } from './texture'
 
 function work (msg, callback) {
   var input = msg.input

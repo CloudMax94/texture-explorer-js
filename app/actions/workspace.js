@@ -4,7 +4,7 @@ import { Record, Map } from 'immutable'
 import { saveFileAs } from '../utils/fileHandler'
 import { prepareProfiles, loadProfile } from './profile'
 import workerPool from '../utils/workerPool'
-import {getFormat} from '@cloudmodding/texture-manipulator'
+import {getFormat} from '../utils/texture'
 import { getSuccessors, getItemPath } from '../utils/helpers'
 
 import FileSaver from 'file-saver'

@@ -3,7 +3,7 @@ import { DropTarget } from 'react-dnd'
 import { NativeTypes } from 'react-dnd-html5-backend'
 import { openFile } from '../../utils/fileHandler'
 
-import {pngToPixelData, pixelDataToRaw} from '@cloudmodding/texture-manipulator'
+import {pngToPixelData, pixelDataToRaw} from '../../utils/texture'
 import ImmutablePureComponent from '../ImmutablePureComponent'
 
 class TextureViewer extends ImmutablePureComponent {

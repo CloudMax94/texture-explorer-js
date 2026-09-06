@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { DragSource, DropTarget } from 'react-dnd'
 import { remote } from 'electron'
-import { getFormat } from '@cloudmodding/texture-manipulator'
+import { getFormat } from '../utils/texture'
 import { getItemPath } from '../utils/helpers'
 import ImmutablePureComponent from './ImmutablePureComponent'
 

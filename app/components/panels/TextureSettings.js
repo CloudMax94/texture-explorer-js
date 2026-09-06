@@ -1,7 +1,7 @@
 import React from 'react'
 import { padStart } from 'lodash'
 
-import { getFormats, getFormat } from '@cloudmodding/texture-manipulator'
+import { getFormats, getFormat } from '../../utils/texture'
 
 import ItemSettings from './ItemSettings'
 import HexSpinner from '../HexSpinner'
